@@ -313,7 +313,7 @@ def NED_heavy_basc_workflow_test():
     dataset_bootstraps=50
     timeseries_bootstraps=10
     n_clusters=10
-    output_size=2000
+    output_size=400
     cross_cluster=True
     
     roi2_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/yeo_2.nii.gz'
