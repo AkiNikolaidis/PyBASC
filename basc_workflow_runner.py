@@ -85,9 +85,9 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     resource_pool['gsm'] = (basc, 'outputspec.gsm')
     resource_pool['gsclusters'] = (basc, 'outputspec.gsclusters')
     resource_pool['gsmap'] = (basc, 'outputspec.gsmap')
-    resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
-    resource_pool['gsmap_img'] = (basc, 'outputspec.gsmap_img')
-    resource_pool['ismap_imgs'] = (basc, 'outputspec.ismap_imgs')
+#    resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
+#    resource_pool['gsmap_img'] = (basc, 'outputspec.gsmap_img')
+#    resource_pool['ismap_imgs'] = (basc, 'outputspec.ismap_imgs')
 
 
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
