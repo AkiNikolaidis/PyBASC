@@ -275,7 +275,7 @@ def heavy_basc_workflow_test():
                          '/Users/aki.nikolaidis/BGDev_SampleData/A00060280/bandpassed_demeaned_filtered_antswarp.nii.gz']
 
 
-    roi_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/BG.nii.gz'
+    roi_mask_file=home + 'git_repo/basc/masks/BG.nii.gz'
    
     dataset_bootstraps=50
     timeseries_bootstraps=10
@@ -283,7 +283,7 @@ def heavy_basc_workflow_test():
     output_size=10
     cross_cluster=True
     
-    roi2_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/yeo_2.nii.gz'
+    roi2_mask_file=home + 'git_repo/basc/masks/yeo_2.nii.gz'
     
     affinity_threshold= [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
     out_dir= home + '/BASC_outputs'
@@ -308,7 +308,7 @@ def NED_heavy_basc_workflow_test():
                          '/data/rockland_sample/A00059733/functional_mni/_scan_clg_2_rest_645/bandpassed_demeaned_filtered_antswarp.nii.gz']
 
 
-    roi_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/BG.nii.gz'
+    roi_mask_file=home + 'git_repo/basc/masks/BG.nii.gz'
    
     dataset_bootstraps=50
     timeseries_bootstraps=10
@@ -316,7 +316,7 @@ def NED_heavy_basc_workflow_test():
     output_size=400
     cross_cluster=True
     
-    roi2_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/yeo_2.nii.gz'
+    roi2_mask_file=home + 'git_repo/basc/masks/yeo_2.nii.gz'
     
     affinity_threshold= [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
     out_dir= home + '/BASC_outputs'
