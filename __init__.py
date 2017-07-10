@@ -14,7 +14,8 @@ import basc
 
 from basc import create_basc, \
                  nifti_individual_stability, \
-                 group_stability_matrix, \
+                 map_group_stability, \
+                 join_group_stability, \
                  ndarray_to_vol, \
                  individual_group_clustered_maps
             

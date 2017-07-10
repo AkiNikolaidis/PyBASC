@@ -21,10 +21,6 @@ from sklearn import cluster, datasets
 from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import StandardScaler
 #
-#import CPAC
-#from CPAC.basc.utils import standard_bootstrap, adjacency_matrix, cluster_timeseries, cluster_matrix_average, individual_stability_matrix
-#from CPAC.basc import group_stability_matrix, individual_group_clustered_maps, individual_stability_matrix, nifti_individual_stability, ndarray_to_vol, create_basc
-#from CPAC.utils import safe_shape
 
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
@@ -33,11 +29,6 @@ import nipype.interfaces.utility as util
 matplotlib.style.use('ggplot')
 home = expanduser("~")
 
-#from ..utils import timeseries_bootstrap, \
-#                    standard_bootstrap, \
-#                    cluster_timeseries, \
-#                    adjacency_matrix, \
-#                    individual_stability_matrix
 
 def test_timeseries_bootstrap():
     """
@@ -170,23 +161,17 @@ def test_cross_cluster_individual_stability_matrix():
 
 def test_nifti_individual_stability():
 
-    #NormalRes
     subject_file = '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060280/reduced50.nii.gz'
 
     roi_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/BG.nii.gz'
     roi2_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/yeo_2.nii.gz'
     
-    
-    #subject_file= home + '/Dropbox/1_Projects/1_Research/2_BASC/Data/Test_Data/residual_antswarp.nii.gz'
-    #subject_file= home + '/C-PAC/CPAC/basc/sampledata/subjects/sub1/Func_Quarter_Res.nii.gz'
-    #roi_mask_file= home + '/C-PAC/CPAC/basc/sampledata/masks/LC_Quarter_Res.nii.gz'
-    #roi_mask_file= home + '/Dropbox/1_Projects/1_Research/2_BASC/Data/BasalGanglia_MNI2mm/Left_Caudate.nii.gz'
+   
     n_bootstraps=100
     n_clusters=2
     output_size=20
     cross_cluster=True
-    #roi2_mask_file= home + '/C-PAC/CPAC/basc/sampledata/masks/RC_Quarter_Res.nii.gz'
-    #roi2_mask_file= home + '/Dropbox/1_Projects/1_Research/2_BASC/Data/BasalGanglia_MNI2mm/Right_Caudate.nii.gz'
+    
     cbb_block_size=None
     affinity_threshold=0.5
     nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
@@ -210,12 +195,10 @@ def new_test_group_stability_matrix():
     indiv_stability_list=ism_list
     n_bootstraps=10
     n_clusters=3
-        #return G, clusters_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
 
     
     G, cluster_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file = group_stability_matrix(ism_list, 10, 3)
 
-#def group_stability_matrix(indiv_stability_list, n_bootstraps, k_clusters, stratification=None):
     assert False
 
 def test_group_stability_matrix():
@@ -242,24 +225,25 @@ def test_basc_workflow_runner():
 
     from basc_workflow_runner import run_basc_workflow
     import utils
-    subject_file_list= [home + '/C-PAC/CPAC/basc/sampledata/subjects/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/C-PAC/CPAC/basc/sampledata/subjects/sub3/Func_Quarter_Res.nii.gz']
+    subject_file_list= [home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/BASC/sample_data/sub3/Func_Quarter_Res.nii.gz']
 
-    roi_mask_file= home + '/C-PAC/CPAC/basc/sampledata/masks/LC_Quarter_Res.nii.gz'
+    roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
     dataset_bootstraps=50
     timeseries_bootstraps=10
     n_clusters=2
     output_size=10
+    bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
-    roi2_mask_file= home + '/C-PAC/CPAC/basc/sampledata/masks/RC_Quarter_Res.nii.gz'
+    roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5, 0.5, 0.5]
     out_dir= home + '/BASC_outputs'
     run=True
     
     
 
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 def heavy_basc_workflow_test():
@@ -394,24 +378,6 @@ def NKI_Ned_test():
 
 def bruteforce_workflow_test():
 
-    #Updates to bruteforce test
-    #Change  functional data to higher resolution
-    #Change ROIs to larger ones.
-    #work out the transformation of the Yeo to the correct size
-
-#    subject_file_list=  [home + '/C-PAC/CPAC/basc/sampledata/subjects/sub1/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub2/Func_Quarter_Res.nii.gz',
-#                         home + '/C-PAC/CPAC/basc/sampledata/subjects/sub3/Func_Quarter_Res.nii.gz']
-#    
-#    /Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/1_BASC/Data/fixedfunc_2thirds_res.nii.gz
-    
    
     subject_file_list = [home + '/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/1_BASC/Data/fixedfunc_2thirds_res.nii.gz',
                          home + '/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/1_BASC/Data/fixedfunc_2thirds_res.nii.gz',

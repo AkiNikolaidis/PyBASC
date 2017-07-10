@@ -6,70 +6,12 @@ import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 import imp
 from os.path import expanduser
-#
-#home2 = expanduser("~")
-#
-#
-#CPAC = imp.load_source('CPAC', home2 + '/C-PAC')
-#
-#bascutils = imp.load_source('bascutils', home2 + '/C-PAC/CPAC/basc/utils.py')
-#
-##basc = imp.load_source('basc', home2 + '/C-PAC/CPAC/basc/basc.py')
-#
-#utilsutils = imp.load_source('utilsutils', home2 + '/C-PAC/CPAC/utils/utils.py')
-#
-#import CPAC
-#from bascutils import standard_bootstrap, adjacency_matrix, cluster_timeseries, cluster_matrix_average, individual_stability_matrix
-##from basc import group_stability_matrix, individual_group_clustered_maps, individual_stability_matrix, nifti_individual_stability, ndarray_to_vol, create_basc
-#from utilsutils import safe_shape
 
-#sys.path.insert(0, '~/C-PAC/CPAC')
-
-
-
-
-#import CPAC
-
-#you just do "import sys" (if not already imported), then "sys.path.insert(0, /path/to/install/dir)", then import CPAC
-
-def group_stability_matrix(indiv_stability_list, n_bootstraps, n_clusters, stratification=None):
-    """
-    Calculate the group stability matrix of the entire dataset by bootstrapping the dataset
-
-    Parameters
-    ----------
-    indiv_stability_list : list of strings
-        A length `N` list of file paths to numpy matrices of shape (`V`, `V`), `N` subjects, `V` voxels
-    n_bootstraps : integer
-        Number of bootstrap datasets
-    n_clusters : integer
-        Number of clusters
-    stratification : array_like, optional
-        List of integer entries denoting stratums for indiv_stability_list
-
-
-    Returns
-    -------
-    G : array_like
-        Group stability matrix of shape (`V`, `V`), `V` voxels
-    clusters_G : array_like
-        Length `V` array of cluster assignments for each voxel
-    cluster_voxel_scores : array_like
-        `K` by `V` matrix of within-cluster average values for each cluster of each voxel
-    """
-#
+def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, stratification=None):
     import os
     import numpy as np
     import nibabel as nb
     import utils
-#    import sys
-    #import CPAC
-    #import nipype.pipeline.engine as pe
-    #import nipype.interfaces.utility as util
-
-#    from CPAC.basc.utils import standard_bootstrap, adjacency_matrix, cluster_timeseries, cluster_matrix_average, individual_stability_matrix
-#    from CPAC.basc import group_stability_matrix, individual_group_clustered_maps, individual_stability_matrix, nifti_individual_stability, ndarray_to_vol, create_basc
-#    from CPAC.utils.utils import safe_shape
 
 
     print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
@@ -81,27 +23,33 @@ def group_stability_matrix(indiv_stability_list, n_bootstraps, n_clusters, strat
 
 
     indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
-#    indiv_stability_set = indiv_stability_list
     print( 'Individual stability list dimensions:', indiv_stability_set.shape )
 
     V = indiv_stability_set.shape[2]
 
     G = np.zeros((V,V))
-    for bootstrap_i in range(n_bootstraps):
-#        if stratification is not None:
-#            strata = np.unique(stratification)
-#            J = np.zeros((V,V))
-#            for stratum in strata:
-#                J += utils.standard_bootstrap(indiv_stability_set[np.where(stratification == stratum)]).sum(0)
-#            J /= indiv_stability_set.shape[0]
-#        else:
-        print( 'bootstrap number', bootstrap_i )
-        J = utils.standard_bootstrap(indiv_stability_set).mean(0)
-        print( 'calculating adjacency matrix')
-        #THIS COULD BE AN ISSUE- MATRIX IS VERY LARGE AND WE ARE CLUSTERING ON IT- COULD APPLY SAME TRANSFORMATION TO LOWER DIM SPACE?
-        G += utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation')[:,np.newaxis])
-    G /= n_bootstraps
-    #**Update**#
+    J = utils.standard_bootstrap(indiv_stability_set).mean(0)
+    print( 'calculating adjacency matrix')
+    G = utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation')[:,np.newaxis])
+    
+    G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
+    np.save(G_file, G)
+    print ('Saving group stability matrix %s' % (G_file))
+    
+    return G_file
+    
+   
+    
+
+def join_group_stability(group_stability_list, n_bootstraps, n_clusters):
+    import os
+    import numpy as np
+    import nibabel as nb
+    import utils
+    
+    group_stability_set = np.asarray([np.load(G_file) for G_file in group_stability_list])
+    gsm=group_stability_set.sum(axis=0)
+    G=gsm/int(n_bootstraps)
 
     print( 'calculating clusters_G')
     clusters_G = utils.cluster_timeseries(G, n_clusters, similarity_metric = 'correlation')
@@ -122,9 +70,93 @@ def group_stability_matrix(indiv_stability_list, n_bootstraps, n_clusters, strat
     print( 'saving files: cluster_voxel_scores')
     cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
     np.save(cluster_voxel_scores_file, cluster_voxel_scores)
-    #return G, clusters_G, cluster_voxel_scores
 
     return G, clusters_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
+    
+
+#def group_stability_matrix(indiv_stability_list, n_bootstraps, n_clusters, stratification=None):
+#    """
+#    Calculate the group stability matrix of the entire dataset by bootstrapping the dataset
+#
+#    Parameters
+#    ----------
+#    indiv_stability_list : list of strings
+#        A length `N` list of file paths to numpy matrices of shape (`V`, `V`), `N` subjects, `V` voxels
+#    n_bootstraps : integer
+#        Number of bootstrap datasets
+#    n_clusters : integer
+#        Number of clusters
+#    stratification : array_like, optional
+#        List of integer entries denoting stratums for indiv_stability_list
+#
+#
+#    Returns
+#    -------
+#    G : array_like
+#        Group stability matrix of shape (`V`, `V`), `V` voxels
+#    clusters_G : array_like
+#        Length `V` array of cluster assignments for each voxel
+#    cluster_voxel_scores : array_like
+#        `K` by `V` matrix of within-cluster average values for each cluster of each voxel
+#    """
+##
+#    import os
+#    import numpy as np
+#    import nibabel as nb
+#    import utils
+#
+#
+#    print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
+#
+##    if stratification is not None:
+##        print 'Applying stratification to group dataset'
+#
+#
+#
+#
+#    indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
+#    print( 'Individual stability list dimensions:', indiv_stability_set.shape )
+#
+#    V = indiv_stability_set.shape[2]
+#
+#    G = np.zeros((V,V))
+#    for bootstrap_i in range(n_bootstraps):
+##        if stratification is not None:
+##            strata = np.unique(stratification)
+##            J = np.zeros((V,V))
+##            for stratum in strata:
+##                J += utils.standard_bootstrap(indiv_stability_set[np.where(stratification == stratum)]).sum(0)
+##            J /= indiv_stability_set.shape[0]
+##        else:
+#        print( 'bootstrap number', bootstrap_i )
+#        J = utils.standard_bootstrap(indiv_stability_set).mean(0)
+#        print( 'calculating adjacency matrix')
+#        #THIS COULD BE AN ISSUE- MATRIX IS VERY LARGE AND WE ARE CLUSTERING ON IT- COULD APPLY SAME TRANSFORMATION TO LOWER DIM SPACE?
+#        G += utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation')[:,np.newaxis])
+#    G /= n_bootstraps
+#   
+#
+#    print( 'calculating clusters_G')
+#    clusters_G = utils.cluster_timeseries(G, n_clusters, similarity_metric = 'correlation')
+#
+#    print( 'calculating cluster_voxel scores' )
+#    cluster_voxel_scores = utils.cluster_matrix_average(G, clusters_G)
+#
+#    # Cluster labels normally start from 0, start from 1 to provide contrast when viewing between 0 voxels
+#    clusters_G += 1
+#
+#    print( 'saving files: G')
+#    gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
+#    np.save(gsm_file, G)
+#    print( 'saving files: clusters_G' )
+#    clusters_G_file = os.path.join(os.getcwd(), 'clusters_G.npy')
+#    np.save(clusters_G_file, clusters_G)
+#    
+#    print( 'saving files: cluster_voxel_scores')
+#    cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
+#    np.save(cluster_voxel_scores_file, cluster_voxel_scores)
+#
+#    return G, clusters_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
 
 
 
@@ -205,9 +237,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     import nibabel as nb
     import utils
     import pandas as pd
-    #from utils import individual_stability_matrix, data_compression
-    #from CPAC.basc.utils import standard_bootstrap, adjacency_matrix, cluster_timeseries, cluster_matrix_average, individual_stability_matrix
-
+    
 
     print( 'Calculating individual stability matrix of:', subject_file)
 
@@ -233,7 +263,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         Y1_labels = pd.DataFrame(data_dict1['labels'])
         Y1_labels=np.array(Y1_labels)
         print( 'Y1 compressed')
-        #index=pd.DataFrame(np.arange(1,Y1_labels.shape[0]+1))
         
         print( 'compressing y2')
 
@@ -251,7 +280,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         voxel_ism = utils.expand_ism(ism, Y1_labels)
         
 
-        #def individual_stability_matrix(Y1, n_bootstraps, k_clusters, Y2=None, cross_cluster=False, cbb_block_size = None, affinity_threshold = 0.5):
 
         ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
         np.save(ism_file, voxel_ism)
@@ -261,11 +289,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     else:
 
         roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float64').astype('bool')
-
-#        if not safe_shape(roi_mask_file, data):
-#            raise ValueError('Subject %s with volume shape %s conflicts with mask shape %s' % (subject_file,
-#                                                                                               str(data.shape[:3]),
-#                                                                                               str(roi_mask_file.shape)) )
 
         roi1data = data[roi_mask_nparray]
         print( '(%i voxels, %i timepoints and %i bootstraps' % (roi1data.shape[0], roi1data.shape[1], n_bootstraps))
@@ -425,6 +448,7 @@ def create_basc(name='basc'):
                                                        'timeseries_bootstraps',
                                                        'n_clusters',
                                                        'output_size',
+                                                       'bootstrap_list',
                                                        'cross_cluster',
                                                        'roi2_mask_file',
                                                        'affinity_threshold']),
@@ -461,20 +485,40 @@ def create_basc(name='basc'):
                                 'affinity_threshold'])
 
     nis.inputs.cbb_block_size=None
-    #return G, clusters_G, clusters_voxel_scores, gsm_file, clusters_G_file, clusters_voxel_scores_file
 
 
-    gsm = pe.Node(util.Function(input_names=['indiv_stability_list',
-                                             'n_bootstraps',
-                                             'n_clusters',
-                                             'stratification'],
+#    gsm = pe.Node(util.Function(input_names=['indiv_stability_list',
+#                                             'n_bootstraps',
+#                                             'n_clusters',
+#                                             'stratification'],
+#                                output_names=['G',
+#                                              'clusters_G',
+#                                              'cluster_voxel_scores',
+#                                              'gsm_file',
+#                                              'clusters_G_file',
+#                                              'cluster_voxel_scores_file'],
+#                                function=group_stability_matrix),
+#                  name='group_stability_matrix')
+#    
+    
+    
+    mgsm= pe.MapNode(util.Function(input_names= ['indiv_stability_list',
+                                                 'n_clusters',
+                                                 'bootstrap_list',
+                                                 'stratification'],
+                                output_names=['G_file'],
+                                function=map_group_stability),
+                                name='map_group_stability',
+                                iterfield='bootstrap_list')
+    
+    jgsm= pe.Node(util.Function(input_names=['group_stability_list','n_bootstraps', 'n_clusters'],
                                 output_names=['G',
                                               'clusters_G',
                                               'cluster_voxel_scores',
                                               'gsm_file',
                                               'clusters_G_file',
                                               'cluster_voxel_scores_file'],
-                                function=group_stability_matrix),
+                                function=join_group_stability),
                   name='group_stability_matrix')
 
 #    igcm = pe.Node(util.Function(input_names=['indiv_stability_list',
@@ -524,15 +568,23 @@ def create_basc(name='basc'):
     basc.connect(inputspec, 'affinity_threshold',
                  nis, 'affinity_threshold')
    
-    
+    basc.connect(inputspec, 'bootstrap_list',
+                 mgsm, 'bootstrap_list')
+    basc.connect(inputspec, 'n_clusters',
+                 mgsm, 'n_clusters')
 
     basc.connect(inputspec, 'dataset_bootstraps',
-                 gsm, 'n_bootstraps')
+                 jgsm, 'n_bootstraps')
     basc.connect(inputspec, 'n_clusters',
-                 gsm, 'n_clusters')
+                 jgsm, 'n_clusters')
+
+
 
     basc.connect(nis, 'ism_file',
-                 gsm, 'indiv_stability_list')
+                 mgsm, 'indiv_stability_list')
+
+    basc.connect(mgsm, 'G_file',
+                 jgsm, 'group_stability_list')
 
 #    basc.connect(inputspec, 'subject_file_list',
 #                 gs_cluster_vol, 'sample_file')
@@ -563,12 +615,12 @@ def create_basc(name='basc'):
 #    basc.connect(gsm, 'cluster_voxel_scores',
 #                 gs_score_vol, 'data_array')
 
-    basc.connect(gsm, 'gsm_file',
+    basc.connect(jgsm, 'gsm_file',
                  outputspec, 'gsm')
-    basc.connect(gsm, 'clusters_G_file',
-                 outputspec, 'gsclusters')
-    basc.connect(gsm, 'cluster_voxel_scores_file',
-                 outputspec, 'gsmap')
+#    basc.connect(jgsm, 'clusters_G_file',
+#                 outputspec, 'gsclusters')
+#    basc.connect(jgsm, 'cluster_voxel_scores_file',
+#                 outputspec, 'gsmap')
 
 #    basc.connect(gs_cluster_vol, 'img_file',
 #                 outputspec, 'gsclusters_img')

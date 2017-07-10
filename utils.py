@@ -26,15 +26,6 @@ from sklearn.preprocessing import StandardScaler, normalize
 home2 = expanduser("~")
 
 
-#CPAC = imp.load_source('CPAC', home2 + '/C-PAC')
-##bascutils = imp.load_source('bascutils', home2 + '/C-PAC/CPAC/basc/utils.py')
-#basc = imp.load_source('basc', home2 + '/C-PAC/CPAC/basc/basc.py')
-#utilsutils = imp.load_source('utilsutils', home2 + '/C-PAC/CPAC/utils/utils.py')
-
-#import CPAC
-#from CPAC.basc.utils import standard_bootstrap, adjacency_matrix, cluster_timeseries, cluster_matrix_average, individual_stability_matrix
-#from CPAC.basc.basc import group_stability_matrix, individual_group_clustered_maps, individual_stability_matrix, nifti_individual_stability, ndarray_to_vol, create_basc
-#from CPAC.utils.utils import safe_shape
 
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
@@ -182,28 +173,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     y_pred = np.dot(eigen_discrete.toarray(), np.diag(np.arange(n_clusters))).sum(1)
 
     """
-#    # sampledata=generate_blobs()
-#    #X= bg_func
-#
-#    # normalize dataset for easier parameter selection
-#    X = pd.DataFrame(X)
-#    X = StandardScaler().fit_transform(X)
-#    spectral = cluster.SpectralClustering(n_clusters=n_clusters, eigen_solver='arpack', random_state = 5, affinity="nearest_neighbors", n_neighbors = 10, assign_labels='discretize')
-#
-#
-#
-#    #t0 = time.time()
-#    spectral.fit(X)
-#    #t1 = time.time()
-#    if hasattr(spectral, 'labels_'):
-#        y_pred = spectral.labels_.astype(np.int)
-#    else:
-#        y_pred = spectral.predict(X)
 
-
-
-##########################
-    #Set affinity type, and affinity threshold
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X, metric = 'euclidean')
     X_dist = sp.spatial.distance.squareform(X_dist)
@@ -212,7 +182,6 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
 
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
 
-    #change distribution to be normalized between 0 and 1 before passing into the spectral clustering algorithm
 
 
     #t0 = time.time()
@@ -285,94 +254,26 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
     import scipy as sp
     from sklearn import cluster, datasets
 
-    
-#    #Simulating data
-#    blobs1 = generate_simple_blobs(27)
-#    blobs2 = generate_simple_blobs(30)
-#
-#    blobs2 = blobs2[0:120,:]
-#    blobs2[0:50,:] = blobs1[0:50,]
-#
-#    blobs1=blobs1[0:50,:]
-#    blobs2=blobs2[0:40,:]
-#
-#    data1=blobs1
-#    data2=blobs2
-    print("clusterT1")
-    
-    #data1_df = pd.DataFrame(data1)
-    #data2_df = pd.DataFrame(data2)
-    print("clusterT2")
-#    plt.imshow(sim_matrix)
-#
-#    a=np.hstack(y_pred)
-#    plt.hist(a,bins='auto')
-
-    #FIGURE OUT HOW TO CREATE SYMMETRIC AND 0-1 NORMED SIMILARITY MATRIX
-    #CUTOFF AFFINITY AT SPECIFIC LEVEL??
-    #CUTOFF THE AFFINITY MATRIX RIGHT AFTER THE FIRST CLUSTERING
-    print("clusterT2")
-#    dist_btwn_df_1_2 = pd.DataFrame(sp.spatial.distance.cdist(data2b, data1, metric = similarity_metric))
-#    dist_btwn_df_1_2 = pd.DataFrame(sp.spatial.distance.cdist(data1, data2b, metric = similarity_metric))
-
-
-    #dist_btwn_df_1_2 = sp.spatial.distance.cdist(data2b, data1, metric = similarity_metric)
-    #dist_btwn_df_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = similarity_metric))
-    #Standardize timeseries before using euclidean distance- PB
+    print("calculating pairwise distances between areas")
     dist_btwn_df_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'euclidean'))
 
 
-    #dist_btwn_df_1_2 = pd.DataFrame(dist_btwn_df_1_2)
-    print(dist_btwn_df_1_2)
-    print(type(dist_btwn_df_1_2))
-    print("clusterT3")
+
     dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = 'correlation')
     dist_of_1[np.isnan((dist_of_1))]=1
-    print("clusterT4")
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
-    print("clusterT5")
+
     sim_matrix=1-dist_matrix
-    print("clusterT6")
+
     sim_matrix[sim_matrix<0.3]=0
-    print("clusterT7")
-#    sim_of_1 = 1 - dist_of_1
-#
-#
-#
-#    sim_btwn_df_1_2 = 1 - dist_btwn_df_1_2
-#    #set similarities below 0.3 to 0
-#    sim_btwn_df_1_2[sim_btwn_df_1_2<0.3] = 0
-#
-#    #corr = np.corrcoef(dist)
-#    dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = similarity_metric)
-#    sim_of_1 = 1 - dist_of_1
-#    dist_matrix = sp.spatial.distance.squareform(dist_of_1)
-#    sim_matrix=1-dist_matrix
-#    dist_matrix_scaler= StandardScaler().fit_transform(dist_matrix)
-#    dist_matrix_norm = normalize(dist_matrix)
-#    delta = sqrt(data1_df.shape[0])
-#    #y_pred = cluster_timeseries(dist, n_clusters, affinity = 'precomputed')
-#    sq_sim_of1 = 1-dist_matrix_scaler
-#
-#
-#    sq_sim_of1 = np.exp(-beta * sq_dist_of1 / sq_dist_of1.std())
-#    sq_sim_of1= np.exp(- dist_matrix ** 2 / (2. * delta ** 2))
-#
-#
-#    X = StandardScaler().fit_transform(X)
 
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-    print("clusterT8")
-    #change distribution to be normalized between 0 and 1 before passing into the spectral clustering algorithm
-
-
-    #t0 = time.time()
+    
+    print("clustering")
     spectral.fit(sim_matrix)
-    print("clusterT9")
-    #t1 = time.time()
+   
 
     y_pred = spectral.labels_.astype(np.int)
-    print("clusterT10")
     return y_pred
 
 
@@ -452,6 +353,7 @@ def cluster_matrix_average(M, cluster_assignments):
     for cluster_id in cluster_ids:
         s[s_idx, :] = M[:,cluster_assignments == cluster_id].mean(1)
         s_idx += 1
+        #???
 #        k = (cluster_assignments == cluster_id)[:, np.newaxis]
 #        print 'Cluster %i size: %i' % (cluster_id, k.sum())
 #        K = np.dot(k,k.T)
@@ -548,8 +450,6 @@ def expand_ism(ism, Y1_labels):
     voxel_num=len(Y1_labels)
     voxel_ism = np.zeros((voxel_num,voxel_num))
     transform_mat=np.zeros((len(ism),voxel_num))
-
-    #voxel_ism=pd.DataFrame(voxel_ism)    
      
     matrixtime = time.time()
 
@@ -563,19 +463,6 @@ def expand_ism(ism, Y1_labels):
     XM_time= time.time() - matrixtime
     print((time.time() - matrixtime))
     voxel_ism=target_mat
-    
-#    for row in range(0,ism.shape[0]):
-#         print 'row is ', row
-#         for column in range(0, ism.shape[1]):
-#            
-#            rowmatch = np.array(Y1_labels==row)
-#            rowmatch = rowmatch*1
-#            
-#            colmatch = np.array(Y1_labels==column)
-#            colmatch = colmatch*1
-#            
-#            match_matrix=rowmatch*colmatch.T
-#            voxel_ism=voxel_ism+(match_matrix*ism[row,column])
             
     return voxel_ism
 
@@ -602,34 +489,12 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
 ###################################################################
 ## Transform nifti files to a data matrix with the NiftiMasker
     from nilearn import input_data
-#
-## The NiftiMasker will extract the data on a mask. We do not have a
-## mask, hence we need to compute one.
-##
-## This is resting-state data: the background has not been removed yet,
-## thus we need to use mask_strategy='epi' to compute the mask from the
-## EPI images
-    i=1   
-    #print '1', i
+
     nifti_masker = input_data.NiftiMasker(mask_img= mask_img, memory='nilearn_cache',
                                           mask_strategy='background', memory_level=1,
                                           standardize=False)
 
     ward=[]
-#MASK = A BOOLEAN NUMPY ARRAY THE SIZE OF THE FUNCTIONAL DATA
-#FUNCTIONAL DATA = MASKED FUNCTIONAL DATA (TIME BY VOXELS)
-#OUTPUT SIZE = NUMBER OF CLUSTERS
-
-#
-#func_filename = data.func[0]
-## The fit_transform call computes the mask and extracts the time-series
-## from the files:
-    #fmri_masked = nifti_masker.fit_transform(func_filename)
-#    fmri_masked = func_filename
-##
-### We can retrieve the numpy array of the mask
-    #mask = nifti_masker.mask_img_.get_data().astype(bool) 
-
 
 ##################################################################
 # Perform Ward clustering
@@ -637,14 +502,13 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
 #
 # We use spatially-constrained Ward clustering. For this, we need to
 # compute from the mask a matrix giving the voxel-to-voxel connectivity
-    #print '2'
 # Compute connectivity matrix: which voxel is connected to which
     from sklearn.feature_extraction import image
     shape = mask_np.shape
     connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                        n_z=shape[2], mask=mask_np)
 
-    #print '3'
+ 
 ##################################################################
 # Then we use FeatureAgglomeration from scikit-learn. Indeed, the voxels
 # are the features of the data matrix.
@@ -663,86 +527,13 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
     ward.fit(fmri_masked)
     print("Ward agglomeration compressing voxels into clusters: %.2fs" % (time.time() - start))
 
-## Compute the ward with more clusters, should be faster as we are using
-## the caching mechanism
-#start = time.time()
-#ward = FeatureAgglomeration(n_clusters=2000, connectivity=connectivity,
-#                            linkage='ward', memory='nilearn_cache')
-#ward.fit(fmri_masked)
-#print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
-##################################################################
-# Visualize results
-# ------------------
-#
-# First we display the labels of the clustering in the brain.
-#
-# To visualize results, we need to transform the clustering's labels back
-# to a neuroimaging volume. For this, we use the NiftiMasker's
-# inverse_transform method.
-#from nilearn.plotting import plot_roi, plot_epi, show
-
-## Unmask the labels
-#
-## Avoid 0 label
     labels = ward.labels_
-    #print '5', i
-    #labels_img = nifti_masker.inverse_transform(labels)
-    #nb.save(labels_img, 'labels.nii.gz')
-#
-    #from nilearn.image import mean_img
-    #mean_func_img = mean_img(func_filename)
-    
-    
-##
-##
-##first_plot = plot_roi(labels_img, mean_func_img, title="Ward parcellation",
-##                      display_mode='xz')
-##
-### common cut coordinates for all plots
-##cut_coords = first_plot.cut_coords
-#
-###################################################################
-## labels_img is a Nifti1Image object, it can be saved to file with the
-## following code:
-    #labels_img.to_filename('parcellation.nii')
 
-
-##################################################################
-# Second, we illustrate the effect that the clustering has on the
-# signal. We show the original data, and the approximation provided by
-# the clustering by averaging the signal on each parcel.
-#
-# As you can see below, this approximation is very good, although there
-# are only 2000 parcels, instead of the original 60000 voxels
-
-## Display the original data
-#plot_epi(nifti_masker.inverse_transform(fmri_masked[0]),
-#         cut_coords=cut_coords,
-#         title='Original (%i voxels)' % fmri_masked.shape[1],
-#         vmax=fmri_masked.max(), vmin=fmri_masked.min(),
-#         display_mode='xz')
-
-# A reduced data can be create by taking the parcel-level average:
-# Note that, as many objects in the scikit-learn, the ward object exposes
-# a transform method that modifies input features. Here it reduces their
-# dimension
     print ('Extracting reduced Dimension Data')
     data_reduced = ward.transform(fmri_masked)
     fmri_masked=[]
     #print '6', i
-    i=i+1
    # compressed_origsize_data = ward.inverse_transform(fmri_masked)
 
     return {'data':data_reduced, 'labels':labels}
-#
-## Display the corresponding data compressed using the parcellation
-#fmri_compressed = ward.inverse_transform(data_reduced)
-#compressed_img = nifti_masker.inverse_transform(fmri_compressed[0])
-#
-#plot_epi(compressed_img, cut_coords=cut_coords,
-#         title='Compressed representation (2000 parcels)',
-#         vmax=fmri_masked.max(), vmin=fmri_masked.min(),
-#         display_mode='xz')
-#
-#show()

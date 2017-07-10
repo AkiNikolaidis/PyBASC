@@ -19,7 +19,7 @@ import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 
 
-def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, cross_cluster=False, roi2_mask_file=None, affinity_threshold=0.5, out_dir=None, run=True):
+def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, cross_cluster=False, roi2_mask_file=None, affinity_threshold=0.5, out_dir=None, run=True):
    #run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, k_clusters, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
@@ -77,6 +77,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     basc.inputs.inputspec.timeseries_bootstraps=timeseries_bootstraps
     basc.inputs.inputspec.n_clusters=n_clusters
     basc.inputs.inputspec.output_size=output_size
+    basc.inputs.inputspec.bootstrap_list=bootstrap_list
     basc.inputs.inputspec.cross_cluster=cross_cluster
     basc.inputs.inputspec.roi2_mask_file=roi2_mask_file
     basc.inputs.inputspec.affinity_threshold=affinity_threshold
@@ -85,9 +86,9 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     resource_pool['gsm'] = (basc, 'outputspec.gsm')
     resource_pool['gsclusters'] = (basc, 'outputspec.gsclusters')
     resource_pool['gsmap'] = (basc, 'outputspec.gsmap')
-#    resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
-#    resource_pool['gsmap_img'] = (basc, 'outputspec.gsmap_img')
-#    resource_pool['ismap_imgs'] = (basc, 'outputspec.ismap_imgs')
+    resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
+    resource_pool['gsmap_img'] = (basc, 'outputspec.gsmap_img')
+    resource_pool['ismap_imgs'] = (basc, 'outputspec.ismap_imgs')
 
 
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
