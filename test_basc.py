@@ -157,7 +157,7 @@ def test_cross_cluster_individual_stability_matrix():
     blobs2 = blobs2[0:150,:]
     ism = individual_stability_matrix(blobs1, 10, 2, Y2 = blobs2, cross_cluster = True)
 
-    assert False
+    return ism
 
 def test_nifti_individual_stability():
 
@@ -177,17 +177,27 @@ def test_nifti_individual_stability():
     nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
 
 
+def test_cluster_matrix_average():
+    
+    G, cluster_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file = new_test_group_stability_matrix()
+    ism = test_cross_cluster_individual_stability_matrix()
+    cluster_voxel_scores=cluster_matrix_average(G, cluster_G)
+
 def new_test_group_stability_matrix():
     """
     Tests group_stability_matrix method.  This creates a dataset of blobs varying only by additive zero-mean gaussian
     noise and calculates the group stability matrix.
     """
+    import utils
+    import basc
+    
+    bootstrap=20
     blobs = generate_blobs()
 
     ism_dataset = np.zeros((5, blobs.shape[0], blobs.shape[0]))
     ism_list = []
     for i in range(ism_dataset.shape[0]):
-        ism_dataset[i] = individual_stability_matrix(blobs + 0.2*np.random.randn(blobs.shape[0], blobs.shape[1]), 10, 3, affinity_threshold = 0.0)
+        ism_dataset[i] = utils.individual_stability_matrix(blobs + 0.2*np.random.randn(blobs.shape[0], blobs.shape[1]), 10, 3, affinity_threshold = 0.0)
         f = 'ism_dataset_%i.npy' % i
         ism_list.append(f)
         np.save(f, ism_dataset[i])
@@ -197,9 +207,14 @@ def new_test_group_stability_matrix():
     n_clusters=3
 
     
-    G, cluster_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file = group_stability_matrix(ism_list, 10, 3)
+    G = basc.map_group_stability(ism_list, 10, 3)
+   # for boot in 
+#    cluster_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
+#    
+#    def join_group_stability(group_stability_list, n_bootstraps, n_clusters):
+#    
+#    return G, cluster_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
 
-    assert False
 
 def test_group_stability_matrix():
     """
