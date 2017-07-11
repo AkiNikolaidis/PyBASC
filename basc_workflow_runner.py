@@ -10,20 +10,12 @@ import numpy as np
 import nibabel as nb
 import sys
 
-#import CPAC
-#from CPAC.basc.utils import standard_bootstrap, adjacency_matrix, cluster_timeseries, cluster_matrix_average, individual_stability_matrix
-#from CPAC.basc import group_stability_matrix, individual_group_clustered_maps, individual_stability_matrix, nifti_individual_stability, ndarray_to_vol, create_basc
-#from CPAC.utils import safe_shape
 
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 
 
 def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, cross_cluster=False, roi2_mask_file=None, affinity_threshold=0.5, out_dir=None, run=True):
-   #run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, k_clusters, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
-
-
-    #subject_file, roi_mask_file, n_bootstraps, k_clusters, cross_cluster=False, roi2_mask_file=None, cbb_block_size=None, affinity_threshold=0.5
     """Run the 'template_workflow' function to execute the modular workflow
     with the provided inputs.
     :type input_resource: str
@@ -55,8 +47,6 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     import pandas as pd
     
     from basc import create_basc
-
-    #output = "{ output resource name }"
 
     workflow = pe.Workflow(name='basc_workflow_runner')
 

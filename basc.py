@@ -521,28 +521,28 @@ def create_basc(name='basc'):
                                 function=join_group_stability),
                   name='group_stability_matrix')
 
-#    igcm = pe.Node(util.Function(input_names=['indiv_stability_list',
-#                                              'clusters_G',
-#                                              'roi_mask_file'],
-#                                 output_names=['individual_cluster_voxel_scores'],
-#                                 function=individual_group_clustered_maps),
-#                   name='individual_group_clustered_maps')
+    igcm = pe.Node(util.Function(input_names=['indiv_stability_list',
+                                              'clusters_G',
+                                              'roi_mask_file'],
+                                 output_names=['individual_cluster_voxel_scores'],
+                                 function=individual_group_clustered_maps),
+                   name='individual_group_clustered_maps')
 #
-#    gs_cluster_vol = pe.Node(util.Function(input_names=['data_array',
-#                                                        'roi_mask_file',
-#                                                        'sample_file',
-#                                                        'filename'],
-#                                           output_names=['img_file'],
-#                                           function=ndarray_to_vol),
-#                             name='group_stability_cluster_vol')
+    gs_cluster_vol = pe.Node(util.Function(input_names=['data_array',
+                                                        'roi_mask_file',
+                                                        'sample_file',
+                                                        'filename'],
+                                           output_names=['img_file'],
+                                           function=ndarray_to_vol),
+                             name='group_stability_cluster_vol')
 #
-#    gs_score_vol = pe.Node(util.Function(input_names=['data_array',
-#                                                      'roi_mask_file',
-#                                                      'sample_file',
-#                                                      'filename'],
-#                                         output_names=['img_file'],
-#                                         function=ndarray_to_vol),
-#                           name='group_stability_score_vol')
+    gs_score_vol = pe.Node(util.Function(input_names=['data_array',
+                                                      'roi_mask_file',
+                                                      'sample_file',
+                                                      'filename'],
+                                         output_names=['img_file'],
+                                         function=ndarray_to_vol),
+                           name='group_stability_score_vol')
 
 
 
@@ -586,47 +586,45 @@ def create_basc(name='basc'):
     basc.connect(mgsm, 'G_file',
                  jgsm, 'group_stability_list')
 
-#    basc.connect(inputspec, 'subject_file_list',
-#                 gs_cluster_vol, 'sample_file')
-#    basc.connect(inputspec, 'roi_mask_file',
-#                 gs_cluster_vol, 'roi_mask_file')
-#    
-#    gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
-#
-#    basc.connect(nis, 'ism_file',
-#                 igcm, 'indiv_stability_list')
-#    basc.connect(gsm, 'clusters_G',
-#                 igcm, 'clusters_G')
-#    basc.connect(inputspec, 'roi_mask_file',
-#                 igcm, 'roi_mask_file')
-#
-#    basc.connect(gsm, 'clusters_G',
-#                 gs_cluster_vol, 'data_array')
-#
-#    basc.connect(inputspec, 'subject_file_list',
-#                 gs_score_vol, 'sample_file')
-#    basc.connect(inputspec, 'roi_mask_file',
-#                 gs_score_vol, 'roi_mask_file')
-#    gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'
+    basc.connect(inputspec, 'subject_file_list',
+                 gs_cluster_vol, 'sample_file')
+    basc.connect(inputspec, 'roi_mask_file',
+                 gs_cluster_vol, 'roi_mask_file')
+    
+    gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
 
-        #return G, clusters_G, clusters_voxel_scores, gsm_file, clusters_G_file, clusters_voxel_scores_file
+    basc.connect(nis, 'ism_file',
+                 igcm, 'indiv_stability_list')
+    basc.connect(jgsm, 'clusters_G',
+                 igcm, 'clusters_G')
+    basc.connect(inputspec, 'roi_mask_file',
+                 igcm, 'roi_mask_file')
+
+    basc.connect(jgsm, 'clusters_G',
+                 gs_cluster_vol, 'data_array')
+
+    basc.connect(inputspec, 'subject_file_list',
+                 gs_score_vol, 'sample_file')
+    basc.connect(inputspec, 'roi_mask_file',
+                 gs_score_vol, 'roi_mask_file')
+    gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'
 
 
-#    basc.connect(gsm, 'cluster_voxel_scores',
-#                 gs_score_vol, 'data_array')
+    basc.connect(jgsm, 'cluster_voxel_scores',
+                 gs_score_vol, 'data_array')
 
     basc.connect(jgsm, 'gsm_file',
                  outputspec, 'gsm')
-#    basc.connect(jgsm, 'clusters_G_file',
-#                 outputspec, 'gsclusters')
-#    basc.connect(jgsm, 'cluster_voxel_scores_file',
-#                 outputspec, 'gsmap')
+    basc.connect(jgsm, 'clusters_G_file',
+                 outputspec, 'gsclusters')
+    basc.connect(jgsm, 'cluster_voxel_scores_file',
+                 outputspec, 'gsmap')
 
-#    basc.connect(gs_cluster_vol, 'img_file',
-#                 outputspec, 'gsclusters_img')
-#    basc.connect(gs_score_vol, 'img_file',
-#                 outputspec, 'gsmap_img')
-#
-#    basc.connect(igcm, 'individual_cluster_voxel_scores',
-#                 outputspec, 'ismap_imgs')
+    basc.connect(gs_cluster_vol, 'img_file',
+                 outputspec, 'gsclusters_img')
+    basc.connect(gs_score_vol, 'img_file',
+                 outputspec, 'gsmap_img')
+
+    basc.connect(igcm, 'individual_cluster_voxel_scores',
+                 outputspec, 'ismap_imgs')
     return basc
