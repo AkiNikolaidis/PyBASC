@@ -247,7 +247,7 @@ def test_basc_workflow_runner():
     roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
     dataset_bootstraps=50
     timeseries_bootstraps=10
-    n_clusters=2
+    n_clusters=4
     output_size=10
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
