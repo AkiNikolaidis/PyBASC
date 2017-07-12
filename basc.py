@@ -51,14 +51,20 @@ def join_group_stability(group_stability_list, n_bootstraps, n_clusters):
     gsm=group_stability_set.sum(axis=0)
     G=gsm/int(n_bootstraps)
 
+
     print( 'calculating clusters_G')
     clusters_G = utils.cluster_timeseries(G, n_clusters, similarity_metric = 'correlation')
-
+    
+ 
     print( 'calculating cluster_voxel scores' )
     cluster_voxel_scores = utils.cluster_matrix_average(G, clusters_G)
 
     # Cluster labels normally start from 0, start from 1 to provide contrast when viewing between 0 voxels
     clusters_G += 1
+    #cluster_voxel_scores += cluster_voxel_scores
+    
+    
+    print(cluster_voxel_scores)
 
     print( 'saving files: G')
     gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
@@ -70,7 +76,16 @@ def join_group_stability(group_stability_list, n_bootstraps, n_clusters):
     print( 'saving files: cluster_voxel_scores')
     cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
     np.save(cluster_voxel_scores_file, cluster_voxel_scores)
-
+    
+    print('cluster voxel scores')
+    print('cluster voxel scores')
+    print('cluster voxel scores')
+    print('cluster voxel scores')
+    print('cluster voxel scores')
+    print('cluster voxel scores')
+    print('cluster voxel scores')
+    print('cluster voxel scores')
+    print(cluster_voxel_scores)
     return G, clusters_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
     
 
@@ -483,7 +498,9 @@ def create_basc(name='basc'):
                      name='individual_stability_matrices',
                      iterfield=['subject_file',
                                 'affinity_threshold'])
-
+    nis.interface.num_threads = 8
+    nis.interface.estimated_memory_gb = 2
+    
     nis.inputs.cbb_block_size=None
 
 
@@ -511,6 +528,9 @@ def create_basc(name='basc'):
                                 name='map_group_stability',
                                 iterfield='bootstrap_list')
     
+    mgsm.interface.num_threads = 8
+    mgsm.interface.estimated_memory_gb = 10
+    
     jgsm= pe.Node(util.Function(input_names=['group_stability_list','n_bootstraps', 'n_clusters'],
                                 output_names=['G',
                                               'clusters_G',
@@ -520,7 +540,9 @@ def create_basc(name='basc'):
                                               'cluster_voxel_scores_file'],
                                 function=join_group_stability),
                   name='group_stability_matrix')
-
+    
+    
+    
     igcm = pe.Node(util.Function(input_names=['indiv_stability_list',
                                               'clusters_G',
                                               'roi_mask_file'],
@@ -607,6 +629,7 @@ def create_basc(name='basc'):
                  gs_score_vol, 'sample_file')
     basc.connect(inputspec, 'roi_mask_file',
                  gs_score_vol, 'roi_mask_file')
+    
     gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'
 
 
