@@ -499,7 +499,7 @@ def create_basc(name='basc'):
                      iterfield=['subject_file',
                                 'affinity_threshold'])
     nis.interface.num_threads = 8
-    nis.interface.estimated_memory_gb = 2
+    nis.interface.estimated_memory_gb = 10
     
     nis.inputs.cbb_block_size=None
 
