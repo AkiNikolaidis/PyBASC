@@ -498,7 +498,7 @@ def create_basc(name='basc'):
                      name='individual_stability_matrices',
                      iterfield=['subject_file',
                                 'affinity_threshold'])
-    nis.interface.num_threads = 8
+    nis.interface.num_threads = 1
     nis.interface.estimated_memory_gb = 10
     
     nis.inputs.cbb_block_size=None
@@ -528,7 +528,7 @@ def create_basc(name='basc'):
                                 name='map_group_stability',
                                 iterfield='bootstrap_list')
     
-    mgsm.interface.num_threads = 8
+    mgsm.interface.num_threads = 1
     mgsm.interface.estimated_memory_gb = 10
     
     jgsm= pe.Node(util.Function(input_names=['group_stability_list','n_bootstraps', 'n_clusters'],
