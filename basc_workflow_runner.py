@@ -88,7 +88,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
         node, out_file = resource_pool[output]
         workflow.connect(node, out_file, ds, output)
 
-    plugin_args = {'memory_gb': 60, 'n_procs' : 5}
+    plugin_args = {'memory_gb': 100, 'n_procs' : 10}
 
     if run == True:
         workflow.run(plugin='MultiProc', plugin_args= plugin_args)

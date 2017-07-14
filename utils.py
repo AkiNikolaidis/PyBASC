@@ -174,12 +174,17 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
 
     """
 
+    import scipy as sp
     X = np.array(X)
-    X_dist = sp.spatial.distance.pdist(X, metric = 'euclidean')
+    X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
+    
+    X_dist[np.isnan((X_dist))]=1
     X_dist = sp.spatial.distance.squareform(X_dist)
+    
     sim_matrix=1-X_dist
     sim_matrix[sim_matrix<affinity_threshold]=0
 
+    
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
 
 
@@ -189,10 +194,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     #t1 = time.time()
 
     y_pred = spectral.labels_.astype(np.int)
-
-
-
-
+    
     return y_pred
 
 

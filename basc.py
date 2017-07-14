@@ -23,7 +23,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, strati
 
 
     indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
-    print( 'Individual stability list dimensions:', indiv_stability_set.shape )
+    print( 'Group stability list dimensions:', indiv_stability_set.shape )
 
     V = indiv_stability_set.shape[2]
 
@@ -31,13 +31,14 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, strati
     J = utils.standard_bootstrap(indiv_stability_set).mean(0)
     print( 'calculating adjacency matrix')
     G = utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation')[:,np.newaxis])
-    
+    print("finished calculating group stbaility matrix")
     G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(G_file, G)
     print ('Saving group stability matrix %s' % (G_file))
     
     return G_file
     
+
    
     
 
@@ -46,7 +47,7 @@ def join_group_stability(group_stability_list, n_bootstraps, n_clusters):
     import numpy as np
     import nibabel as nb
     import utils
-    
+    print("starting join group stability")
     group_stability_set = np.asarray([np.load(G_file) for G_file in group_stability_list])
     gsm=group_stability_set.sum(axis=0)
     G=gsm/int(n_bootstraps)
