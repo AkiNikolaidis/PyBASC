@@ -173,7 +173,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     y_pred = np.dot(eigen_discrete.toarray(), np.diag(np.arange(n_clusters))).sum(1)
 
     """
-    
+
     import scipy as sp
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
@@ -194,12 +194,8 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     #t1 = time.time()
 
     y_pred = spectral.labels_.astype(np.int)
-
-
+    
     return y_pred
-
-
-
 
 
 def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
@@ -418,29 +414,25 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
     if (cross_cluster is True):
         for bootstrap_i in range(n_bootstraps):
             print("333")
-            #print(Y2)
+            print(Y2)
             N2 = Y2.shape[1]
             print("4441")
             cbb_block_size2 = int(np.sqrt(N2))
             print("4442")
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
-            print(Y_b1)
             print("4443")
             Y_b2 = utils.timeseries_bootstrap(Y2, cbb_block_size2)
-            print(Y_b2)
             print("4444")
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = 'correlation'))
 
             print("4445")
         S /= n_bootstraps
-        S=S.astype("float16")
     else:
         for bootstrap_i in range(n_bootstraps):
             print("444")
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = 'correlation', affinity_threshold = affinity_threshold)[:,np.newaxis])
         S /= n_bootstraps
-        S=S.astype("float16")
     print("555")    
     return S
 
