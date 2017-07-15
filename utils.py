@@ -427,12 +427,14 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
 
             print("4445")
         S /= n_bootstraps
+        S=S.astype("float16")
     else:
         for bootstrap_i in range(n_bootstraps):
             print("444")
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = 'correlation', affinity_threshold = affinity_threshold)[:,np.newaxis])
         S /= n_bootstraps
+        S=S.astype("float16")
     print("555")    
     return S
 
