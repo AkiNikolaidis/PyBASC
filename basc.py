@@ -31,7 +31,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, strati
     J = utils.standard_bootstrap(indiv_stability_set).mean(0)
     print( 'calculating adjacency matrix')
     G = utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation')[:,np.newaxis])
-    
+    G=G.astype("float16")
     G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(G_file, G)
     print ('Saving group stability matrix %s' % (G_file))
@@ -498,8 +498,8 @@ def create_basc(name='basc'):
                      name='individual_stability_matrices',
                      iterfield=['subject_file',
                                 'affinity_threshold'])
-    nis.interface.num_threads = 8
-    nis.interface.estimated_memory_gb = 10
+    nis.interface.num_threads = 1
+    nis.interface.estimated_memory_gb = 5
     
     nis.inputs.cbb_block_size=None
 
@@ -528,8 +528,9 @@ def create_basc(name='basc'):
                                 name='map_group_stability',
                                 iterfield='bootstrap_list')
     
-    mgsm.interface.num_threads = 8
-    mgsm.interface.estimated_memory_gb = 10
+    mgsm.interface.num_threads = 1
+    mgsm.interface.estimated_memory_gb = 5
+    #put the number of cores you want here, and the number of cores/ and estimated memory = # of total GB / number of cores
     
     jgsm= pe.Node(util.Function(input_names=['group_stability_list','n_bootstraps', 'n_clusters'],
                                 output_names=['G',

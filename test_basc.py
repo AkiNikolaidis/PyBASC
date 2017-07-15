@@ -261,6 +261,37 @@ def test_basc_workflow_runner():
     basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
+
+def test_basc_workflow_runner():
+
+    from basc_workflow_runner import run_basc_workflow
+    import utils
+    subject_file_list=    ['/Users/aki.nikolaidis/BGDev_SampleData/A00060280/reduced100.nii.gz',
+                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060280/reduced100.nii.gz',
+                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060280/reduced100.nii.gz',
+                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060384/reduced100.nii.gz',
+                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060384/reduced100.nii.gz',
+                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060384/reduced100.nii.gz']
+
+    roi_mask_file=home + '/git_repo/basc/masks/BG.nii.gz'
+    dataset_bootstraps=10
+    timeseries_bootstraps=50
+    n_clusters=4
+    output_size=500
+    bootstrap_list=list(range(0,dataset_bootstraps))
+    cross_cluster=True
+    roi2_mask_file=home + '/git_repo/basc/masks/yeo_2.nii.gz'
+    affinity_threshold= [0.5] * len(subject_file_list)
+    out_dir= home + '/BASC_outputs'
+    run=True
+    
+    
+
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+
+
+
+
 def heavy_basc_workflow_test():
 
     from basc_workflow_runner import run_basc_workflow
