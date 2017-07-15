@@ -32,7 +32,8 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, strati
     print( 'calculating adjacency matrix')
     G = utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation')[:,np.newaxis])
     print("finished calculating group stbaility matrix")
-    G=G.astype("float16")
+    G=G*100
+    G=G.astype("int8")
     G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(G_file, G)
     print ('Saving group stability matrix %s' % (G_file))
