@@ -297,7 +297,8 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         voxel_num=roi1data.shape[0]
         voxel_ism = utils.expand_ism(ism, Y1_labels)
         
-
+        voxel_ism=voxel_ism*100
+        voxel_ism=voxel_ism.astype("uint8")
 
         ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
         np.save(ism_file, voxel_ism)
@@ -324,6 +325,8 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         voxel_num=roi1data.shape[0]
         voxel_ism = utils.expand_ism(ism, Y1_labels)
         
+        voxel_ism=voxel_ism*100
+        voxel_ism=voxel_ism.astype("uint8")
         
         ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
         np.save(ism_file, ism)
@@ -532,7 +535,7 @@ def create_basc(name='basc'):
                                 iterfield='bootstrap_list')
     
     mgsm.interface.num_threads = 1
-    mgsm.interface.estimated_memory_gb = 10
+    mgsm.interface.estimated_memory_gb = 20
     
     jgsm= pe.Node(util.Function(input_names=['group_stability_list','n_bootstraps', 'n_clusters'],
                                 output_names=['G',
