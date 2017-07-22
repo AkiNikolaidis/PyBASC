@@ -480,8 +480,13 @@ def create_basc(proc_mem, name='basc'):
                                 name='map_group_stability',
                                 iterfield='bootstrap_list')
     
+<<<<<<< HEAD
     mgsm.interface.num_threads = proc_mem[1]
     mgsm.interface.estimated_memory_gb = int(proc_mem[0]/proc_mem[1])
+=======
+    mgsm.interface.num_threads = 1
+    mgsm.interface.estimated_memory_gb = 20
+>>>>>>> 7e926f8f360768749457ef7b47d0186fef27127c
     
     jgsm= pe.Node(util.Function(input_names=['indiv_stability_list',
                                              'group_stability_list',

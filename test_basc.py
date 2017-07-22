@@ -619,20 +619,25 @@ def NED_heavy_basc_workflow_test():
     '/data/Projects/anikolai/rockland_downsampled/A00060603/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00060846/3mm_resampled.nii.gz']
 
-    roi_mask_file=home + '/git_repo/BASC/masks/BG_3mm.nii.gz'
+    roi_mask_file=home + '/git_repo/BASC/masks/cerebellum_3mm.nii.gz'
    
     dataset_bootstraps=50
     timeseries_bootstraps=50
-    n_clusters=10
+    n_clusters=3
     output_size=400
     cross_cluster=True
     bootstrap_list=list(range(0,dataset_bootstraps))
+<<<<<<< HEAD
     proc_mem=[10,80]
     
     roi2_mask_file=home + '/git_repo/BASC/masks/yeo_3mm.nii.gz'
+=======
+
+    roi2_mask_file=home + '/git_repo/BASC/masks/yeo2_3mm.nii.gz'
+>>>>>>> 7e926f8f360768749457ef7b47d0186fef27127c
     
     affinity_threshold= [0.5] * 107 #[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
-    out_dir=   '/data/Projects/anikolai/BASC_outputs'
+    out_dir=   '/data/Projects/anikolai/BASC_outputs/CouilleCerebellum'
     run=True
     
 
