@@ -73,17 +73,19 @@ def timeseries_bootstrap(tseries, block_size):
 
     """
     import numpy as np
-    print ('1')
+    import time
+    
+    print('Calculating Timeseries Bootstrap')
+    bootstraptime=time.time()
+    
     k = int(np.ceil(float(tseries.shape[0])/block_size))
     r_ind = np.floor(np.random.rand(1,k)*tseries.shape[0])
-    print ('2')
     blocks = np.dot(np.arange(0,block_size)[:,np.newaxis], np.ones([1,k]))
     block_offsets = np.dot(np.ones([block_size,1]), r_ind)
-    print ('3')
     block_mask = (blocks + block_offsets).flatten('F')[:tseries.shape[0]]
-    print ('4')
     block_mask = np.mod(block_mask, tseries.shape[0])
-    print ('5')
+    
+    print('Finished: ', (time.time() - bootstraptime), ' seconds')
     return tseries[block_mask.astype('int'), :]
 
 def standard_bootstrap(dataset):
@@ -175,6 +177,11 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     """
 
     import scipy as sp
+    import time 
+    
+    print('Creating CLustering')
+    
+    clustertime= time.time()
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
     
@@ -189,11 +196,11 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
 
 
 
-    #t0 = time.time()
     spectral.fit(sim_matrix)
-    #t1 = time.time()
 
     y_pred = spectral.labels_.astype(np.int)
+    
+    print('Creating Clusters took ', (time.time()- clustertime), ' seconds')
     
     return y_pred
 
@@ -254,9 +261,13 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
     """
 
     import scipy as sp
+    import time
     from sklearn import cluster, datasets
 
-    print("calculating pairwise distances between areas")
+    print("Calculating Cross-clustering")
+    print("Calculating pairwise distances between areas")
+    
+    clustertime=time.time()
     dist_btwn_df_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'euclidean'))
 
 
@@ -271,11 +282,13 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
 
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
     
-    print("clustering")
+    print("Clustering")
     spectral.fit(sim_matrix)
    
 
     y_pred = spectral.labels_.astype(np.int)
+    
+    print("Clustering took ", (time.time() - clustertime), ' seconds')
     return y_pred
 
 
@@ -308,16 +321,13 @@ def adjacency_matrix(cluster_pred):
 
     """
     x = cluster_pred.copy()
-    print ('1')
     if(len(x.shape) == 1):
         x = x[:, np.newaxis]
-    print ('2')
     # Force the cluster indexing to be positive integers
     if(x.min() <= 0):
         x += -x.min() + 1
 
     A = np.dot(x**-1., x.T) == 1
-    print ('3')
     return A
 
 def cluster_matrix_average(M, cluster_assignments):
@@ -344,6 +354,20 @@ def cluster_matrix_average(M, cluster_assignments):
     array([  6.,   6.,   6.,  21.,  21.])
 
     """
+#
+#    #TODO FIGURE OUT TEST FOR THIS FUNCTION
+#    
+#    ## from individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_file)
+#    
+#    indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
+#    #
+#    
+#    cluster_voxel_scores = np.zeros((nClusters, nSubjects, nVoxels))
+#    for i in range(nSubjects):
+#        cluster_voxel_scores[:,i] = utils.cluster_matrix_average(indiv_stability_set[i], clusters_G)
+#    ##
+#    
+    
 
     if np.any(np.isnan(M)):
         np.save('bad_M.npz', M)
@@ -352,21 +376,32 @@ def cluster_matrix_average(M, cluster_assignments):
     cluster_ids = np.unique(cluster_assignments)
     s = np.zeros((cluster_ids.shape[0], cluster_assignments.shape[0]), dtype='float64')
     s_idx = 0
+    K_mask=np.zeros(M.shape)
     for cluster_id in cluster_ids:
         s[s_idx, :] = M[:,cluster_assignments == cluster_id].mean(1)
-        s_idx += 1
+        
 #        #???
-#        k = (cluster_assignments == cluster_id)[:, np.newaxis]
-#        print('Cluster %i size: %i' % (cluster_id, k.sum()))
-#        K = np.dot(k,k.T)
-#        K[np.diag_indices_from(K)] = False
-#        if K.sum() == 0: # Voxel with its own cluster
-#            s[k[:,0]] = 0.0
-#        else:
-#            s[k[:,0]] = M[K].mean()
+        k = (cluster_assignments == cluster_id)[:, np.newaxis]
+        print('Cluster %i size: %i' % (cluster_id, k.sum()))
+        K = np.dot(k,k.T)
+        K[np.diag_indices_from(K)] = False
+        Ktemp=K*1
+        K_mask=K_mask+Ktemp
+        if K.sum() == 0: # Voxel with its own cluster
+            s[k[:,0]] = 0.0
+            s_idx += 1
+        else:
+            s[s_idx,k[:,0].T] = M[K].mean()
+            s_idx += 1
 
+    
+    return s, K_mask
 
-    return s
+def compare_stability_matrices(ism1, ism2):
+    import scipy as sp
+    distance=sp.spatial.distance.correlation(ism1.ravel(), ism2.ravel())
+    similarity= 1-distance
+    return similarity
 
 def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_cluster=False, cbb_block_size = None, affinity_threshold = 0.5):
     """
@@ -395,7 +430,9 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
     """
     
     import utils 
-    print("111")
+    import time
+    print("Calculating Individual Stability Matrix")
+    ismtime=time.time()
    
     
     if affinity_threshold < 0.0:
@@ -404,7 +441,6 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
     #flipped the N and V values bc originally data was being put in transposed
     N1 = Y1.shape[1]
     V1 = Y1.shape[0]
-    print("222")
    
     if(cbb_block_size is None):
         cbb_block_size = int(np.sqrt(N1))
@@ -413,68 +449,63 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
 
     if (cross_cluster is True):
         for bootstrap_i in range(n_bootstraps):
-            print("333")
-            print(Y2)
+        
             N2 = Y2.shape[1]
-            print("4441")
             cbb_block_size2 = int(np.sqrt(N2))
-            print("4442")
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
-            print("4443")
             Y_b2 = utils.timeseries_bootstrap(Y2, cbb_block_size2)
-            print("4444")
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = 'correlation'))
 
-            print("4445")
+            
         S /= n_bootstraps
         
         S=S*100
-        S=S.astype("int8")
-        
+        S=S.astype("uint8")
+        print('ISM calculation took', (time.time() - ismtime), ' seconds')
     else:
         for bootstrap_i in range(n_bootstraps):
-            print("444")
+            
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = 'correlation', affinity_threshold = affinity_threshold)[:,np.newaxis])
         S /= n_bootstraps
         
         S=S*100
-        S=S.astype("int8")
-        
-    print("555")    
+        S=S.astype("uint8")
+        print('ISM calculation took', (time.time() - ismtime), ' seconds')
     return S
 
-def return_to_voxelspace(ism, voxelmask):
-    """
-    ism : symmetric stability matrix
-    
-    voxelmask: 
-    """
 
 def expand_ism(ism, Y1_labels):
-    #%% XU MACKENZIE ALGORITHM
-    import time
-    import random
-    import pandas as pd
-    import numpy as np
-    voxel_num=len(Y1_labels)
-    voxel_ism = np.zeros((voxel_num,voxel_num))
-    transform_mat=np.zeros((len(ism),voxel_num))
-     
-    matrixtime = time.time()
-
-    for i in range(0,voxel_num):
-      transform_mat[Y1_labels[i],i]=1
+   """
+   ism : individual stabilty matrix. A symmetric array
+   
+   Y1_labels : 1-D array of voxel to supervoxel labels, created in initial data compression
+   
+   """
+    
+   import random
+   import pandas as pd
+   import numpy as np
+   import time
+    
+   voxel_num=len(Y1_labels)
+   voxel_ism = np.zeros((voxel_num,voxel_num))
+   transform_mat=np.zeros((len(ism),voxel_num))
+ 
+   matrixtime = time.time()
+   
+   for i in range(0,voxel_num):
+     transform_mat[Y1_labels[i],i]=1
       
-    temp=np.dot(ism,transform_mat)
-    target_mat=np.dot(temp.T,transform_mat)
+   temp=np.dot(ism,transform_mat)
+   target_mat=np.dot(temp.T,transform_mat)
     
     
-    XM_time= time.time() - matrixtime
-    print((time.time() - matrixtime))
-    voxel_ism=target_mat
+   XM_time= time.time() - matrixtime
+   print('Matrix expansion took', (time.time() - matrixtime), ' seconds')
+   voxel_ism=target_mat
             
-    return voxel_ism
+   return voxel_ism
 
 
 
@@ -489,51 +520,29 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
         
     """
     
-    #%%
-    #Pseudocode-
-    # Option 1- Take in the functional data and mask, and mask here. and convert data to numpy array
-    # Option 2- Take in the masked functional data for ROI1, and ROI2, and separately reduce dimensionality.
-    #%%
-    #Inputs- Data, mask1, mask2, output_size
 
-###################################################################
 ## Transform nifti files to a data matrix with the NiftiMasker
+    import time
     from nilearn import input_data
 
+    datacompressiontime=time.time()
     nifti_masker = input_data.NiftiMasker(mask_img= mask_img, memory='nilearn_cache',
                                           mask_strategy='background', memory_level=1,
                                           standardize=False)
 
     ward=[]
 
-##################################################################
 # Perform Ward clustering
-# -----------------------
-#
-# We use spatially-constrained Ward clustering. For this, we need to
-# compute from the mask a matrix giving the voxel-to-voxel connectivity
-# Compute connectivity matrix: which voxel is connected to which
     from sklearn.feature_extraction import image
     shape = mask_np.shape
     connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                        n_z=shape[2], mask=mask_np)
 
  
-##################################################################
-# Then we use FeatureAgglomeration from scikit-learn. Indeed, the voxels
-# are the features of the data matrix.
-#
-# In addition, we use caching. As a result, the clustering doesn't have
-# to be recomputed later.
-
-# Computing the ward for the first time, this is long...
     from sklearn.cluster import FeatureAgglomeration
-# If you have scikit-learn older than 0.14, you need to import
-# WardAgglomeration instead of FeatureAgglomeration
     start = time.time()
     ward = FeatureAgglomeration(n_clusters=output_size, connectivity=connectivity,
                             linkage='ward')
-    #print '4', i
     ward.fit(fmri_masked)
     print("Ward agglomeration compressing voxels into clusters: %.2fs" % (time.time() - start))
 
@@ -543,7 +552,5 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
     print ('Extracting reduced Dimension Data')
     data_reduced = ward.transform(fmri_masked)
     fmri_masked=[]
-    #print '6', i
-   # compressed_origsize_data = ward.inverse_transform(fmri_masked)
-
+    print('Data compression took ', (time.time()- datacompressiontime), ' seconds')
     return {'data':data_reduced, 'labels':labels}

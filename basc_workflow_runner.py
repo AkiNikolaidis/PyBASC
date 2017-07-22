@@ -15,7 +15,7 @@ import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 
 
-def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, cross_cluster=False, roi2_mask_file=None, affinity_threshold=0.5, out_dir=None, run=True):
+def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=False, roi2_mask_file=None, affinity_threshold=0.5, out_dir=None, run=True):
     """Run the 'template_workflow' function to execute the modular workflow
     with the provided inputs.
     :type input_resource: str
@@ -60,7 +60,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     config = {}
     num_cores_per_subject = 1
 
-    basc=create_basc(name='basc')
+    basc=create_basc(proc_mem, name='basc')
     basc.inputs.inputspec.subject_file_list=subject_file_list
     basc.inputs.inputspec.roi_mask_file=roi_mask_file
     basc.inputs.inputspec.dataset_bootstraps=dataset_bootstraps
@@ -68,6 +68,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     basc.inputs.inputspec.n_clusters=n_clusters
     basc.inputs.inputspec.output_size=output_size
     basc.inputs.inputspec.bootstrap_list=bootstrap_list
+    basc.inputs.inputspec.proc_mem=proc_mem
     basc.inputs.inputspec.cross_cluster=cross_cluster
     basc.inputs.inputspec.roi2_mask_file=roi2_mask_file
     basc.inputs.inputspec.affinity_threshold=affinity_threshold
@@ -76,6 +77,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     resource_pool['gsm'] = (basc, 'outputspec.gsm')
     resource_pool['gsclusters'] = (basc, 'outputspec.gsclusters')
     resource_pool['gsmap'] = (basc, 'outputspec.gsmap')
+    resource_pool['ism_gsm_corr_file'] = (basc, 'outputspec.ism_gsm_corr_file')
     resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
     resource_pool['gsmap_img'] = (basc, 'outputspec.gsmap_img')
     resource_pool['ismap_imgs'] = (basc, 'outputspec.ismap_imgs')
@@ -88,7 +90,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
         node, out_file = resource_pool[output]
         workflow.connect(node, out_file, ds, output)
 
-    plugin_args = {'memory_gb': 100, 'n_procs' : 10}
+    plugin_args = {'memory_gb': proc_mem[0], 'n_procs' : proc_mem[1]}
 
     if run == True:
         workflow.run(plugin='MultiProc', plugin_args= plugin_args)

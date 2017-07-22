@@ -8,6 +8,7 @@ from utils import timeseries_bootstrap, \
                   cluster_matrix_average, \
                   individual_stability_matrix, \
                   expand_ism, \
+                  compare_stability_matrices, \
                   data_compression
 
 import basc
