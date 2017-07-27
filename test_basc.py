@@ -170,8 +170,8 @@ def test_nifti_individual_stability():
 
     subject_file = home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
 
-    roi_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/BG.nii.gz'
-    roi2_mask_file=home + '/C-PAC/CPAC/basc/sampledata/masks/yeo_2.nii.gz'
+    roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
+    roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     
    
     n_bootstraps=100
@@ -627,14 +627,11 @@ def NED_heavy_basc_workflow_test():
     output_size=400
     cross_cluster=True
     bootstrap_list=list(range(0,dataset_bootstraps))
-<<<<<<< HEAD
     proc_mem=[10,80]
     
     roi2_mask_file=home + '/git_repo/BASC/masks/yeo_3mm.nii.gz'
-=======
 
     roi2_mask_file=home + '/git_repo/BASC/masks/yeo2_3mm.nii.gz'
->>>>>>> 7e926f8f360768749457ef7b47d0186fef27127c
     
     affinity_threshold= [0.5] * 107 #[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
     out_dir=   '/data/Projects/anikolai/BASC_outputs/CouilleCerebellum'

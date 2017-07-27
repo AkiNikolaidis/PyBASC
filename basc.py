@@ -199,6 +199,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     import nibabel as nb
     import utils
     import pandas as pd
+    import sklearn as sk
     
 
     print( 'Calculating individual stability matrix of:', subject_file)
@@ -218,6 +219,11 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
 
         roi1data = data[roi_mask_nparray]
         roi2data = data[roi2_mask_nparray]
+        
+        #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
+        roi1data=sk.normalize(roi1data, norm='l2')
+        roi2data=sk.normalize(roi2data, norm='l2')
+        
         print( 'Compressing data')
         data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
         Y1_compressed = data_dict1['data']
@@ -480,13 +486,9 @@ def create_basc(proc_mem, name='basc'):
                                 name='map_group_stability',
                                 iterfield='bootstrap_list')
     
-<<<<<<< HEAD
     mgsm.interface.num_threads = proc_mem[1]
     mgsm.interface.estimated_memory_gb = int(proc_mem[0]/proc_mem[1])
-=======
-    mgsm.interface.num_threads = 1
-    mgsm.interface.estimated_memory_gb = 20
->>>>>>> 7e926f8f360768749457ef7b47d0186fef27127c
+
     
     jgsm= pe.Node(util.Function(input_names=['indiv_stability_list',
                                              'group_stability_list',
