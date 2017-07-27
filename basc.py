@@ -456,8 +456,8 @@ def create_basc(proc_mem, name='basc'):
                      name='individual_stability_matrices',
                      iterfield=['subject_file',
                                 'affinity_threshold'])
-    nis.interface.num_threads = proc_mem[1]
-    nis.interface.estimated_memory_gb = int(proc_mem[0]/proc_mem[1])
+    nis.interface.num_threads = proc_mem[0]
+    nis.interface.estimated_memory_gb = int(proc_mem[1]/proc_mem[0])
     
     nis.inputs.cbb_block_size=None
 
@@ -486,8 +486,8 @@ def create_basc(proc_mem, name='basc'):
                                 name='map_group_stability',
                                 iterfield='bootstrap_list')
     
-    mgsm.interface.num_threads = proc_mem[1]
-    mgsm.interface.estimated_memory_gb = int(proc_mem[0]/proc_mem[1])
+    mgsm.interface.num_threads = proc_mem[0]
+    mgsm.interface.estimated_memory_gb = int(proc_mem[1]/proc_mem[0])
 
     
     jgsm= pe.Node(util.Function(input_names=['indiv_stability_list',
@@ -534,96 +534,93 @@ def create_basc(proc_mem, name='basc'):
 
     #run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, k_clusters, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
+#node, out_file = resource_pool['anat_reorient']
+#workflow.connect([
+#    (node, clip_level,      [(out_file, 'in_file')]),
+#    (node, mask_skull,      [(out_file, 'in_file_a')]),
+#    (node, slice_head_mask, [(out_file, 'infile')])
+#])
+# 
+#workflow.connect([
+#    (fill, combine_masks, [('out_file', 'in_file_a')]),
+#    (slice_head_mask, combine_masks, [('outfile_path', 'in_file_b')])
+#])
 
+###########################################
+  
+
+#    basc.connect([
+#            (inputspec, nis [('subject_file_list', 'subject_file')]),
+#            (inputspec, nis [('roi_mask_file','roi_mask_file')]),
+#            (inputspec, nis [('timeseries_bootstraps','n_bootstraps')]),
+#            (inputspec, nis [('output_size', 'output_size')]),
+#            (inputspec, nis [('cross_cluster','cross_cluster')]),
+#            (inputspec, nis [('roi2_mask_file','roi2_mask_file')]),
+#            (inputspec, nis [('affinity_threshold','affinity_threshold')]),
+#            (inputspec, mgsm [('bootstrap_list','bootstrap_list')]),
+#            (inputspec, mgsm [('n_clusters','n_clusters')]),
+#            (inputspec, jgsm [('dataset_bootstraps','dataset_bootstraps')]),
+#            (inputspec, jgsm [('n_bootstraps','n_bootstraps')]),
+#            (inputspec, gs_cluster_vol [('subject_file_list','sample_file')]),
+#            (inputspec, gs_cluster_vol [('roi_mask_file','roi_mask_file')]),
+#            (inputspec, igcm [('roi_mask_file','roi_mask_file')]),
+#            (inputspec, gs_score_vol [('subject_file_list','sample_file')]),
+#            (inputspec, gs_score_vol [('roi_mask_file','roi_mask_file')]),
+#            (nis, mgsm  [('ism_file','indiv_stability_list')]),
+#            (nis, jgsm  [('ism_file','indiv_stability_list')]),
+#            (mgsm, jgsm  [('G_file','group_stability_list')]),
+#            (nis, igcm  [('ism_file','indiv_stability_list')]),
+#            (jgsm, igcm  [('clusters_G','clusters_G')]),
+#            (jgsm, gs_cluster_vol  [('clusters_G','data_array')]),
+#            ])
+#   
+#
+#    gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
+#    gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'
+
+ 
+    
+    
+
+##############################################
     # Gather outside workflow inputs
-    basc.connect(inputspec, 'subject_file_list',
-                 nis, 'subject_file')
-    basc.connect(inputspec, 'roi_mask_file',
-                 nis, 'roi_mask_file')
-    basc.connect(inputspec, 'timeseries_bootstraps',
-                 nis, 'n_bootstraps')
-    basc.connect(inputspec, 'n_clusters',
-                 nis, 'n_clusters')
-    basc.connect(inputspec, 'output_size',
-                 nis, 'output_size')
-    
-    basc.connect(inputspec, 'cross_cluster',
-                 nis, 'cross_cluster')
-    basc.connect(inputspec, 'roi2_mask_file',
-                 nis, 'roi2_mask_file')
-    basc.connect(inputspec, 'affinity_threshold',
-                 nis, 'affinity_threshold')
-   
-    basc.connect(inputspec, 'bootstrap_list',
-                 mgsm, 'bootstrap_list')
-    basc.connect(inputspec, 'n_clusters',
-                 mgsm, 'n_clusters')
+    basc.connect(inputspec, 'subject_file_list',        nis, 'subject_file')
+    basc.connect(inputspec, 'roi_mask_file',            nis, 'roi_mask_file')
+    basc.connect(inputspec, 'timeseries_bootstraps',    nis, 'n_bootstraps')
+    basc.connect(inputspec, 'n_clusters',               nis, 'n_clusters')
+    basc.connect(inputspec, 'output_size',              nis, 'output_size')
+    basc.connect(inputspec, 'cross_cluster',            nis, 'cross_cluster')
+    basc.connect(inputspec, 'roi2_mask_file',           nis, 'roi2_mask_file')
+    basc.connect(inputspec, 'affinity_threshold',       nis, 'affinity_threshold')
+    basc.connect(inputspec, 'bootstrap_list',           mgsm, 'bootstrap_list')
+    basc.connect(inputspec, 'n_clusters',               mgsm, 'n_clusters')
+    basc.connect(inputspec, 'dataset_bootstraps',       jgsm, 'n_bootstraps')
+    basc.connect(inputspec, 'n_clusters',               jgsm, 'n_clusters')
+    basc.connect(inputspec, 'subject_file_list',        gs_cluster_vol, 'sample_file')
+    basc.connect(inputspec, 'roi_mask_file',            gs_cluster_vol, 'roi_mask_file') 
+    basc.connect(inputspec, 'roi_mask_file',            igcm, 'roi_mask_file')
+    basc.connect(inputspec, 'subject_file_list',        gs_score_vol, 'sample_file')
+    basc.connect(inputspec, 'roi_mask_file',            gs_score_vol, 'roi_mask_file')
 
-    basc.connect(inputspec, 'dataset_bootstraps',
-                 jgsm, 'n_bootstraps')
-    basc.connect(inputspec, 'n_clusters',
-                 jgsm, 'n_clusters')
+    #Node to Node connections
+    basc.connect(nis, 'ism_file',                       mgsm, 'indiv_stability_list')
+    basc.connect(nis, 'ism_file',                       jgsm, 'indiv_stability_list')
+    basc.connect(mgsm, 'G_file',                        jgsm, 'group_stability_list')
+    basc.connect(nis, 'ism_file',                       igcm, 'indiv_stability_list')
+    basc.connect(jgsm, 'clusters_G',                    igcm, 'clusters_G')
+    basc.connect(jgsm, 'clusters_G',                    gs_cluster_vol, 'data_array')
+    basc.connect(jgsm, 'clusters_G',                    gs_score_vol, 'data_array')
 
-    basc.connect(inputspec, 'subject_file_list',
-                 gs_cluster_vol, 'sample_file')
-    basc.connect(inputspec, 'roi_mask_file',
-                 gs_cluster_vol, 'roi_mask_file')
-    
-    basc.connect(inputspec, 'roi_mask_file',
-                 igcm, 'roi_mask_file')
-    
-    basc.connect(inputspec, 'subject_file_list',
-                 gs_score_vol, 'sample_file')
-    basc.connect(inputspec, 'roi_mask_file',
-                 gs_score_vol, 'roi_mask_file')
-
-    basc.connect(nis, 'ism_file',
-                 mgsm, 'indiv_stability_list')
-
-    basc.connect(nis, 'ism_file',
-                 jgsm, 'indiv_stability_list')
-    basc.connect(mgsm, 'G_file',
-                 jgsm, 'group_stability_list')
+    #Outputs
+    basc.connect(jgsm, 'gsm_file',                      outputspec, 'gsm')
+    basc.connect(jgsm, 'clusters_G_file',               outputspec, 'gsclusters')
+    basc.connect(jgsm, 'cluster_voxel_scores_file',     outputspec, 'gsmap')
+    basc.connect(jgsm, 'ism_gsm_corr_file',             outputspec, 'ism_gsm_corr_file')
+    basc.connect(gs_cluster_vol, 'img_file',            outputspec, 'gsclusters_img')
+    basc.connect(gs_score_vol, 'img_file',              outputspec, 'gsmap_img')
+    basc.connect(igcm, 'individual_cluster_voxel_scores',outputspec, 'ismap_imgs')
 
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
-
-    basc.connect(nis, 'ism_file',
-                 igcm, 'indiv_stability_list')
-    basc.connect(jgsm, 'clusters_G',
-                 igcm, 'clusters_G')
-
-
-    basc.connect(jgsm, 'clusters_G',
-                 gs_cluster_vol, 'data_array')
-
-   
-    
-    #def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_file):
-
-    
     gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'
 
-
-#    basc.connect(igcm, 'individual_cluster_voxel_scores',
-#                 gs_score_vol, 'data_array')
-
-    basc.connect(jgsm, 'clusters_G',
-                 gs_score_vol, 'data_array')
-
-    basc.connect(jgsm, 'gsm_file',
-                 outputspec, 'gsm')
-    basc.connect(jgsm, 'clusters_G_file',
-                 outputspec, 'gsclusters')
-    basc.connect(jgsm, 'cluster_voxel_scores_file',
-                 outputspec, 'gsmap')
-    basc.connect(jgsm, 'ism_gsm_corr_file',
-                 outputspec, 'ism_gsm_corr_file')
-
-    basc.connect(gs_cluster_vol, 'img_file',
-                 outputspec, 'gsclusters_img')
-    basc.connect(gs_score_vol, 'img_file',
-                 outputspec, 'gsmap_img')
-
-    basc.connect(igcm, 'individual_cluster_voxel_scores',
-                 outputspec, 'ismap_imgs')
     return basc

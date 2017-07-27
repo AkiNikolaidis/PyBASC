@@ -28,8 +28,8 @@ import nipype.interfaces.utility as util
 
 matplotlib.style.use('ggplot')
 home = expanduser("~")
-proc_mem= [2,4]
-
+proc_mem= [2,4] #first is number of proc , second total number of mem
+    
 #%% TEST UTILS.PY
 #Remaining Tests:
     #compare_stability_matrix
@@ -237,13 +237,7 @@ def new_test_group_stability_matrix():
     
     return G
     
-   # for boot in 
-#    cluster_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
-#    
-#    def join_group_stability(group_stability_list, n_bootstraps, n_clusters):
-#    
-#    return G, cluster_G, cluster_voxel_scores, gsm_file, clusters_G_file, cluster_voxel_scores_file
-
+  
 
 def test_group_stability_matrix():
     """
@@ -313,7 +307,7 @@ def test_individual_group_clustered_maps():
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     cbb_block_size=None
     affinity_threshold= 0.5 #* len(subject_file_list)
-    out_dir= home + '/BASC_outputs/ClusterCorrTest3'
+    out_dir= home + '/BASC_outputs/testing1'
     run=True
     ismfile=[]
     for i in range(0,len(subject_file_list)):
@@ -330,22 +324,7 @@ def test_individual_group_clustered_maps():
 
     icvs=basc.individual_group_clustered_maps(ismfile, clusters_G, roi_mask_file)
 
-
-######################NEW FUNCTIONS TO TEST##########################################
-######################NEW FUNCTIONS TO TEST##########################################
-######################NEW FUNCTIONS TO TEST##########################################
-#def test_join_group_stability():
-#    #TODO testing the group input from the group stability matrix.
-#    #def join_group_stability(group_stability_list, n_bootstraps, n_clusters):
-#
-#def test_ndarray_to_vol():
-#    #TODO testing the transformation from array to volume
-#####################NEW FUNCTIONS TO TEST###########################################
-#######################NEW FUNCTIONS TO TEST#########################################
-########################NEW FUNCTIONS TO TEST########################################
-
-
-
+    return icvs, G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
 
 
 
@@ -374,7 +353,7 @@ def test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/ClusterCorrTest5'
+    out_dir= home + '/BASC_outputs/testing1'
     run=True
     
     
