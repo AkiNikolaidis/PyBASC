@@ -221,8 +221,8 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         roi2data = data[roi2_mask_nparray]
         
         #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
-        roi1data=sk.normalize(roi1data, norm='l2')
-        roi2data=sk.normalize(roi2data, norm='l2')
+        roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
+        roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
         
         print( 'Compressing data')
         data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
