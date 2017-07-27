@@ -347,13 +347,13 @@ def test_basc_workflow_runner():
     roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
     dataset_bootstraps=50
     timeseries_bootstraps=10
-    n_clusters=3
+    n_clusters=7
     output_size=10
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/testing1'
+    out_dir= home + '/BASC_outputs/ClusterComparisons/testing7'
     run=True
     
     
