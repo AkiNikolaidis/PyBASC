@@ -368,17 +368,17 @@ def create_basc(proc_mem, name='basc'):
 
     Workflow Outputs::
 
-        outputspec.gsm : ndarray
+        outputspec.group_stability_matrix : ndarray
             Group stability matrix
-        outputspec.gsclusters: ndarray
+        outputspec.clusters_G: ndarray
             Matrix partitioning each cluster of the group stability matrix
-        outputspec.gsmap: ndarray
+        outputspec.cluster_voxel_scores: ndarray
             Group stability map using gsm and gscluster to calculate average within-cluster stability
         outputspec.gsclusters_img : string (nifti file)
             3-D volume of brain regions partitioned with gsclusters
-        outputspec.gsmap_img : string (nifti file)
+        outputspec.cluster_voxel_scores_img : string (nifti file)
             3-D volume of brain regions associated with gs_map
-        outputspec.ismap_imgs : list of strings (nifti files)
+        outputspec.individual_cluster_voxel_scores_imgs : list of strings (nifti files)
             3-D volumes of stability scores of each cluster based on group clustering
 
     BASC Procedure:
@@ -429,15 +429,15 @@ def create_basc(proc_mem, name='basc'):
 
 
 
-    outputspec = pe.Node(util.IdentityInterface(fields=['gsm',
-                                                        'gsclusters',
-                                                        'gsmap',
+    outputspec = pe.Node(util.IdentityInterface(fields=['group_stability_matrix',
+                                                        'clusters_G',
+                                                        'cluster_voxel_scores',
                                                         'ism_gsm_corr_file',
                                                         'gsclusters_img',
-                                                        'gsmap_img',
-                                                        'ismap_imgs']),
+                                                        'cluster_voxel_scores_img',
+                                                        'individual_cluster_voxel_scores_imgs']),
                         name='outputspec')
-
+#G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
     basc = pe.Workflow(name=name)
 
 
@@ -503,7 +503,7 @@ def create_basc(proc_mem, name='basc'):
                                               'cluster_voxel_scores_file',
                                               'ism_gsm_corr_file'],
                                 function=join_group_stability),
-                  name='group_stability_matrix')
+                  name='join_group_stability')
     
     
     
@@ -612,13 +612,13 @@ def create_basc(proc_mem, name='basc'):
     basc.connect(jgsm, 'clusters_G',                    gs_score_vol, 'data_array')
 
     #Outputs
-    basc.connect(jgsm, 'gsm_file',                      outputspec, 'gsm')
-    basc.connect(jgsm, 'clusters_G_file',               outputspec, 'gsclusters')
-    basc.connect(jgsm, 'cluster_voxel_scores_file',     outputspec, 'gsmap')
+    basc.connect(jgsm, 'gsm_file',                      outputspec, 'group_stability_matrix')
+    basc.connect(jgsm, 'clusters_G_file',               outputspec, 'clusters_G')
+    basc.connect(jgsm, 'cluster_voxel_scores_file',     outputspec, 'cluster_voxel_scores')
     basc.connect(jgsm, 'ism_gsm_corr_file',             outputspec, 'ism_gsm_corr_file')
     basc.connect(gs_cluster_vol, 'img_file',            outputspec, 'gsclusters_img')
-    basc.connect(gs_score_vol, 'img_file',              outputspec, 'gsmap_img')
-    basc.connect(igcm, 'individual_cluster_voxel_scores',outputspec, 'ismap_imgs')
+    basc.connect(gs_score_vol, 'img_file',              outputspec, 'cluster_voxel_scores_img')
+    basc.connect(igcm, 'individual_cluster_voxel_scores',outputspec, 'individual_cluster_voxel_scores_imgs')
 
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
     gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'

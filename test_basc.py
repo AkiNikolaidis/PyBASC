@@ -335,14 +335,14 @@ def test_individual_group_clustered_maps():
 def test_basc_workflow_runner():
 
     from basc_workflow_runner import run_basc_workflow
-    import utils
+    #import utils
     subject_file_list= [home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
                         home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
+                        home + '/git_repo/BASC/sample_data/sub3/Func_Quarter_Res.nii.gz']#,]
+                        #home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        #home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        #home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        #home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
 
     roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
     dataset_bootstraps=50
@@ -353,7 +353,7 @@ def test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/ClusterComparisons/testing7'
+    out_dir= home + '/BASC_outputs/test_init8'
     run=True
     
     
@@ -501,8 +501,8 @@ def NED_heavy_basc_workflow_test():
     '/data/Projects/anikolai/rockland_downsampled/A00031219/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00031410/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00031411/3mm_resampled.nii.gz',
-    '/data/Projects/anikolai/rockland_downsampled/A00031578/3mm_resampled.nii.gz',
-    '/data/Projects/anikolai/rockland_downsampled/A00031881/3mm_resampled.nii.gz',
+    '/data/Projects/anikolai/rockland_downsampled/A00031578/3mm_resampled.nii.gz']#,
+    a=['/data/Projects/anikolai/rockland_downsampled/A00031881/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00032008/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00032817/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00033231/3mm_resampled.nii.gz',
@@ -598,7 +598,7 @@ def NED_heavy_basc_workflow_test():
     '/data/Projects/anikolai/rockland_downsampled/A00060603/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00060846/3mm_resampled.nii.gz']
 
-    roi_mask_file=home + '/git_repo/BASC/masks/cerebellum_3mm.nii.gz'
+    roi_mask_file=home + '/git_repo/BASC/masks/BG_3mm.nii.gz'
    
     dataset_bootstraps=50
     timeseries_bootstraps=50
@@ -608,12 +608,12 @@ def NED_heavy_basc_workflow_test():
     bootstrap_list=list(range(0,dataset_bootstraps))
     proc_mem=[10,80]
     
-    roi2_mask_file=home + '/git_repo/BASC/masks/yeo_3mm.nii.gz'
+    #roi2_mask_file=home + '/git_repo/BASC/masks/yeo_3mm.nii.gz'
 
     roi2_mask_file=home + '/git_repo/BASC/masks/yeo2_3mm.nii.gz'
     
     affinity_threshold= [0.5] * 107 #[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
-    out_dir=   '/data/Projects/anikolai/BASC_outputs/CouilleCerebellum'
+    out_dir=   '/data/Projects/anikolai/BASC_outputs/NKITest'
     run=True
     
 

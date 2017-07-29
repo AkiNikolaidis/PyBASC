@@ -1,4 +1,4 @@
-BASC: Bootstrap Analysis of Stable Cluster
+BASC: Bootstrap Analysis of Stable Clusters
 ============================================================
 
 A multi-level, open-source, Nipype-based, parcellation pipeline for preprocessed functional MRI data. Designed for use by both novice and expert users, BASC allows individual to find reproducible and reliable clusters at the individual and group level.

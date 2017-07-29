@@ -74,13 +74,13 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     basc.inputs.inputspec.affinity_threshold=affinity_threshold
     
 
-    resource_pool['gsm'] = (basc, 'outputspec.gsm')
-    resource_pool['gsclusters'] = (basc, 'outputspec.gsclusters')
-    resource_pool['gsmap'] = (basc, 'outputspec.gsmap')
+    resource_pool['group_stability_matrix'] = (basc, 'outputspec.group_stability_matrix')
+    resource_pool['clusters_G'] = (basc, 'outputspec.clusters_G')
+    resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
     resource_pool['ism_gsm_corr_file'] = (basc, 'outputspec.ism_gsm_corr_file')
     resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
-    resource_pool['gsmap_img'] = (basc, 'outputspec.gsmap_img')
-    resource_pool['ismap_imgs'] = (basc, 'outputspec.ismap_imgs')
+    resource_pool['cluster_voxel_scores_img'] = (basc, 'outputspec.cluster_voxel_scores_img')
+    resource_pool['individual_cluster_voxel_scores_imgs'] = (basc, 'outputspec.individual_cluster_voxel_scores_imgs')
 
 
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
