@@ -1,6 +1,6 @@
 #import BASC.utils #as utils
 
-from BASC.utils import timeseries_bootstrap, \
+from utils import timeseries_bootstrap, \
                   standard_bootstrap, \
                   cluster_timeseries, \
                   cross_cluster_timeseries, \
@@ -13,7 +13,7 @@ from BASC.utils import timeseries_bootstrap, \
 
 #import BASC.basc
 
-from BASC.basc import create_basc, \
+from basc import create_basc, \
                  nifti_individual_stability, \
                  map_group_stability, \
                  join_group_stability, \
@@ -22,7 +22,7 @@ from BASC.basc import create_basc, \
             
 #from BASC.basc_workflow_runner import run_basc_workflow as run_basc_workflow
 
-import BASC.RunFile as RunFile
+import RunFile as RunFile
 
 #from
               

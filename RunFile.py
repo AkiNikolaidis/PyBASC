@@ -14,8 +14,8 @@ from os.path import expanduser
 home = expanduser("~")
 proc_mem= [2,4]
 
-from BASC.basc_workflow_runner import run_basc_workflow
-import BASC.utils
+from basc_workflow_runner import run_basc_workflow
+import utils
 
 
 subject_file_list= [home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
@@ -37,7 +37,7 @@ bootstrap_list=list(range(0,dataset_bootstraps))
 cross_cluster=True
 roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
 affinity_threshold= [0.5] * len(subject_file_list)
-out_dir= home + '/BASC_outputs/singlescripttest'
+out_dir= home + '/BASC_outputs/singlescripttest3'
 run=True
 
 
