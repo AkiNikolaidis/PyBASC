@@ -57,10 +57,8 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     workflow.base_dir = workflow_dir
 
     resource_pool = {}
-    config = {}
-    num_cores_per_subject = 1
-
-    basc=create_basc(proc_mem, name='basc')
+    
+    basc = create_basc(proc_mem, name='basc')
     basc.inputs.inputspec.subject_file_list=subject_file_list
     basc.inputs.inputspec.roi_mask_file=roi_mask_file
     basc.inputs.inputspec.dataset_bootstraps=dataset_bootstraps
@@ -76,27 +74,35 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
 
     resource_pool['group_stability_matrix'] = (basc, 'outputspec.group_stability_matrix')
     resource_pool['clusters_G'] = (basc, 'outputspec.clusters_G')
-    resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
     resource_pool['ism_gsm_corr_file'] = (basc, 'outputspec.ism_gsm_corr_file')
     resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
     resource_pool['cluster_voxel_scores_img'] = (basc, 'outputspec.cluster_voxel_scores_img')
     resource_pool['individual_cluster_voxel_scores_imgs'] = (basc, 'outputspec.individual_cluster_voxel_scores_imgs')
+    resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
+    resource_pool['k_mask'] = (basc, 'outputspec.k_mask')
 
 
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
     ds.inputs.base_directory = workflow_dir
-
+    
+    b=1
     for output in resource_pool.keys():
+        print('hi 1')
         node, out_file = resource_pool[output]
+        print('hi 2', b)
         workflow.connect(node, out_file, ds, output)
+        b=b+1
 
     plugin_args = { 'n_procs' : proc_mem[0],'memory_gb': proc_mem[1]}
 
 
     if run == True:
+        print('hi 1')
+        print(plugin_args)
         workflow.run(plugin='MultiProc', plugin_args= plugin_args)
-                        # {'n_procs': 1})
+        print('hi 2', b)               # {'n_procs': 1})
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
+        print('hi 3', b)
         return outpath
     else:
         return workflow, workflow.base_dir

@@ -24,7 +24,6 @@ from basc import create_basc, \
 
 import RunFile as RunFile
 
-#from
               
             
 __all__ = [       'timeseries_bootstrap', \
@@ -36,7 +35,7 @@ __all__ = [       'timeseries_bootstrap', \
                   'individual_stability_matrix', \
                   'expand_ism', \
                   'compare_stability_matrices', \
-                  'data_compression',
+                  'data_compression', \
                   
                   'create_basc', \
                   'nifti_individual_stability', \

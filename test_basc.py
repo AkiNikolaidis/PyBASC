@@ -166,6 +166,158 @@ def test_cross_cluster_individual_stability_matrix():
 
     return ism
 
+
+def test_expand_ism_options():
+    
+    import time
+    import random
+    import pandas as pd
+    import numpy as np
+    
+    n=60
+    k=55
+    i=0
+    vec1=[]
+    for x in range(0, n):
+       vec1.append(random.randint(0, k-1))
+    
+    temp=np.random.random((k,k))
+    vec1=np.array(vec1)
+    sizevec1=len(vec1)
+    matshape=(sizevec1,sizevec1)
+    target_mat=np.zeros(matshape)
+    
+    
+    source_mat=temp*temp.T
+    np.fill_diagonal(source_mat, 1)
+    transform_mat=np.zeros((len(source_mat),len(target_mat)))
+    
+    
+    #Slow Solution
+    matrixtime = time.time()
+    for row in range(0,target_mat.shape[0]):
+        #print 'row is ', row
+        for column in range(0,target_mat.shape[1]):
+    
+            #print 'column is', column
+            if (row == column):
+                target_mat[row,column]=1
+            else:
+                target_mat[row,column] = source_mat.item(int(vec1[row]), int(vec1[column]))
+            
+    print((time.time() - matrixtime))
+    target_mat_slow=target_mat
+    
+    #XU MACKENZIE SOLUTION
+
+    target_mat=np.zeros(matshape)
+    matrixtime = time.time()
+
+    for i in range(0,len(target_mat)):
+      transform_mat[vec1[i],i]=1
+    
+    temp=np.dot(source_mat,transform_mat)
+    target_mat=np.dot(temp.T,transform_mat)
+    target_mat_XM=target_mat
+    target_mat=np.zeros(matshape)
+    XM_time= time.time() - matrixtime
+    print((time.time() - matrixtime))
+    
+    #Older 'fast' solution
+    matrixtime = time.time()
+    for row in range(0,source_mat.shape[0]):
+        #print('row is ', row)
+        #for column in range(0, source_mat.shape[1]):
+        for column in range(0, row):   
+            rowmatch = np.array([vec1==row])
+            rowmatch = rowmatch*1
+    
+            colmatch = np.array([vec1==column])
+            colmatch = colmatch*1
+    
+            match_matrix=rowmatch*colmatch.T
+            target_mat=target_mat+(match_matrix*source_mat[row,column])
+    
+    print((time.time() - matrixtime))
+    target_mat_fast=target_mat
+    target_mat=np.zeros(matshape)
+    
+    target_mat_slow==target_mat_fast
+    target_mat_fast==target_mat_XM
+    target_mat_slow==target_mat_XM
+    
+def test_data_compress_expand():
+    import os
+    import numpy as np
+    import nibabel as nb
+    import utils
+    import pandas as pd
+    import sklearn as sk
+    
+    #Setup
+    subject_file = home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
+    roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
+    roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
+    n_bootstraps=100
+    n_clusters=2
+    output_size=20
+    cross_cluster=True
+    cbb_block_size=None
+    affinity_threshold=0.5
+    
+    print( 'Calculating individual stability matrix of:', subject_file)
+
+
+    data = nb.load(subject_file).get_data().astype('float32')
+    print( 'Data Loaded')
+
+    if (roi2_mask_file != None):
+        print( 'Setting up NIS')
+        roi_mask_file_nb = nb.load(roi_mask_file)
+        roi2_mask_file_nb= nb.load(roi2_mask_file)
+
+        roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+        roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
+
+
+        roi1data = data[roi_mask_nparray]
+        roi2data = data[roi2_mask_nparray]
+        
+        #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
+        roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
+        roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
+        
+        print( 'Compressing data')
+        data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
+        Y1_compressed = data_dict1['data']
+        Y1_compressed = Y1_compressed.T
+        Y1_labels = pd.DataFrame(data_dict1['labels'])
+        Y1_labels=np.array(Y1_labels)
+        print( 'Y1 compressed')
+        
+        print( 'Compressing Y2')
+
+        data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size)
+        Y2_compressed = data_dict2['data']
+        Y2_compressed=Y2_compressed.T
+        Y2_labels = pd.DataFrame(data_dict2['labels'])
+        print( 'Y2 compressed')
+        
+        print('Going into ism')
+        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, Y2_compressed, cross_cluster, cbb_block_size, affinity_threshold)
+        #ism=ism/n_bootstraps # was already done in ism
+
+        
+        print('Expanding ism')
+        voxel_num=roi1data.shape[0]
+        voxel_ism = utils.expand_ism(ism, Y1_labels)
+      
+        
+        #voxel_ism=voxel_ism*100 # was already done in ism
+        voxel_ism=voxel_ism.astype("uint8")
+    
+
+
 def test_nifti_individual_stability():
 
     subject_file = home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
@@ -223,7 +375,7 @@ def new_test_group_stability_matrix():
     indiv_stability_list=[]
     
     for i in range(ism_dataset.shape[0]):
-        ism_dataset[i] = utils.individual_stability_matrix(blobs + 0.2*np.random.randn(blobs.shape[0], blobs.shape[1]), 10, 3, affinity_threshold = 0.0)
+        ism_dataset[i] = utils.individual_stability_matrix(blobs + 0.2*np.random.randn(blobs.shape[0], blobs.shape[1]), bootstrap, 3, affinity_threshold = 0.0)
         f = 'ism_dataset_%i.npy' % i
         indiv_stability_list.append(f)
         np.save(f, ism_dataset[i])
@@ -233,7 +385,7 @@ def new_test_group_stability_matrix():
     n_clusters=3
 
     
-    G = basc.map_group_stability(indiv_stability_list, 10, 3)
+    G = basc.map_group_stability(indiv_stability_list, n_bootstraps, n_clusters)
     
     return G
     
@@ -298,8 +450,8 @@ def test_individual_group_clustered_maps():
                         home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
 
     roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
-    dataset_bootstraps=50
-    timeseries_bootstraps=10
+    dataset_bootstraps=5
+    timeseries_bootstraps=5
     n_clusters=3
     output_size=10
     bootstrap_list=list(range(0,dataset_bootstraps))
@@ -307,22 +459,22 @@ def test_individual_group_clustered_maps():
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     cbb_block_size=None
     affinity_threshold= 0.5 #* len(subject_file_list)
-    out_dir= home + '/BASC_outputs/testing1'
+    out_dir= home + '/BASC_outputs/testing3'
     run=True
     ismfile=[]
     for i in range(0,len(subject_file_list)):
         temp = basc.nifti_individual_stability(subject_file_list[i], roi_mask_file, timeseries_bootstraps, n_clusters, output_size, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
+        #temp=temp/timeseries_bootstraps
         ismfile.append(temp)
-    
+        
     G_file=[]
     for i in range(0,dataset_bootstraps):
         temp2= map_group_stability(ismfile, n_clusters, bootstrap_list, stratification=None)
         G_file.append(temp2)
         
-    G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file= basc.join_group_stability(ismfile, G_file, dataset_bootstraps, n_clusters)
-
-
-    icvs=basc.individual_group_clustered_maps(ismfile, clusters_G, roi_mask_file)
+    G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(ismfile, G_file, dataset_bootstraps, n_clusters)
+    #k_mask,k_mask_file
+    icvs, cluster_voxel_scores, icvs_file, cluster_voxel_scores_file  =basc.individual_group_clustered_maps(ismfile, clusters_G, roi_mask_file)
 
     return icvs, G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
 
@@ -338,22 +490,22 @@ def test_basc_workflow_runner():
     #import utils
     subject_file_list= [home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
                         home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub3/Func_Quarter_Res.nii.gz']#,]
-                        #home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        #home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        #home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        #home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
+                        home + '/git_repo/BASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
 
     roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
-    dataset_bootstraps=50
-    timeseries_bootstraps=10
-    n_clusters=7
+    dataset_bootstraps=20
+    timeseries_bootstraps=20
+    n_clusters=4
     output_size=10
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/test_init8'
+    out_dir= home + '/BASC_outputs/outputs_test3g2'
     run=True
     
     
@@ -361,6 +513,38 @@ def test_basc_workflow_runner():
     basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
+#%%
+def heavy_test_basc_workflow_runner():
+
+    from basc_workflow_runner import run_basc_workflow
+    import utils
+    subject_file_list=    ['/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060280/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060384/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060429/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060503/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060603/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060864/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz']
+
+    proc_mem= [2,5] #first is number of proc , second total number of mem
+
+    roi_mask_file=home + '/git_repo/basc/masks/BG_3mm.nii.gz'
+    dataset_bootstraps=5
+    timeseries_bootstraps=100
+    n_clusters=2
+    output_size=400
+    bootstrap_list=list(range(0,dataset_bootstraps))
+    cross_cluster=True
+    roi2_mask_file=home + '/git_repo/basc/masks/yeo2_3mm.nii.gz'
+    affinity_threshold= [0.5] * len(subject_file_list)
+    out_dir= home + '/BASC_outputs/3mmTest_3_2'
+    run=True
+    
+    
+
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+
+
+#%%
 
 
 
@@ -409,67 +593,10 @@ def test_compare_stability_matrices():
 
 #%%
 
-def test_basc_workflow_runner():
-
-    from basc_workflow_runner import run_basc_workflow
-    import utils
-    subject_file_list=    ['/Users/aki.nikolaidis/BGDev_SampleData/A00060280/reduced100.nii.gz',
-                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060280/reduced100.nii.gz',
-                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060280/reduced100.nii.gz',
-                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060384/reduced100.nii.gz',
-                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060384/reduced100.nii.gz',
-                           '/Users/aki.nikolaidis/BGDev_SampleData/A00060384/reduced100.nii.gz']
-
-    roi_mask_file=home + '/git_repo/basc/masks/BG.nii.gz'
-    dataset_bootstraps=10
-    timeseries_bootstraps=50
-    n_clusters=4
-    output_size=500
-    bootstrap_list=list(range(0,dataset_bootstraps))
-    cross_cluster=True
-    roi2_mask_file=home + '/git_repo/basc/masks/yeo_2.nii.gz'
-    affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/clusterCorrTest'
-    run=True
-    
-    
-
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 
 
-
-
-def heavy_basc_workflow_test():
-
-    from basc_workflow_runner import run_basc_workflow
-    import utils
-
-    subject_file_list=['/Users/aki.nikolaidis/BGDev_SampleData/A00060846/bandpassed_demeaned_filtered_antswarp.nii.gz',
-                         '/Users/aki.nikolaidis/BGDev_SampleData/A00060603/bandpassed_demeaned_filtered_antswarp.nii.gz',
-                         '/Users/aki.nikolaidis/BGDev_SampleData/A00060503/bandpassed_demeaned_filtered_antswarp.nii.gz',
-                         '/Users/aki.nikolaidis/BGDev_SampleData/A00060429/bandpassed_demeaned_filtered_antswarp.nii.gz',
-                         '/Users/aki.nikolaidis/BGDev_SampleData/A00060384/bandpassed_demeaned_filtered_antswarp.nii.gz',
-                         '/Users/aki.nikolaidis/BGDev_SampleData/A00060280/bandpassed_demeaned_filtered_antswarp.nii.gz']
-
-
-    roi_mask_file=home + '/git_repo/basc/masks/BG.nii.gz'
-   
-    dataset_bootstraps=50
-    timeseries_bootstraps=10
-    n_clusters=2
-    output_size=10
-    cross_cluster=True
-    
-    roi2_mask_file=home + '/git_repo/basc/masks/yeo_2.nii.gz'
-    
-    affinity_threshold= [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
-    out_dir= home + '/BASC_outputs'
-    run=True
-    
-
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 def NED_heavy_basc_workflow_test():
 #%%

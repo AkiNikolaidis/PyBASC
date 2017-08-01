@@ -179,7 +179,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     import scipy as sp
     import time 
     
-    print('Creating CLustering')
+    print('Creating Clustering')
     
     clustertime= time.time()
     X = np.array(X)
@@ -399,6 +399,10 @@ def cluster_matrix_average(M, cluster_assignments):
 
 def compare_stability_matrices(ism1, ism2):
     import scipy as sp
+    import sklearn as sk
+
+    ism1=sk.preprocessing.normalize(ism1,norm='l2')
+    ism2=sk.preprocessing.normalize(ism2,norm='l2')
     distance=sp.spatial.distance.correlation(ism1.ravel(), ism2.ravel())
     similarity= 1-distance
     return similarity
@@ -467,6 +471,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
             
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = 'correlation', affinity_threshold = affinity_threshold)[:,np.newaxis])
+        
         S /= n_bootstraps
         
         S=S*100
@@ -506,7 +511,6 @@ def expand_ism(ism, Y1_labels):
    voxel_ism=target_mat
             
    return voxel_ism
-
 
 
 def data_compression(fmri_masked, mask_img, mask_np, output_size):
