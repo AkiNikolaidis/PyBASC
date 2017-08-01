@@ -459,7 +459,7 @@ def test_individual_group_clustered_maps():
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     cbb_block_size=None
     affinity_threshold= 0.5 #* len(subject_file_list)
-    out_dir= home + '/BASC_outputs/testing3'
+    out_dir= home + '/BASC_outputs/testing4'
     run=True
     ismfile=[]
     for i in range(0,len(subject_file_list)):
@@ -473,8 +473,9 @@ def test_individual_group_clustered_maps():
         G_file.append(temp2)
         
     G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(ismfile, G_file, dataset_bootstraps, n_clusters)
-    #k_mask,k_mask_file
-    icvs, cluster_voxel_scores, icvs_file, cluster_voxel_scores_file  =basc.individual_group_clustered_maps(ismfile, clusters_G, roi_mask_file)
+    #k_mask,k_mask_file, icvs, cluster_voxel_scores,
+    for i in range(0,len(subject_file_list)):
+        icvs_file, cluster_voxel_scores_file, k_mask_file  =basc.individual_group_clustered_maps(ismfile[i], clusters_G, roi_mask_file)
 
     return icvs, G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
 
@@ -513,7 +514,7 @@ def test_basc_workflow_runner():
     basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
-
+#%%
 def heavy_test_basc_workflow_runner():
 #%%
     from basc_workflow_runner import run_basc_workflow
@@ -529,14 +530,14 @@ def heavy_test_basc_workflow_runner():
 
     roi_mask_file=home + '/git_repo/basc/masks/BG_3mm.nii.gz'
     dataset_bootstraps=5
-    timeseries_bootstraps=100
+    timeseries_bootstraps=5
     n_clusters=2
     output_size=400
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
     roi2_mask_file=home + '/git_repo/basc/masks/yeo2_3mm.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/3mmTest_3_2ga'
+    out_dir= home + '/BASC_outputs/IGCM_Test2'
     run=True
     
     

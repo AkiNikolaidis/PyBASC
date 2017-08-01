@@ -115,24 +115,27 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     import utils
     import basc
 
-    indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
-
-    nSubjects = indiv_stability_set.shape[0]
+    #indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
+    indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
+    indiv_stability_set = indiv_stability_mat[0]
+    #nSubjects = indiv_stability_set.shape[0]
     nVoxels = indiv_stability_set.shape[1]
 
     cluster_ids = np.unique(clusters_G)
     nClusters = cluster_ids.shape[0]
 
-    cluster_voxel_scores = np.zeros((nSubjects,nClusters, nVoxels))
-    k_mask=np.zeros((nSubjects,nVoxels, nVoxels))
-    for i in range(nSubjects):
-        cluster_voxel_scores[i,:,:], k_mask[i,:,:] = utils.cluster_matrix_average(indiv_stability_set[i], clusters_G)
+#    cluster_voxel_scores = np.zeros((nSubjects,nClusters, nVoxels))
+#    k_mask=np.zeros((nSubjects,nVoxels, nVoxels))
+    cluster_voxel_scores = np.zeros((nClusters, nVoxels))
+    k_mask=np.zeros((nVoxels, nVoxels))
+    #for i in range(nSubjects):
+    cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(indiv_stability_set, clusters_G)
 
     icvs = []
     icvs_idx = 0
     #for i in range(nSubjects):
     for k in cluster_ids:
-        icvs.append(basc.ndarray_to_vol(cluster_voxel_scores[:,icvs_idx], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k))
+        icvs.append(basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k))
         icvs_idx += 1
  
     print( 'saving files: icvs')
@@ -476,8 +479,9 @@ def create_basc(proc_mem, name='basc'):
                                               'ism_gsm_corr_file'],
                                 function=join_group_stability),
                   name='join_group_stability')
-    
-    igcm = pe.Node(util.Function(input_names=['indiv_stability_list',
+  
+    #update this to take in subject file? or indiv stability?
+    igcm = pe.MapNode(util.Function(input_names=['indiv_stability_list',
                                               'clusters_G',
                                               'roi_mask_file'],
                                  output_names=[#'icvs,'
@@ -486,8 +490,13 @@ def create_basc(proc_mem, name='basc'):
                                                'cluster_voxel_scores_file',
                                                'k_mask_file'],
                                  function=individual_group_clustered_maps),
-                   name='individual_group_clustered_maps')
-#
+                   name='individual_group_clustered_maps',
+                   iterfield='indiv_stability_list')
+    
+    igcm.interface.estimated_memory_gb = int(proc_mem[1]/proc_mem[0])
+
+
+
     gs_cluster_vol = pe.Node(util.Function(input_names=['data_array',
                                                         'roi_mask_file',
                                                         'sample_file',
