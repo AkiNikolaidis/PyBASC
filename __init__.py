@@ -20,9 +20,9 @@ from basc import create_basc, \
                  ndarray_to_vol, \
                  individual_group_clustered_maps
             
-#from BASC.basc_workflow_runner import run_basc_workflow as run_basc_workflow
+from basc_workflow_runner import run_basc_workflow
 
-import RunFile as RunFile
+#import RunFile as RunFile
 
               
             

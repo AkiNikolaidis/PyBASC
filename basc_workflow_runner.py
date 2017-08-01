@@ -85,24 +85,17 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
     ds.inputs.base_directory = workflow_dir
     
-    b=1
     for output in resource_pool.keys():
-        print('hi 1')
         node, out_file = resource_pool[output]
-        print('hi 2', b)
         workflow.connect(node, out_file, ds, output)
-        b=b+1
 
-    plugin_args = { 'n_procs' : proc_mem[0],'memory_gb': proc_mem[1]}
+    plugin_args = { 'n_procs' : int(proc_mem[0]),'memory_gb': int(proc_mem[1])}
 
 
     if run == True:
-        print('hi 1')
-        print(plugin_args)
         workflow.run(plugin='MultiProc', plugin_args= plugin_args)
-        print('hi 2', b)               # {'n_procs': 1})
+                     # {'n_procs': 1})
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
-        print('hi 3', b)
         return outpath
     else:
         return workflow, workflow.base_dir

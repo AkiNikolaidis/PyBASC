@@ -513,9 +513,9 @@ def test_basc_workflow_runner():
     basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
-#%%
-def heavy_test_basc_workflow_runner():
 
+def heavy_test_basc_workflow_runner():
+#%%
     from basc_workflow_runner import run_basc_workflow
     import utils
     subject_file_list=    ['/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060280/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
@@ -525,7 +525,7 @@ def heavy_test_basc_workflow_runner():
                            '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060603/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
                            '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060864/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz']
 
-    proc_mem= [2,5] #first is number of proc , second total number of mem
+    proc_mem= [3,6] #first is number of proc , second total number of mem
 
     roi_mask_file=home + '/git_repo/basc/masks/BG_3mm.nii.gz'
     dataset_bootstraps=5
@@ -536,7 +536,7 @@ def heavy_test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file=home + '/git_repo/basc/masks/yeo2_3mm.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/3mmTest_3_2'
+    out_dir= home + '/BASC_outputs/3mmTest_3_2ga'
     run=True
     
     

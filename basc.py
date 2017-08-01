@@ -444,9 +444,11 @@ def create_basc(proc_mem, name='basc'):
                      name='individual_stability_matrices',
                      iterfield=['subject_file',
                                 'affinity_threshold'])
-    nis.interface.num_threads = proc_mem[0]
-    nis.interface.estimated_memory_gb = int(proc_mem[1]/proc_mem[0])
     
+#    nis.interface.num_threads = proc_mem[0]
+    nis.interface.estimated_memory_gb = int(proc_mem[1]/proc_mem[0])
+
+
     nis.inputs.cbb_block_size=None
 
     
@@ -459,7 +461,7 @@ def create_basc(proc_mem, name='basc'):
                                 name='map_group_stability',
                                 iterfield='bootstrap_list')
     
-    mgsm.interface.num_threads = proc_mem[0]
+    #mgsm.interface.num_threads = proc_mem[0]
     mgsm.interface.estimated_memory_gb = int(proc_mem[1]/proc_mem[0])
 
     jgsm= pe.Node(util.Function(input_names=['indiv_stability_list',
