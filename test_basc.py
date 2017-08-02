@@ -506,7 +506,7 @@ def test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/outputs_test3g2'
+    out_dir= home + '/BASC_outputs/outputs_savetest'
     run=True
     
     

@@ -65,6 +65,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
 
     # Cluster labels normally start from 0, start from 1 to provide contrast when viewing between 0 voxels
     clusters_G += 1
+    clusters_G=clusters_G.astype("uint8")
     
 
     
@@ -143,10 +144,12 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     np.save(icvs_file, icvs)
     
     print( 'saving files: cluster_voxel_scores')
+    cluster_voxel_scores=cluster_voxel_scores.astype("uint8")
     cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
     np.save(cluster_voxel_scores_file, cluster_voxel_scores)
     
     print( 'saving files: k_mask')
+    k_mask=k_mask.astype("bool_")
     k_mask_file = os.path.join(os.getcwd(), 'k_mask.npy')
     np.save(k_mask_file, k_mask)
 

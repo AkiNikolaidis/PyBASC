@@ -370,7 +370,7 @@ def cluster_matrix_average(M, cluster_assignments):
     
 
     if np.any(np.isnan(M)):
-        np.save('bad_M.npz', M)
+        #np.save('bad_M.npz', M)
         raise ValueError('M matrix has a nan value')
 
     cluster_ids = np.unique(cluster_assignments)
