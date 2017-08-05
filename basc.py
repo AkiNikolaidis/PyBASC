@@ -62,7 +62,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
  
     print( 'calculating cluster_voxel scores' )
         
-
+    print( '1')
     # Cluster labels normally start from 0, start from 1 to provide contrast when viewing between 0 voxels
     clusters_G += 1
     clusters_G=clusters_G.astype("uint8")
@@ -72,12 +72,12 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     
     
     indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
-    
+    print( '2')
     ism_gsm_corr=np.zeros(len(indiv_stability_list))
     
     for i in range(0,len(indiv_stability_list)):
-        ism_gsm_corr[i]=utils.compare_stability_matrices(indiv_stability_set[i].ravel(), G.ravel())
-    
+        ism_gsm_corr[i]=utils.compare_stability_matrices(indiv_stability_set[i], G)
+    print( '3')
     print( 'saving files: G')
     gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(gsm_file, G)
@@ -518,7 +518,7 @@ def create_basc(proc_mem, name='basc'):
 
 
 
- #run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, k_clusters, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+#run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, k_clusters, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 #node, out_file = resource_pool['anat_reorient']
 #workflow.connect([

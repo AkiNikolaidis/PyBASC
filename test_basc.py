@@ -506,7 +506,7 @@ def test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/outputs_savetest'
+    out_dir= home + '/BASC_outputs/outputs_savetest3'
     run=True
     
     
@@ -546,12 +546,6 @@ def heavy_test_basc_workflow_runner():
 
 
 #%%
-
-
-
-
-
-
 
 def test_compare_stability_matrices():
     
@@ -629,8 +623,8 @@ def NED_heavy_basc_workflow_test():
     '/data/Projects/anikolai/rockland_downsampled/A00031219/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00031410/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00031411/3mm_resampled.nii.gz',
-    '/data/Projects/anikolai/rockland_downsampled/A00031578/3mm_resampled.nii.gz']#,
-    a=['/data/Projects/anikolai/rockland_downsampled/A00031881/3mm_resampled.nii.gz',
+    '/data/Projects/anikolai/rockland_downsampled/A00031578/3mm_resampled.nii.gz',
+    '/data/Projects/anikolai/rockland_downsampled/A00031881/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00032008/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00032817/3mm_resampled.nii.gz',
     '/data/Projects/anikolai/rockland_downsampled/A00033231/3mm_resampled.nii.gz',
