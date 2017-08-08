@@ -268,11 +268,11 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
     print("Calculating pairwise distances between areas")
     
     clustertime=time.time()
-    dist_btwn_df_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'euclidean'))
+    dist_btwn_df_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
 
 
 
-    dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = 'euclidean')
+    dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = 'correlation')
     dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
 
