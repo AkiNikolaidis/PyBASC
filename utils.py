@@ -277,7 +277,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
 
     sim_matrix=1-dist_matrix
 
-    sim_matrix[sim_matrix<0.3]=0
+    sim_matrix[sim_matrix<affinity_threshold]=0
 
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
     
