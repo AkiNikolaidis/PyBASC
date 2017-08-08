@@ -537,7 +537,7 @@ def heavy_test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file=home + '/git_repo/basc/masks/yeo2_3mm.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/IGCM_Test4'
+    out_dir= home + '/BASC_outputs/IGCM_Test5'
     run=True
     
     

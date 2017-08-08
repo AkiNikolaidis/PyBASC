@@ -29,7 +29,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, strati
     J=J.astype("uint8")
     
     print( 'calculating adjacency matrix')
-    G = utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation')[:,np.newaxis])
+    G = utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)[:,np.newaxis])
     print("finished calculating group stability matrix")
     
     
@@ -57,7 +57,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     G=G.astype("uint8")
 
     print( 'calculating clusters_G')
-    clusters_G = utils.cluster_timeseries(G, n_clusters, similarity_metric = 'correlation')
+    clusters_G = utils.cluster_timeseries(G, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
     #APPLY THIS METHOD TO THE INDIVIDUAL LEVEL CLUSTER
  
     print( 'calculating cluster_voxel scores' )

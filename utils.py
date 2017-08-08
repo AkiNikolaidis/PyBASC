@@ -109,7 +109,7 @@ def standard_bootstrap(dataset):
     b = np.random.randint(0, high=n-1, size=n)
     return dataset[b]
 
-def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinity_threshold = 0.0, neighbors = 10):
+def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinity_threshold = None, neighbors = 10):
     """
     Cluster a given timeseries
 
