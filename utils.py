@@ -109,7 +109,7 @@ def standard_bootstrap(dataset):
     b = np.random.randint(0, high=n-1, size=n)
     return dataset[b]
 
-def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinity_threshold = 0.0, neighbors = 10):
+def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinity_threshold = 0.0, neighbors = 10):
     """
     Cluster a given timeseries
 
@@ -175,7 +175,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     y_pred = np.dot(eigen_discrete.toarray(), np.diag(np.arange(n_clusters))).sum(1)
 
     """
-
+    from sklearn import cluster
     import scipy as sp
     import time 
     
@@ -183,7 +183,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     
     clustertime= time.time()
     X = np.array(X)
-    X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
+    X_dist = sp.spatial.distance.pdist(X, metric = 'euclidean')
     
     X_dist[np.isnan((X_dist))]=1
     X_dist = sp.spatial.distance.squareform(X_dist)
@@ -195,7 +195,6 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
 
 
-
     spectral.fit(sim_matrix)
 
     y_pred = spectral.labels_.astype(np.int)
@@ -205,7 +204,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'k_neighbors', affinit
     return y_pred
 
 
-def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
+def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affinity_threshold):
 
 
     """
@@ -259,7 +258,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html#scipy.spatial.distance.cdist
     http://scikit-learn.org/stable/modules/clustering.html#spectral-clustering
     """
-
+    from sklearn import cluster
     import scipy as sp
     import time
     from sklearn import cluster, datasets
@@ -272,7 +271,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric):
 
 
 
-    dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = 'correlation')
+    dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = 'euclidean')
     dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
 
@@ -458,7 +457,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
             cbb_block_size2 = int(np.sqrt(N2))
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             Y_b2 = utils.timeseries_bootstrap(Y2, cbb_block_size2)
-            S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = 'correlation'))
+            S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = 'correlation', affinity_threshold= affinity_threshold))
 
             
         S /= n_bootstraps

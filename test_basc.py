@@ -135,9 +135,9 @@ def test_cross_cluster_timeseries():
     offset = np.random.randn(30)
     x1 = np.random.randn(20,30) + 10*offset
     x2 = np.random.randn(10,30) + 44*np.random.randn(30)
-    sampledata1 = np.vstack((x1,x2))
-    sampledata2 = sampledata1
-    actual = cross_cluster_timeseries(sampledata1, sampledata2, 2, 'correlation')
+    data1 = np.vstack((x1,x2))
+    data2 = data1
+    actual = cross_cluster_timeseries(data1, data2, n_clusters=2, similarity_metric='correlation', affinity_threshold=0.3)
     desired = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
        1, 1, 1, 1, 1, 1, 1])
     np.testing.assert_equal(actual,desired)
@@ -506,7 +506,7 @@ def test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/outputs_savetest3'
+    out_dir= home + '/BASC_outputs/outputs_savetest4'
     run=True
     
     
@@ -537,7 +537,7 @@ def heavy_test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file=home + '/git_repo/basc/masks/yeo2_3mm.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/IGCM_Test2'
+    out_dir= home + '/BASC_outputs/IGCM_Test4'
     run=True
     
     
