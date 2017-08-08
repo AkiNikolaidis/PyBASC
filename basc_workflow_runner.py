@@ -80,6 +80,9 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     resource_pool['individual_cluster_voxel_scores_imgs'] = (basc, 'outputspec.individual_cluster_voxel_scores_imgs')
     resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
     resource_pool['k_mask'] = (basc, 'outputspec.k_mask')
+    resource_pool['ind_group_cluster_stability'] = (basc, 'outputspec.ind_group_cluster_stability')
+    resource_pool['ind_group_cluster_stability_set'] = (basc, 'outputspec.ind_group_cluster_stability_set')
+
 
 
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')

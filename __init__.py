@@ -14,7 +14,8 @@ from basc import create_basc, \
                  map_group_stability, \
                  join_group_stability, \
                  ndarray_to_vol, \
-                 individual_group_clustered_maps
+                 individual_group_clustered_maps, \
+                 post_analysis
             
 from basc_workflow_runner import run_basc_workflow
 
@@ -38,7 +39,8 @@ __all__ = [       'timeseries_bootstrap', \
                   'map_group_stability', \
                   'join_group_stability', \
                   'ndarray_to_vol', \
-                  'individual_group_clustered_maps'
+                  'individual_group_clustered_maps' \
+                  'ind_group_cluster_stability_file_list'
                  
                  ]
         

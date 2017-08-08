@@ -461,21 +461,21 @@ def test_individual_group_clustered_maps():
     affinity_threshold= 0.5 #* len(subject_file_list)
     out_dir= home + '/BASC_outputs/testing4'
     run=True
-    ismfile=[]
+    indiv_stability_list=[]
     for i in range(0,len(subject_file_list)):
         temp = basc.nifti_individual_stability(subject_file_list[i], roi_mask_file, timeseries_bootstraps, n_clusters, output_size, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
         #temp=temp/timeseries_bootstraps
-        ismfile.append(temp)
+        indiv_stability_list.append(temp)
         
     G_file=[]
     for i in range(0,dataset_bootstraps):
-        temp2= map_group_stability(ismfile, n_clusters, bootstrap_list, stratification=None)
+        temp2= map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, stratification=None)
         G_file.append(temp2)
         
-    G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(ismfile, G_file, dataset_bootstraps, n_clusters)
+    G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(indiv_stability_list, G_file, dataset_bootstraps, n_clusters)
     #k_mask,k_mask_file, icvs, cluster_voxel_scores,
     for i in range(0,len(subject_file_list)):
-        icvs_file, cluster_voxel_scores_file, k_mask_file  =basc.individual_group_clustered_maps(ismfile[i], clusters_G, roi_mask_file)
+        icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file =basc.individual_group_clustered_maps(indiv_stability_list[i], clusters_G, roi_mask_file)
 
     return icvs, G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
 

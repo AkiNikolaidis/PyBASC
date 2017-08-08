@@ -44,7 +44,7 @@ run=True
 
 for n_clusters in n_clusters_list:
     for output_size in output_sizes:
-        out_dir= home + '/BASC_outputs/multi_set4/dim_' + str(output_size) + '_' + str(n_clusters) + '_clusters'
+        out_dir= home + '/BASC_outputs/multi_set9/dim_' + str(output_size) + '_' + str(n_clusters) + '_clusters'
         basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
         ism_gsm_stability.append(np.load(out_dir + '/workflow_output/ism_gsm_corr_file/ism_gsm_corr.npy'))
 
