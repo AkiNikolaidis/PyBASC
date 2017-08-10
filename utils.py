@@ -183,20 +183,24 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     
     clustertime= time.time()
     X = np.array(X)
-    X_dist = sp.spatial.distance.pdist(X, metric = 'euclidean')
-    
+    X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
+    print(X_dist)
+    print('Creating Clustering2')
     X_dist[np.isnan((X_dist))]=1
+    print(X_dist)
     X_dist = sp.spatial.distance.squareform(X_dist)
-    
+    print(X_dist)
+    print('Creating Clustering3')
     sim_matrix=1-X_dist
-    #sim_matrix[sim_matrix<affinity_threshold]=0
-
-    
+    sim_matrix[sim_matrix<affinity_threshold]=0
+    print('Creating Clusterin4')
+    print(sim_matrix)
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-
-
+    print('Creating Clusterin5')
+   
+    plt.imshow(sim_matrix)
     spectral.fit(sim_matrix)
-
+    print('Creating Clustering6')
     y_pred = spectral.labels_.astype(np.int)
     
     print('Creating Clusters took ', (time.time()- clustertime), ' seconds')
@@ -267,24 +271,27 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     print("Calculating pairwise distances between areas")
     
     clustertime=time.time()
-    dist_btwn_df_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
-    #dist_btwn_df_1_2[dist_btwn_df_1_2<affinity_threshold]=0
+    dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
+    sim_btwn_data_1_2=1-dist_btwn_data_1_2
+    sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
+    print("Calculating Cross-clustering2")
 
-
-    dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = 'euclidean')
-    dist_of_1[np.isnan((dist_of_1))]=1
+    dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'correlation')
+    dist_of_1[np.isnan((dist_of_1))]=0
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
-
+    print("Calculating Cross-clustering3")
     sim_matrix=1-dist_matrix
     
     #matrix must be sparse
     sim_matrix[sim_matrix<affinity_threshold]=0
-
+    print("Calculating Cross-clustering4")
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-    
+    print("Calculating Cross-clustering5")
     print("Clustering")
+    print(sim_matrix)
+    plt.imshow(sim_matrix)
     spectral.fit(sim_matrix)
-   
+    print("Calculating Cross-clustering6")
 
     y_pred = spectral.labels_.astype(np.int)
     
