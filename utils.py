@@ -189,7 +189,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     X_dist = sp.spatial.distance.squareform(X_dist)
     
     sim_matrix=1-X_dist
-    sim_matrix[sim_matrix<affinity_threshold]=0
+    #sim_matrix[sim_matrix<affinity_threshold]=0
 
     
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
@@ -268,7 +268,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     
     clustertime=time.time()
     dist_btwn_df_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
-    dist_btwn_df_1_2[dist_btwn_df_1_2<affinity_threshold]=0
+    #dist_btwn_df_1_2[dist_btwn_df_1_2<affinity_threshold]=0
 
 
     dist_of_1 = sp.spatial.distance.pdist(dist_btwn_df_1_2, metric = 'euclidean')
