@@ -75,7 +75,7 @@ def timeseries_bootstrap(tseries, block_size):
     import numpy as np
     import time
     
-    print('Calculating Timeseries Bootstrap')
+    #print('Calculating Timeseries Bootstrap')
     bootstraptime=time.time()
     
     k = int(np.ceil(float(tseries.shape[0])/block_size))
@@ -85,7 +85,7 @@ def timeseries_bootstrap(tseries, block_size):
     block_mask = (blocks + block_offsets).flatten('F')[:tseries.shape[0]]
     block_mask = np.mod(block_mask, tseries.shape[0])
     
-    print('Finished: ', (time.time() - bootstraptime), ' seconds')
+    #print('Finished: ', (time.time() - bootstraptime), ' seconds')
     return tseries[block_mask.astype('int'), :]
 
 def standard_bootstrap(dataset):
@@ -179,31 +179,31 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     import scipy as sp
     import time 
     
-    print('Creating Clustering')
+    #print('Creating Clustering')
     
     clustertime= time.time()
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
-    print(X_dist)
-    print('Creating Clustering2')
+    #print(X_dist)
+    #print('Creating Clustering2')
     X_dist[np.isnan((X_dist))]=1
-    print(X_dist)
+    #print(X_dist)
     X_dist = sp.spatial.distance.squareform(X_dist)
-    print(X_dist)
-    print('Creating Clustering3')
+    #print(X_dist)
+    #print('Creating Clustering3')
     sim_matrix=1-X_dist
     sim_matrix[sim_matrix<affinity_threshold]=0
-    print('Creating Clusterin4')
-    print(sim_matrix)
+    #print('Creating Clusterin4')
+    #print(sim_matrix)
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-    print('Creating Clusterin5')
+    #print('Creating Clusterin5')
    
     plt.imshow(sim_matrix)
     spectral.fit(sim_matrix)
-    print('Creating Clustering6')
+    #print('Creating Clustering6')
     y_pred = spectral.labels_.astype(np.int)
     
-    print('Creating Clusters took ', (time.time()- clustertime), ' seconds')
+    #print('Creating Clusters took ', (time.time()- clustertime), ' seconds')
     
     return y_pred
 
@@ -267,35 +267,39 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     import time
     from sklearn import cluster, datasets
 
-    print("Calculating Cross-clustering")
-    print("Calculating pairwise distances between areas")
+    #print("Calculating Cross-clustering")
+    #print("Calculating pairwise distances between areas")
     
     clustertime=time.time()
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
     sim_btwn_data_1_2=1-dist_btwn_data_1_2
     sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
-    print("Calculating Cross-clustering2")
+    sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
+
+    #print("Calculating Cross-clustering2")
 
     dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'correlation')
     dist_of_1[np.isnan((dist_of_1))]=0
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
-    print("Calculating Cross-clustering3")
+    #print("Calculating Cross-clustering3")
     sim_matrix=1-dist_matrix
+
     
     #matrix must be sparse
     sim_matrix[sim_matrix<affinity_threshold]=0
-    print("Calculating Cross-clustering4")
+    sim_matrix[sim_matrix>1]=1
+    #print("Calculating Cross-clustering4")
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-    print("Calculating Cross-clustering5")
-    print("Clustering")
-    print(sim_matrix)
+    #print("Calculating Cross-clustering5")
+    #print("Clustering")
+    #print(sim_matrix)
     plt.imshow(sim_matrix)
     spectral.fit(sim_matrix)
-    print("Calculating Cross-clustering6")
+    #print("Calculating Cross-clustering")
 
     y_pred = spectral.labels_.astype(np.int)
     
-    print("Clustering took ", (time.time() - clustertime), ' seconds')
+    #print("Clustering took ", (time.time() - clustertime), ' seconds')
     return y_pred
 
 
@@ -442,7 +446,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
     
     import utils 
     import time
-    print("Calculating Individual Stability Matrix")
+    #print("Calculating Individual Stability Matrix")
     ismtime=time.time()
    
     
@@ -472,7 +476,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
         
         S=S*100
         S=S.astype("uint8")
-        print('ISM calculation took', (time.time() - ismtime), ' seconds')
+        #print('ISM calculation took', (time.time() - ismtime), ' seconds')
     else:
         for bootstrap_i in range(n_bootstraps):
             
@@ -483,7 +487,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
         
         S=S*100
         S=S.astype("uint8")
-        print('ISM calculation took', (time.time() - ismtime), ' seconds')
+        #print('ISM calculation took', (time.time() - ismtime), ' seconds')
     return S
 
 
@@ -514,7 +518,7 @@ def expand_ism(ism, Y1_labels):
     
     
    XM_time= time.time() - matrixtime
-   print('Matrix expansion took', (time.time() - matrixtime), ' seconds')
+   #print('Matrix expansion took', (time.time() - matrixtime), ' seconds')
    voxel_ism=target_mat
             
    return voxel_ism
@@ -555,13 +559,13 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
     ward = FeatureAgglomeration(n_clusters=output_size, connectivity=connectivity,
                             linkage='ward')
     ward.fit(fmri_masked)
-    print("Ward agglomeration compressing voxels into clusters: %.2fs" % (time.time() - start))
+    #print("Ward agglomeration compressing voxels into clusters: %.2fs" % (time.time() - start))
 
 
     labels = ward.labels_
 
-    print ('Extracting reduced Dimension Data')
+    #print ('Extracting reduced Dimension Data')
     data_reduced = ward.transform(fmri_masked)
     fmri_masked=[]
-    print('Data compression took ', (time.time()- datacompressiontime), ' seconds')
+    #print('Data compression took ', (time.time()- datacompressiontime), ' seconds')
     return {'data':data_reduced, 'labels':labels}

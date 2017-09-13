@@ -167,6 +167,153 @@ def test_cross_cluster_individual_stability_matrix():
     return ism
 
 
+def test_co_clustering():
+    
+    import numpy as np
+    import nibabel as nb
+    from matplotlib import pyplot as plt
+    import sklearn as sk
+    from sklearn.datasets import make_biclusters
+    from sklearn.datasets import samples_generator as sg
+    from sklearn.cluster.bicluster import SpectralCoclustering
+    from sklearn.metrics import consensus_score
+    
+    
+    # REAL DATA
+    subject_file= '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060280/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz'
+    roi_mask_file=home + '/git_repo/basc/masks/BG_3mm.nii.gz'
+    roi2_mask_file=home + '/git_repo/basc/masks/yeo2_3mm.nii.gz'
+
+    data = nb.load(subject_file).get_data().astype('float32')
+    print( 'Data Loaded')
+
+    print( 'Setting up NIS')
+    roi_mask_file_nb = nb.load(roi_mask_file)
+    roi2_mask_file_nb= nb.load(roi2_mask_file)
+
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+    roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
+
+
+    roi1data = data[roi_mask_nparray]
+    roi2data = data[roi2_mask_nparray]
+    
+    #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
+    roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
+    roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
+    
+    dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(roi1data, roi2data, metric = 'correlation'))
+    sim_btwn_data_1_2=1-dist_btwn_data_1_2
+    sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
+    sim_btwn_data_1_2[sim_btwn_data_1_2<0]=0
+
+    sim_btwn_data_1_2=sim_btwn_data_1_2+(np.random.rand(len(sim_btwn_data_1_2),len(sim_btwn_data_1_2[1,:])))/100
+    sim_btwn_data_1_2[sim_btwn_data_1_2>1]=1
+    
+    sum(sum(sim_btwn_data_1_2==np.inf))
+    sum(sum(sim_btwn_data_1_2==np.nan))
+
+
+    model = SpectralCoclustering(n_clusters=5, random_state=0, n_init=100)
+    model.fit(sim_btwn_data_1_2)
+    
+    fit_data = sim_btwn_data_1_2[np.argsort(model.row_labels_)]
+    fit_data = fit_data[:, np.argsort(model.column_labels_)]
+    
+    plt.matshow(fit_data, cmap=plt.cm.Blues)
+    plt.title("After biclustering; rearranged to show biclusters")
+    
+    plt.show()
+    
+    
+    
+
+    #SIMULATION DATA
+    import numpy as np
+    from matplotlib import pyplot as plt
+
+    from sklearn.datasets import make_biclusters
+    from sklearn.datasets import samples_generator as sg
+    from sklearn.cluster.bicluster import SpectralCoclustering
+    from sklearn.metrics import consensus_score
+
+    #Creating Simulated Data
+    data, rows, columns = make_biclusters(
+        shape=(300, 100), n_clusters=5, noise=5,
+        shuffle=False, random_state=0)
+    
+    plt.matshow(data, cmap=plt.cm.Blues)
+    plt.title("Original dataset")
+    
+    data, row_idx, col_idx = sg._shuffle(data, random_state=0)
+    plt.matshow(data, cmap=plt.cm.Blues)
+    plt.title("Shuffled dataset")
+    
+    
+    #Creating Model
+    model = SpectralCoclustering(n_clusters=5, random_state=0)
+    model.fit(data)
+    score = consensus_score(model.biclusters_,
+                            (rows[:, row_idx], columns[:, col_idx]))
+    
+    print("consensus score: {:.3f}".format(score))
+    
+    fit_data = data[np.argsort(model.row_labels_)]
+    fit_data = fit_data[:, np.argsort(model.column_labels_)]
+    
+    plt.matshow(fit_data, cmap=plt.cm.Blues)
+    plt.title("After biclustering; rearranged to show biclusters")
+    
+    plt.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    ####################################################################
+    ####################################################################
+    from sklearn import cluster
+    import scipy as sp
+    import time
+    from sklearn import cluster, datasets
+    import numpy as np
+    from matplotlib import pyplot as plt
+
+    from sklearn.datasets import make_biclusters
+    from sklearn.datasets import samples_generator as sg
+    from sklearn.cluster.bicluster import SpectralCoclustering
+    from sklearn.metrics import consensus_score
+    
+    data1 = generate_simple_blobs(27)
+    data2 = generate_simple_blobs(27)
+    data2 = data2[0:150,:]
+    
+
+    print("Calculating Cross-clustering")
+    print("Calculating pairwise distances between areas")
+    
+    dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(roi1data, roi2data, metric = 'correlation'))
+    sim_btwn_data_1_2=1-dist_btwn_data_1_2
+    sim_btwn_data_1_2[sim_btwn_data_1_2<0]=0
+    co_cluster=cluster.SpectralCoclustering()
+    co_cluster.fit(sim_btwn_data_1_2)
+    score = consensus_score(co_cluster.biclusters_,
+                        (rows[:, row_idx], columns[:, col_idx]))
+
+    print("consensus score: {:.3f}".format(score))
+
+    fit_data = data[np.argsort(co_cluster.row_labels_)]
+    fit_data = fit_data[:, np.argsort(co_cluster.column_labels_)]
+
+    plt.matshow(fit_data, cmap=plt.cm.Blues)
+    plt.title("After biclustering; rearranged to show biclusters")
+
+    plt.show()
+    
 def test_expand_ism_options():
     
     import time
