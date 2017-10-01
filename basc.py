@@ -65,11 +65,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     #print( '1')
     # Cluster labels normally start from 0, start from 1 to provide contrast when viewing between 0 voxels
     clusters_G += 1
-    clusters_G=clusters_G.astype("uint8")
-    
-
-    
-    
+    clusters_G=clusters_G.astype("uint8") 
     
     indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     #print( '2')
@@ -140,8 +136,22 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     icvs = []
     icvs_idx = 0
     #for i in range(nSubjects):
+    A=[]
+    B=[]
     for k in cluster_ids:
+        #import pdb; pdb.set_trace()
+        A, B = basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k)
         icvs.append(basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k))
+        B.to_filename(os.path.join(A))
+        A=[]
+        B=[]
+         #import pdb; pdb.set_trace()
+#or:
+#
+#nib.save(img, os.path.join('build','test4d.nii.gz'))
+        
+        
+        
         #ind_group_cluster_stability.append(cluster_voxel_scores[(k-1),clusters_G==k].mean())
         icvs_idx += 1
         
@@ -158,6 +168,8 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     cluster_voxel_scores=cluster_voxel_scores.astype("uint8")
     cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
     np.save(cluster_voxel_scores_file, cluster_voxel_scores)
+    
+    
     
     #print( 'saving files: k_mask')
     k_mask=k_mask.astype("bool_")
@@ -332,6 +344,7 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
         Path of the nifti file output
 
     """
+    #import pdb;pdb.set_trace()
     import nibabel as nb
     import numpy as np
     import os
@@ -354,7 +367,7 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
     img_file = os.path.join(os.getcwd(), filename)
     img.to_filename(img_file)
     
-    return img_file
+    return img_file, img
 
 
 def create_basc(proc_mem, name='basc'):
@@ -537,7 +550,7 @@ def create_basc(proc_mem, name='basc'):
                                                         'roi_mask_file',
                                                         'sample_file',
                                                         'filename'],
-                                           output_names=['img_file'],
+                                           output_names=['img_file', 'img'],
                                            function=ndarray_to_vol),
                              name='group_stability_cluster_vol')
 #
@@ -545,7 +558,7 @@ def create_basc(proc_mem, name='basc'):
                                                       'roi_mask_file',
                                                       'sample_file',
                                                       'filename'],
-                                         output_names=['img_file'],
+                                         output_names=['img_file', 'img'],
                                          function=ndarray_to_vol),
                            name='group_stability_score_vol')
 

@@ -393,12 +393,14 @@ def cluster_matrix_average(M, cluster_assignments):
         
 #        #???
         k = (cluster_assignments == cluster_id)[:, np.newaxis]
+        k=k*1
         print('Cluster %i size: %i' % (cluster_id, k.sum()))
         K = np.dot(k,k.T)
         K[np.diag_indices_from(K)] = False
         Ktemp=K*1
         K_mask=K_mask+Ktemp
         if K.sum() == 0: # Voxel with its own cluster
+            #import pdb; pdb.set_trace()
             s[k[:,0]] = 0.0
             s_idx += 1
         else:

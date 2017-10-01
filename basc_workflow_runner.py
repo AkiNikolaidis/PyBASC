@@ -71,13 +71,22 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     basc.inputs.inputspec.roi2_mask_file=roi2_mask_file
     basc.inputs.inputspec.affinity_threshold=affinity_threshold
     
+    # shitty Steve pseudo-code that is shitty
+#    thing = basc.outputs.outputspec.individual_cluster_voxel_scores_imgs
+#    print(thing)
+#    print(thing)
+#    print(thing)
+#    for filepath in basc.outputs.outputspec.individual_cluster_voxel_scores_imgs:
+#        filename = os.path.basename(filepath)
+#        resource_pool[filename] = filepath
 
     resource_pool['group_stability_matrix'] = (basc, 'outputspec.group_stability_matrix')
     resource_pool['clusters_G'] = (basc, 'outputspec.clusters_G')
     resource_pool['ism_gsm_corr_file'] = (basc, 'outputspec.ism_gsm_corr_file')
     resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
     resource_pool['cluster_voxel_scores_img'] = (basc, 'outputspec.cluster_voxel_scores_img')
-    resource_pool['individual_cluster_voxel_scores_imgs'] = (basc, 'outputspec.individual_cluster_voxel_scores_imgs')
+    # below commented out to try out the shitty Steve pseudo-code above, that is shitty
+    #resource_pool['individual_cluster_voxel_scores_imgs'] = (basc, 'outputspec.individual_cluster_voxel_scores_imgs')
     resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
     resource_pool['k_mask'] = (basc, 'outputspec.k_mask')
     resource_pool['ind_group_cluster_stability'] = (basc, 'outputspec.ind_group_cluster_stability')
@@ -96,7 +105,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
 
 
     if run == True:
-        workflow.run(plugin='MultiProc', plugin_args= plugin_args) #
+        workflow.run(plugin='Linear', plugin_args= plugin_args) #
                      # {'n_procs': 1})
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
         return outpath
