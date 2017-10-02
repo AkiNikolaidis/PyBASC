@@ -181,17 +181,18 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     
     #print('Creating Clustering')
     
+      
     clustertime= time.time()
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
     #print(X_dist)
     #print('Creating Clustering2')
-    X_dist[np.isnan((X_dist))]=1
     #print(X_dist)
     X_dist = sp.spatial.distance.squareform(X_dist)
     #print(X_dist)
     #print('Creating Clustering3')
     sim_matrix=1-X_dist
+    sim_matrix[np.isnan((sim_matrix))]=0
     sim_matrix[sim_matrix<affinity_threshold]=0
     #print('Creating Clusterin4')
     #print(sim_matrix)
@@ -202,10 +203,6 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     spectral.fit(sim_matrix)
     #print('Creating Clustering6')
     y_pred = spectral.labels_.astype(np.int)
-    
-    #print('Creating Clusters took ', (time.time()- clustertime), ' seconds')
-    
-    return y_pred
 
 
 def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affinity_threshold):
@@ -279,13 +276,14 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     #print("Calculating Cross-clustering2")
 
     dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'correlation')
-    dist_of_1[np.isnan((dist_of_1))]=0
+    #dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
     #print("Calculating Cross-clustering3")
     sim_matrix=1-dist_matrix
 
     
     #matrix must be sparse
+    sim_matrix[np.isnan((sim_matrix))]=0
     sim_matrix[sim_matrix<affinity_threshold]=0
     sim_matrix[sim_matrix>1]=1
     #print("Calculating Cross-clustering4")
