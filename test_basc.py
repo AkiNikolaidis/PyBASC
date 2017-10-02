@@ -491,9 +491,9 @@ def test_cluster_matrix_average():
     
     
     blobs = generate_blobs()
-    ism = individual_stability_matrix(blobs, 100, 3)
-    y_predict = cluster_timeseries(blobs, 3, similarity_metric = 'euclidean')
-    cluster_voxel_scores, K_mask = cluster_matrix_average(ism, y_predict)
+    ism = utils.individual_stability_matrix(blobs, 100, 3)
+    y_predict = utils.cluster_timeseries(blobs, 3, similarity_metric = 'correlation')
+    cluster_voxel_scores, K_mask = utils.cluster_matrix_average(ism, y_predict)
     
     plt.imshow(K_mask)
     

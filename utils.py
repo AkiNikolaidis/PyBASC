@@ -109,7 +109,7 @@ def standard_bootstrap(dataset):
     b = np.random.randint(0, high=n-1, size=n)
     return dataset[b]
 
-def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinity_threshold = None, neighbors = 10):
+def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinity_threshold = 0.0, neighbors = 10):
     """
     Cluster a given timeseries
 
@@ -191,6 +191,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     X_dist = sp.spatial.distance.squareform(X_dist)
     #print(X_dist)
     #print('Creating Clustering3')
+    #import pdb; pdb.set_trace()
     sim_matrix=1-X_dist
     sim_matrix[np.isnan((sim_matrix))]=0
     sim_matrix[sim_matrix<affinity_threshold]=0
@@ -203,6 +204,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     spectral.fit(sim_matrix)
     #print('Creating Clustering6')
     y_pred = spectral.labels_.astype(np.int)
+    return y_pred
 
 
 def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affinity_threshold):
@@ -283,7 +285,9 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
 
     
     #matrix must be sparse
+    #import pdb; pdb.set_trace()
     sim_matrix[np.isnan((sim_matrix))]=0
+    
     sim_matrix[sim_matrix<affinity_threshold]=0
     sim_matrix[sim_matrix>1]=1
     #print("Calculating Cross-clustering4")
@@ -469,6 +473,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
             cbb_block_size2 = int(np.sqrt(N2))
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             Y_b2 = utils.timeseries_bootstrap(Y2, cbb_block_size2)
+            #import pdb; pdb.set_trace()
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = 'correlation', affinity_threshold= affinity_threshold))
 
             
@@ -481,6 +486,8 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
         for bootstrap_i in range(n_bootstraps):
             
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
+            #import pdb; pdb.set_trace()
+
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = 'correlation', affinity_threshold = affinity_threshold)[:,np.newaxis])
         
         S /= n_bootstraps

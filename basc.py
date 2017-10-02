@@ -7,7 +7,7 @@ import nipype.interfaces.utility as util
 import imp
 from os.path import expanduser
 
-def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, stratification=None):
+def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
     import os
     import numpy as np
     import nibabel as nb
@@ -16,7 +16,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, strati
 
     #print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
 
-
+    #import pdb; pdb.set_trace()
     indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     #print( 'Group stability list dimensions:', indiv_stability_set.shape )
 
@@ -136,15 +136,15 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     icvs = []
     icvs_idx = 0
     #for i in range(nSubjects):
-    A=[]
-    B=[]
-    for k in cluster_ids:
-        #import pdb; pdb.set_trace()
-        A, B = basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k)
-        icvs.append(basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k))
-        B.to_filename(os.path.join(A))
-        A=[]
-        B=[]
+#    A=[]
+#    B=[]
+#    for k in cluster_ids:
+#        #import pdb; pdb.set_trace()
+#        A, B = basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k)
+#        icvs.append(basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k))
+#        B.to_filename(os.path.join(A))
+#        A=[]
+#        B=[]
          #import pdb; pdb.set_trace()
 #or:
 #
@@ -153,7 +153,7 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
         
         
         #ind_group_cluster_stability.append(cluster_voxel_scores[(k-1),clusters_G==k].mean())
-        icvs_idx += 1
+        #icvs_idx += 1
         
     for i in cluster_ids:
         ind_group_cluster_stability.append(cluster_voxel_scores[(i-1),clusters_G==i].mean())
@@ -507,8 +507,7 @@ def create_basc(proc_mem, name='basc'):
     
     mgsm= pe.MapNode(util.Function(input_names= ['indiv_stability_list',
                                                  'n_clusters',
-                                                 'bootstrap_list',
-                                                 'stratification'],
+                                                 'bootstrap_list'],
                                 output_names=['G_file'],
                                 function=map_group_stability),
                                 name='map_group_stability',
