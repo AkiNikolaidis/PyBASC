@@ -111,7 +111,21 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     import numpy as np
     import utils
     import basc
-
+    
+    
+    quit()
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    print('QUIT DIDNT WORK')
+    
+    
     #indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
     indiv_stability_set = indiv_stability_mat[0]
@@ -183,7 +197,6 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
 
 
     
-
     return  icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file #icvs, cluster_voxel_scores, k_mask
 
 def post_analysis(ind_group_cluster_stability_file_list):
