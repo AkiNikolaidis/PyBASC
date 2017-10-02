@@ -296,6 +296,8 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
 
         roi1data = data[roi_mask_nparray]
+        roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
+
         #print( '(%i voxels, %i timepoints and %i bootstraps' % (roi1data.shape[0], roi1data.shape[1], n_bootstraps))
         
         roi_mask_file_nb=nb.load(roi_mask_file)
