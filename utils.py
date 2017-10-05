@@ -272,8 +272,8 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     clustertime=time.time()
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
     sim_btwn_data_1_2=1-dist_btwn_data_1_2
-    sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
     sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
+    sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
 
     #print("Calculating Cross-clustering2")
 
