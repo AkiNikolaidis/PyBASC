@@ -16,7 +16,8 @@ from basc import create_basc, \
                  ndarray_to_vol, \
                  individual_group_clustered_maps, \
                  post_analysis, \
-                 save_igcm_nifti
+                 save_igcm_nifti, \
+                 create_group_cluster_maps
             
 from basc_workflow_runner import run_basc_workflow
 
@@ -42,6 +43,8 @@ __all__ = [       'timeseries_bootstrap', \
                   'ndarray_to_vol', \
                   'individual_group_clustered_maps' \
                   'ind_group_cluster_stability_file_list'
+                  'save_igcm_nifti'\
+                  'create_group_cluster_maps'
                  
                  ]
         

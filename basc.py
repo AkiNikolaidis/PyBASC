@@ -269,6 +269,40 @@ def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
 #        A=[]
 #        B=[]
 
+def create_group_cluster_maps(gsm_file,clusters_G_file,roi_mask_file):
+    import numpy as np
+    import basc
+    import utils
+    
+    group_stability_mat = np.asarray([np.load(gsm_file)])
+    group_stability_set = group_stability_mat[0]
+    #nSubjects = indiv_stability_set.shape[0]
+    nVoxels = group_stability_set.shape[1]
+    clusters_G=np.load(clusters_G_file)
+    group_cluster_stability=[]
+    cluster_ids = np.unique(clusters_G)
+    nClusters = cluster_ids.shape[0]
+    print("igcm debug 2")
+
+#    cluster_voxel_scores = np.zeros((nSubjects,nClusters, nVoxels))
+#    k_mask=np.zeros((nSubjects,nVoxels, nVoxels))
+    group_cluster_voxel_scores = np.zeros((nClusters, nVoxels))
+    k_mask=np.zeros((nVoxels, nVoxels))
+    #for i in range(nSubjects):
+    
+    group_cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(group_stability_set, clusters_G)    
+
+
+    for i in cluster_ids:
+        group_cluster_stability.append(group_cluster_voxel_scores[(i-1),clusters_G==i].mean())
+    
+    for k in cluster_ids:
+        print('k equals \n\n', k, '\n\n') #Loops through every row of cluster_voxel_scores and creates nifti files
+        print('clustervoxelscores equals \n\n', group_cluster_voxel_scores[k-1,:], '\n\n')
+        A, B = basc.ndarray_to_vol(group_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'group_level_cluster%i_stability.nii.gz' % k)
+        print('Output A equals', A, '\n\n')
+    return
+
 def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster=False, roi2_mask_file=None, cbb_block_size=None, affinity_threshold=0.5):
     """
     Calculate the individual stability matrix for a single subject by using Circular Block Bootstrapping method
