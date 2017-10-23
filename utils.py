@@ -72,21 +72,47 @@ def timeseries_bootstrap(tseries, block_size):
            [ 4, 14, 24, 34, 44]])
 
     """
+    
+#    x = np.arange(50).reshape((5,10)).T
+#    sample_bootstrap(x,3)
+#    array([[ 7, 17, 27, 37, 47],
+#           [ 8, 18, 28, 38, 48],
+#           [ 9, 19, 29, 39, 49],
+#           [ 4, 14, 24, 34, 44],
+#           [ 5, 15, 25, 35, 45],
+#           [ 6, 16, 26, 36, 46],
+#           [ 0, 10, 20, 30, 40],
+#           [ 1, 11, 21, 31, 41],
+#           [ 2, 12, 22, 32, 42],
+#           [ 4, 14, 24, 34, 44]])
     import numpy as np
     import time
     
     #print('Calculating Timeseries Bootstrap')
     bootstraptime=time.time()
-    
+    #print('timeseries1')
+    #print('block size: ', block_size)
+    #print('tseries0',tseries.shape[0])
+    #print('tseries1',tseries.shape[1])
     k = int(np.ceil(float(tseries.shape[0])/block_size))
+    #print('timeseries2')
+
     r_ind = np.floor(np.random.rand(1,k)*tseries.shape[0])
     blocks = np.dot(np.arange(0,block_size)[:,np.newaxis], np.ones([1,k]))
+    #print('timeseries3')
+
     block_offsets = np.dot(np.ones([block_size,1]), r_ind)
     block_mask = (blocks + block_offsets).flatten('F')[:tseries.shape[0]]
     block_mask = np.mod(block_mask, tseries.shape[0])
-    
+    #print('block_offsets shape0', block_offsets.shape[0])
+    #print('block_offsets shape1', block_offsets.shape[1])
+    #print('block_mask shape0', block_mask.shape[0])
+    #print('block_mask shape1', block_mask.shape[1])
+    #print('tseries shape0', tseries[block_mask.astype('int'), :].shape[0])
+    #print('tseries shape1', tseries[block_mask.astype('int'), :].shape[1])
     #print('Finished: ', (time.time() - bootstraptime), ' seconds')
     return tseries[block_mask.astype('int'), :]
+
 
 def standard_bootstrap(dataset):
     """
@@ -109,7 +135,7 @@ def standard_bootstrap(dataset):
     b = np.random.randint(0, high=n-1, size=n)
     return dataset[b]
 
-def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinity_threshold = 0.0, neighbors = 10):
+def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, neighbors = 10):
     """
     Cluster a given timeseries
 
@@ -175,12 +201,14 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     y_pred = np.dot(eigen_discrete.toarray(), np.diag(np.arange(n_clusters))).sum(1)
 
     """
-    from sklearn import cluster
+
+    from sklearn import cluster, datasets
     import scipy as sp
     import time 
-    
+    from sklearn import cluster, datasets
     #print('Creating Clustering')
     
+    print('hello1')
       
     clustertime= time.time()
     X = np.array(X)
@@ -195,17 +223,19 @@ def cluster_timeseries(X, n_clusters, similarity_metric = 'correlation', affinit
     sim_matrix=1-X_dist
     sim_matrix[np.isnan((sim_matrix))]=0
     sim_matrix[sim_matrix<affinity_threshold]=0
+    sim_matrix[sim_matrix>1]=1
     #print('Creating Clusterin4')
     #print(sim_matrix)
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
     #print('Creating Clusterin5')
-   
+    print('hello2')
+
     plt.imshow(sim_matrix)
+    print('hello3')
     spectral.fit(sim_matrix)
-    #print('Creating Clustering6')
+    print('Creating Clustering6')
     y_pred = spectral.labels_.astype(np.int)
     return y_pred
-
 
 def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affinity_threshold):
 
@@ -265,9 +295,8 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     import scipy as sp
     import time
     from sklearn import cluster, datasets
-
-    #print("Calculating Cross-clustering")
-    #print("Calculating pairwise distances between areas")
+    print("Calculating Cross-clustering")
+    print("Calculating pairwise distances between areas")
     
     clustertime=time.time()
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
@@ -275,33 +304,31 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
     sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
 
-    #print("Calculating Cross-clustering2")
+    print("Calculating Cross-clustering2")
 
     dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'correlation')
     #dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
-    #print("Calculating Cross-clustering3")
+    print("Calculating Cross-clustering3")
     sim_matrix=1-dist_matrix
 
     
     #matrix must be sparse
     #import pdb; pdb.set_trace()
     sim_matrix[np.isnan((sim_matrix))]=0
-    
+    #sim_matrix[sim_matrix<0]=0
+
     sim_matrix[sim_matrix<affinity_threshold]=0
     sim_matrix[sim_matrix>1]=1
-    #print("Calculating Cross-clustering4")
+    print("Calculating Cross-clustering4")
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-    #print("Calculating Cross-clustering5")
-    #print("Clustering")
-    #print(sim_matrix)
+    print("Calculating Cross-clustering5")
+    print("Clustering")
+    print(sim_matrix)
     plt.imshow(sim_matrix)
     spectral.fit(sim_matrix)
-    #print("Calculating Cross-clustering")
-
+    print("Calculating Cross-clustering")
     y_pred = spectral.labels_.astype(np.int)
-    
-    #print("Clustering took ", (time.time() - clustertime), ' seconds')
     return y_pred
 
 
@@ -333,6 +360,7 @@ def adjacency_matrix(cluster_pred):
            [1, 0, 0, 0, 1]])
 
     """
+    print('adjacency start')
     x = cluster_pred.copy()
     if(len(x.shape) == 1):
         x = x[:, np.newaxis]
@@ -341,6 +369,7 @@ def adjacency_matrix(cluster_pred):
         x += -x.min() + 1
 
     A = np.dot(x**-1., x.T) == 1
+    print('adjacency end')
     return A
 
 def cluster_matrix_average(M, cluster_assignments):
@@ -387,13 +416,15 @@ def cluster_matrix_average(M, cluster_assignments):
         raise ValueError('M matrix has a nan value')
 
     cluster_ids = np.unique(cluster_assignments)
-    s = np.zeros((cluster_ids.shape[0], cluster_assignments.shape[0]), dtype='float64')
+    vox_cluster_label = np.zeros((cluster_ids.shape[0], cluster_assignments.shape[0]), dtype='float64')
     s_idx = 0
     K_mask=np.zeros(M.shape)
     for cluster_id in cluster_ids:
-        s[s_idx, :] = M[:,cluster_assignments == cluster_id].mean(1)
+        #import pdb;pdb.set_trace()
+        vox_cluster_label[s_idx, :] = M[:,cluster_assignments == cluster_id].mean(1)
         
-#        #???
+        
+        
         k = (cluster_assignments == cluster_id)[:, np.newaxis]
         k=k*1
         print('Cluster %i size: %i' % (cluster_id, k.sum()))
@@ -401,16 +432,17 @@ def cluster_matrix_average(M, cluster_assignments):
         K[np.diag_indices_from(K)] = False
         Ktemp=K*1
         K_mask=K_mask+Ktemp
+        #import pdb;pdb.set_trace()
         if K.sum() == 0: # Voxel with its own cluster
             #import pdb; pdb.set_trace()
-            s[k[:,0]] = 0.0
+            vox_cluster_label[k[:,0]] = 0.0
             s_idx += 1
         else:
-            s[s_idx,k[:,0].T] = M[K].mean()
+            Kbool=K.astype(bool)
+            vox_cluster_label[s_idx,k[:,0].T] = M[Kbool].mean()
             s_idx += 1
-
-    
-    return s, K_mask
+    #import pdb; pdb.set_trace()
+    return vox_cluster_label, K_mask
 
 def compare_stability_matrices(ism1, ism2):
     import scipy as sp
@@ -450,6 +482,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
     
     import utils 
     import time
+    import numpy as np
     #print("Calculating Individual Stability Matrix")
     ismtime=time.time()
    
@@ -461,9 +494,14 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
     N1 = Y1.shape[1]
     V1 = Y1.shape[0]
    
-    if(cbb_block_size is None):
-        cbb_block_size = int(np.sqrt(N1))
-
+    print('N1',N1)
+    print('V1',V1)
+    print(int(np.sqrt(N1)))
+    print('block size is- ', cbb_block_size)
+    cbb_block_size = int(np.sqrt(N1))
+#    if(cbb_block_size is None):
+#        cbb_block_size = int(np.sqrt(N1))
+    print('block size now is- ', cbb_block_size)
     S = np.zeros((V1, V1))
 
     if (cross_cluster is True):
@@ -484,14 +522,21 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
         #print('ISM calculation took', (time.time() - ismtime), ' seconds')
     else:
         for bootstrap_i in range(n_bootstraps):
-            
+            print('ismcalc1')
+            print('block size', cbb_block_size)
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             #import pdb; pdb.set_trace()
-
+            print('ismcalc2')
+            #import pdb;pdb.set_trace()
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = 'correlation', affinity_threshold = affinity_threshold)[:,np.newaxis])
-        
+            
+            print('S shape0', S.shape[0])
+            print('S shape1', S.shape[1])
+            print('ismcalc3')
+
         S /= n_bootstraps
-        
+        print('ismcalc4')
+
         S=S*100
         S=S.astype("uint8")
         #print('ISM calculation took', (time.time() - ismtime), ' seconds')
@@ -510,17 +555,23 @@ def expand_ism(ism, Y1_labels):
    import pandas as pd
    import numpy as np
    import time
-    
+   print('debug expand ism1') 
    voxel_num=len(Y1_labels)
    voxel_ism = np.zeros((voxel_num,voxel_num))
    transform_mat=np.zeros((len(ism),voxel_num))
  
    matrixtime = time.time()
-   
+   print('debug expand ism2') 
+   #import pdb; pdb.set_trace()
+
    for i in range(0,voxel_num):
      transform_mat[Y1_labels[i],i]=1
-      
+
+   print('debug expand ism3') 
+
    temp=np.dot(ism,transform_mat)
+   print('debug expand ism4') 
+
    target_mat=np.dot(temp.T,transform_mat)
     
     

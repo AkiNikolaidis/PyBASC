@@ -13,8 +13,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
     import nibabel as nb
     import utils
 
-
-    #print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
+    print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
 
     #import pdb; pdb.set_trace()
     indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
@@ -36,7 +35,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
     G=G.astype("uint8")
     G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(G_file, G)
-    #print ('Saving group stability matrix %s' % (G_file))
+    print ('Saving group stability matrix %s' % (G_file))
     
     return G_file
        
@@ -48,7 +47,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     import nibabel as nb
     import utils
     
-    #print("starting join group stability")
+    print("starting join group stability")
     group_stability_set = np.asarray([np.load(G_file) for G_file in group_stability_list])
     gsm=group_stability_set.sum(axis=0)
     G=gsm/int(n_bootstraps)
@@ -75,6 +74,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
         ism_gsm_corr[i]=utils.compare_stability_matrices(indiv_stability_set[i], G)
     #print( '3')
     print( 'saving files: G')
+    print(G)
     gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(gsm_file, G)
     
@@ -85,7 +85,6 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     print( 'saving files: ism_gsm_corr')
     ism_gsm_corr_file = os.path.join(os.getcwd(), 'ism_gsm_corr.npy')
     np.save(ism_gsm_corr_file, ism_gsm_corr)
-    
     return G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file
 
 
@@ -111,21 +110,21 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     import numpy as np
     import utils
     import basc
+    print('starting igcm')
     
+#    quit()
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
+#    print('QUIT DIDNT WORK')
     
-    quit()
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    print('QUIT DIDNT WORK')
-    
-    
+    print("igcm debug 1")
     #indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
     indiv_stability_set = indiv_stability_mat[0]
@@ -134,22 +133,26 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
 
     cluster_ids = np.unique(clusters_G)
     nClusters = cluster_ids.shape[0]
+    print("igcm debug 2")
 
 #    cluster_voxel_scores = np.zeros((nSubjects,nClusters, nVoxels))
 #    k_mask=np.zeros((nSubjects,nVoxels, nVoxels))
     cluster_voxel_scores = np.zeros((nClusters, nVoxels))
     k_mask=np.zeros((nVoxels, nVoxels))
     #for i in range(nSubjects):
+    
     cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(indiv_stability_set, clusters_G)
     #clust5[0,clusters_g==1].mean()
-    
+    print("igcm debug 3")
+    #import pdb; pdb.set_trace()
     
     #cluster_voxel_scores[0,clusters_g==1].mean()
     
     ind_group_cluster_stability=[]
     icvs = []
+    icvs=np.asarray(1)
     icvs_idx = 0
-    #for i in range(nSubjects):
+#    for i in range(nSubjects):
 #    A=[]
 #    B=[]
 #    for k in cluster_ids:
@@ -164,21 +167,23 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
 #
 #nib.save(img, os.path.join('build','test4d.nii.gz'))
         
-        
+    print("igcm debug 4")
+   
         
         #ind_group_cluster_stability.append(cluster_voxel_scores[(k-1),clusters_G==k].mean())
         #icvs_idx += 1
         
     for i in cluster_ids:
         ind_group_cluster_stability.append(cluster_voxel_scores[(i-1),clusters_G==i].mean())
- 
+    print("igcm debug 5")
+
     ind_group_cluster_stability=np.array(ind_group_cluster_stability)
     #ind_group_cluster_stability=np.array([1,2,3,4,5])
     #print( 'saving files: icvs')
     icvs_file = os.path.join(os.getcwd(), 'icvs.npy')
     np.save(icvs_file, icvs)
     
-    #print( 'saving files: cluster_voxel_scores')
+    print( 'saving files: cluster_voxel_scores')
     cluster_voxel_scores=cluster_voxel_scores.astype("uint8")
     cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
     np.save(cluster_voxel_scores_file, cluster_voxel_scores)
@@ -200,6 +205,20 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     return  icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file #icvs, cluster_voxel_scores, k_mask
 
 def post_analysis(ind_group_cluster_stability_file_list):
+    """
+    Creates a composite matrix of all the ind_group_cluster_stability files.
+    This allows for choosing the combination of parameters that produces the most stable clustering.
+    
+    Parameters
+    ----------
+    
+    ind_group_cluster_stability_file_list : A list of all ind_group_cluster_stability files 
+     
+    Returns
+    -------
+    ind_group_cluster_stability_set_file : a composite matrix of all the ind_group_cluster_stability metrics
+    """
+    
     import os
     import numpy as np
     ind_group_cluster_stability_set = np.asarray([np.load(ind_group_cluster) for ind_group_cluster in ind_group_cluster_stability_file_list])
@@ -211,7 +230,44 @@ def post_analysis(ind_group_cluster_stability_file_list):
     ind_group_cluster_stability_set_file = os.path.join(os.getcwd(), 'ind_group_cluster_stability_set.npy')
     np.save(ind_group_cluster_stability_set_file, ind_group_cluster_stability_set)
     return ind_group_cluster_stability_set_file
+
+def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
+    """
+    Loops through every row of cluster_voxel_scores and creates nifti files
     
+    Parameters
+    ----------
+        cluster_voxel_scores_file- a cluster number by voxel measure of the stability
+    of group level solutions at the individual level.
+        clusters_G_file- taken from igcm output
+        roi_mask_file- file you want to transform the data back into.
+
+    Returns
+    -------
+    Creates NIFTI files for all the igcm files for each participant across all clusters 
+    """
+    
+    
+    import numpy as np
+    import basc
+    cluster_voxel_scores=np.load(cluster_voxel_scores_file)
+    clusters_G=np.load(clusters_G_file)
+    cluster_ids = np.unique(clusters_G)
+    icvs_idx = 0
+    A=[]
+    B=[]
+    #import pdb; pdb.set_trace()
+
+    for k in cluster_ids:
+        print('k equals \n\n', k, '\n\n') #Loops through every row of cluster_voxel_scores and creates nifti files
+        print('clustervoxelscores equals \n\n', cluster_voxel_scores[k-1,:], '\n\n')
+        A, B = basc.ndarray_to_vol(cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k)
+        print('Output A equals', A, '\n\n')
+        #print(B)
+#        icvs.append(basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k))
+#        B.to_filename(os.path.join(A))
+#        A=[]
+#        B=[]
 
 def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster=False, roi2_mask_file=None, cbb_block_size=None, affinity_threshold=0.5):
     """
@@ -248,7 +304,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     import sklearn as sk
     
 
-    #print( 'Calculating individual stability matrix of:', subject_file)
+    print( 'Calculating individual stability matrix of:', subject_file)
 
 
     data = nb.load(subject_file).get_data().astype('float32')
@@ -257,19 +313,9 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     if (roi2_mask_file != None):
        #print( 'Setting up NIS')
         roi_mask_file_nb = nb.load(roi_mask_file)
-        roi2_mask_file_nb= nb.load(roi2_mask_file)
-
         roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-        roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
-
-
         roi1data = data[roi_mask_nparray]
-        roi2data = data[roi2_mask_nparray]
-        
-        #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
         roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
-        roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
-        
         #print( 'Compressing data')
         data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
         Y1_compressed = data_dict1['data']
@@ -278,20 +324,26 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         Y1_labels=np.array(Y1_labels)
         #print( 'Y1 compressed')
         
+        roi2_mask_file_nb= nb.load(roi2_mask_file)
+        roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
+        roi2data = data[roi2_mask_nparray]
+        #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
+        roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
         #print( 'Compressing Y2')
-
         data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size)
         Y2_compressed = data_dict2['data']
         Y2_compressed=Y2_compressed.T
         Y2_labels = pd.DataFrame(data_dict2['labels'])
+        Y2_labels=np.array(Y2_labels)
         #print( 'Y2 compressed')
         
-        #print('Going into ism')
+        print('Going into ism')
         ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, Y2_compressed, cross_cluster, cbb_block_size, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
 
         
-        #print('Expanding ism')
+        
+        print('Expanding ism')
         voxel_num=roi1data.shape[0]
         voxel_ism = utils.expand_ism(ism, Y1_labels)
       
@@ -306,32 +358,35 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
 
     else:
 
+        roi_mask_file_nb=nb.load(roi_mask_file)
         roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-
         roi1data = data[roi_mask_nparray]
         roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
-
+        print('debug1')
         #print( '(%i voxels, %i timepoints and %i bootstraps' % (roi1data.shape[0], roi1data.shape[1], n_bootstraps))
-        
-        roi_mask_file_nb=nb.load(roi_mask_file)
-        
         data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
         Y1_compressed = data_dict1['data']
         Y1_compressed = Y1_compressed.T
         Y1_labels = pd.DataFrame(data_dict1['labels'])
+        Y1_labels=np.array(Y1_labels)
+        print('debug2')
 
-        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, cbb_block_size, affinity_threshold)
+        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, cross_cluster, cbb_block_size, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
-        
-        #print('expanding ism')
+        print('debug3')
+        #import pdb; pdb.set_trace()
+        print(Y1_labels)
+
+        print('expanding ism')
         voxel_num=roi1data.shape[0]
         voxel_ism = utils.expand_ism(ism, Y1_labels)
-        
+        print('debug3b')
         #voxel_ism=voxel_ism*100 # was already done in ism
         voxel_ism=voxel_ism.astype("uint8")
         
         ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
-        np.save(ism_file, ism)
+        np.save(ism_file, voxel_ism)
+        print('debug4')
         #print( 'Saving individual stability matrix %s for %s' % (ism_file, subject_file))
         return ism_file
     return ism_file
@@ -359,10 +414,16 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
         Path of the nifti file output
 
     """
-    #import pdb;pdb.set_trace()
+   
+    
     import nibabel as nb
     import numpy as np
     import os
+    
+    print('data array is', data_array)
+    print('roi mask file', roi_mask_file)
+    print('filename', filename)
+    #import pdb;pdb.set_trace()
     roi_mask_file = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
     if(len(data_array.shape) == 1):
         out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
@@ -559,6 +620,13 @@ def create_basc(proc_mem, name='basc'):
                                           output_names = ['ind_group_cluster_stability_set_file'],
                                           function = post_analysis),
                     name='post_analysis')
+    
+#    (cluster_voxel_scores_file,clusters_G_file,roi_mask_file)
+#    save= pe.Node(util.Function(input_names=['cluster_voxel_scores',
+#                                             'clusters_G_file',
+#                                             'roi_mask_file'],
+#                                            function = 
+#                                )
 
     gs_cluster_vol = pe.Node(util.Function(input_names=['data_array',
                                                         'roi_mask_file',
@@ -567,7 +635,9 @@ def create_basc(proc_mem, name='basc'):
                                            output_names=['img_file', 'img'],
                                            function=ndarray_to_vol),
                              name='group_stability_cluster_vol')
-#
+    
+    gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
+
     gs_score_vol = pe.Node(util.Function(input_names=['data_array',
                                                       'roi_mask_file',
                                                       'sample_file',
@@ -575,7 +645,8 @@ def create_basc(proc_mem, name='basc'):
                                          output_names=['img_file', 'img'],
                                          function=ndarray_to_vol),
                            name='group_stability_score_vol')
-
+    
+    gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'
 
 
 #run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, k_clusters, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
@@ -630,6 +701,8 @@ def create_basc(proc_mem, name='basc'):
 
 ##############################################
     # Gather outside workflow inputs
+    
+    
     basc.connect(inputspec, 'subject_file_list',            nis, 'subject_file')
     basc.connect(inputspec, 'roi_mask_file',                nis, 'roi_mask_file')
     basc.connect(inputspec, 'timeseries_bootstraps',        nis, 'n_bootstraps')
@@ -647,6 +720,9 @@ def create_basc(proc_mem, name='basc'):
     basc.connect(inputspec, 'roi_mask_file',                igcm, 'roi_mask_file')
     basc.connect(inputspec, 'subject_file_list',            gs_score_vol, 'sample_file')
     basc.connect(inputspec, 'roi_mask_file',                gs_score_vol, 'roi_mask_file')
+
+
+
 
     #Node to Node connections
     basc.connect(nis, 'ism_file',                           mgsm, 'indiv_stability_list')
@@ -672,7 +748,6 @@ def create_basc(proc_mem, name='basc'):
 
 
 
-    gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
-    gs_score_vol.inputs.filename = 'group_stability_scores.nii.gz'
+ 
 
     return basc

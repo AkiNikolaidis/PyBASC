@@ -15,7 +15,8 @@ from basc import create_basc, \
                  join_group_stability, \
                  ndarray_to_vol, \
                  individual_group_clustered_maps, \
-                 post_analysis
+                 post_analysis, \
+                 save_igcm_nifti
             
 from basc_workflow_runner import run_basc_workflow
 

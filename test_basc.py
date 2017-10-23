@@ -127,7 +127,7 @@ def test_cluster_timeseries():
     Tests the cluster_timeseries method on three blobs in three dimensions (to make correlation possible)
     """
     blobs = generate_blobs_3d()
-    y_predict = cluster_timeseries(blobs, 3, similarity_metric = 'correlation')
+    y_predict = cluster_timeseries(blobs, 3, similarity_metric = 'correlation', affinity_threshold=0.0)
 
 
 def test_cross_cluster_timeseries():
@@ -137,7 +137,7 @@ def test_cross_cluster_timeseries():
     x2 = np.random.randn(10,30) + 44*np.random.randn(30)
     data1 = np.vstack((x1,x2))
     data2 = data1
-    actual = cross_cluster_timeseries(data1, data2, n_clusters=2, similarity_metric='correlation', affinity_threshold=0.3)
+    actual = cross_cluster_timeseries(data1, data2, n_clusters=2, similarity_metric='correlation', affinity_threshold=0.0)
     desired = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
        1, 1, 1, 1, 1, 1, 1])
     np.testing.assert_equal(actual,desired)
@@ -402,11 +402,11 @@ def test_data_compress_expand():
     import sklearn as sk
     
     #Setup
-    subject_file = home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
-    roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
-    roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
+    subject_file = home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
+    roi_mask_file= home + '/git_repo/PyBASC/masks/LC_Quarter_Res.nii.gz'
+    roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     n_bootstraps=100
-    n_clusters=2
+    n_clusters=10
     output_size=20
     cross_cluster=True
     cbb_block_size=None
@@ -467,16 +467,16 @@ def test_data_compress_expand():
 
 def test_nifti_individual_stability():
 
-    subject_file = home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
+    subject_file = home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
 
-    roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
-    roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
+    roi_mask_file= home + '/git_repo/PyBASC/masks/LC_Quarter_Res.nii.gz'
+    roi2_mask_file= None#home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     
    
     n_bootstraps=100
     n_clusters=2
     output_size=20
-    cross_cluster=True
+    cross_cluster=False
     
     cbb_block_size=None
     affinity_threshold=0.5
@@ -492,7 +492,7 @@ def test_cluster_matrix_average():
     
     blobs = generate_blobs()
     ism = utils.individual_stability_matrix(blobs, 100, 3)
-    y_predict = utils.cluster_timeseries(blobs, 3, similarity_metric = 'correlation')
+    y_predict = utils.cluster_timeseries(blobs, 3, similarity_metric = 'correlation', affinity_threshold=0.0)
     cluster_voxel_scores, K_mask = utils.cluster_matrix_average(ism, y_predict)
     
     plt.imshow(K_mask)
@@ -588,25 +588,25 @@ def test_individual_group_clustered_maps():
     
     import basc
     import utils
-    subject_file_list= [home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
+    subject_file_list= [home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
 
-    roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
+    roi_mask_file= home + '/git_repo/PyBASC/masks/LC_Quarter_Res.nii.gz'
     dataset_bootstraps=5
     timeseries_bootstraps=5
     n_clusters=3
     output_size=10
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
-    roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
+    roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     cbb_block_size=None
     affinity_threshold= 0.5 #* len(subject_file_list)
-    out_dir= home + '/BASC_outputs/testing4'
+    out_dir= home + '/PyBASC_outputs/IGCMDebug2'
     run=True
     indiv_stability_list=[]
     for i in range(0,len(subject_file_list)):
@@ -616,7 +616,7 @@ def test_individual_group_clustered_maps():
         
     G_file=[]
     for i in range(0,dataset_bootstraps):
-        temp2= map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, stratification=None)
+        temp2= map_group_stability(indiv_stability_list, n_clusters, bootstrap_list)
         G_file.append(temp2)
         
     G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(indiv_stability_list, G_file, dataset_bootstraps, n_clusters)
@@ -626,7 +626,47 @@ def test_individual_group_clustered_maps():
 
     return icvs, G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
 
+def test_save_igcm_nifti(cluster_voxel_scores_file):
+    
+    import basc
+    import utils
+    subject_file_list= [home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
 
+    roi_mask_file= home + '/git_repo/PyBASC/masks/LC_Quarter_Res.nii.gz'
+    dataset_bootstraps=5
+    timeseries_bootstraps=5
+    n_clusters=3
+    output_size=10
+    bootstrap_list=list(range(0,dataset_bootstraps))
+    cross_cluster=True
+    roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
+    cbb_block_size=None
+    affinity_threshold= 0.5 #* len(subject_file_list)
+    out_dir= home + '/PyBASC_outputs/SaveIGCMDebug2'
+    run=True
+    indiv_stability_list=[]
+    for i in range(0,len(subject_file_list)):
+        temp = basc.nifti_individual_stability(subject_file_list[i], roi_mask_file, timeseries_bootstraps, n_clusters, output_size, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
+        #temp=temp/timeseries_bootstraps
+        indiv_stability_list.append(temp)
+        
+    G_file=[]
+    for i in range(0,dataset_bootstraps):
+        temp2= map_group_stability(indiv_stability_list, n_clusters, bootstrap_list)
+        G_file.append(temp2)
+        
+    G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(indiv_stability_list, G_file, dataset_bootstraps, n_clusters)
+    #k_mask,k_mask_file, icvs, cluster_voxel_scores,
+    for i in range(0,len(subject_file_list)):
+        icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file =basc.individual_group_clustered_maps(indiv_stability_list[i], clusters_G, roi_mask_file)
+ 
+    basc.save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file)
 
 #%% TEST BASC WORKFLOW
 
