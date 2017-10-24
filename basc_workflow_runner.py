@@ -105,7 +105,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
 
 
     if run == True:
-        workflow.run(plugin='Linear', plugin_args= plugin_args) #
+        workflow.run(plugin='MultiProc', plugin_args= plugin_args) #
                      # {'n_procs': 1})
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
         return outpath
