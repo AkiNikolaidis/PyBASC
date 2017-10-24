@@ -8,6 +8,23 @@ import imp
 from os.path import expanduser
 
 def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
+        """
+    Calculate the group stability maps for each group-level bootstrap
+
+    Parameters
+    ----------
+    indiv_stability_list : list of strings
+        A length `N` list of file paths to numpy matrices of shape (`V`, `V`), `N` subjects, `V` voxels
+    n_clusters : array_like
+        number of clusters extrated from adjacency matrx
+
+    Returns
+    -------
+    G_file : numpy array
+        The group stability matrix for a single bootstrap repitition
+
+    """
+    
     import os
     import numpy as np
     import nibabel as nb
@@ -42,6 +59,29 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
     
 
 def join_group_stability(indiv_stability_list, group_stability_list, n_bootstraps, n_clusters):
+    """
+    Merges the group stability maps for all and compares to all individual stability maps
+
+    Parameters
+    ----------
+    indiv_stability_list : list of strings
+        A length `N` list of file paths to numpy matrices of shape (`V`, `V`), `N` subjects, `V` voxels
+    group_stability_list : list of strings
+        A length `N` list of file paths to numpy matrices of shape (`V`, `V`), `N` subjects, `V` voxels
+    n_bootstraps : array_like
+        Number of bootstraps to join and average.
+    n_clusters : array_like
+        number of clusters extrated from adjacency matrx
+
+    Returns
+    -------
+    G_file : numpy array
+        The group stability matrix for a single bootstrap repitition
+
+    """
+    
+    
+    
     import os
     import numpy as np
     import nibabel as nb
@@ -112,18 +152,6 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     import basc
     print('starting igcm')
     
-#    quit()
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-#    print('QUIT DIDNT WORK')
-    
     print("igcm debug 1")
     #indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
@@ -152,21 +180,6 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     icvs = []
     icvs=np.asarray(1)
     icvs_idx = 0
-#    for i in range(nSubjects):
-#    A=[]
-#    B=[]
-#    for k in cluster_ids:
-#        #import pdb; pdb.set_trace()
-#        A, B = basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k)
-#        icvs.append(basc.ndarray_to_vol(cluster_voxel_scores[icvs_idx,:], roi_mask_file, roi_mask_file, 'individual_group_cluster%i_stability.nii.gz' % k))
-#        B.to_filename(os.path.join(A))
-#        A=[]
-#        B=[]
-         #import pdb; pdb.set_trace()
-#or:
-#
-#nib.save(img, os.path.join('build','test4d.nii.gz'))
-        
     print("igcm debug 4")
    
         
@@ -270,6 +283,22 @@ def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
 #        B=[]
 
 def create_group_cluster_maps(gsm_file,clusters_G_file,roi_mask_file):
+    """
+    Loops through every row of cluster_voxel_scores and creates nifti files
+    
+    Parameters
+    ----------
+        gsm_file- a cluster number by voxel measure of the stability
+            of group level solutions.
+        clusters_G_file- taken from igcm output
+        roi_mask_file- file you want to transform the data back into.
+
+    Returns
+    -------
+    Creates NIFTI files for all the gsm file for the group across all clusters 
+    
+    """
+    
     import numpy as np
     import basc
     import utils

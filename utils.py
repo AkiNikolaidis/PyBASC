@@ -445,6 +445,23 @@ def cluster_matrix_average(M, cluster_assignments):
     return vox_cluster_label, K_mask
 
 def compare_stability_matrices(ism1, ism2):
+    """
+    Calculate the distance between two different stability maps
+    
+    Parameters
+    ----------
+    ism1 : array_like
+        A numpy stability matrix of shape (`V`, `V`), `V` voxels.
+    ism2 : array_like
+        A numpy stability matrix of shape (`V`, `V`), `V` voxels.
+
+    Returns
+    -------
+    similarity : array_like
+        The distance between the two input matrices.
+
+    """    
+    
     import scipy as sp
     import sklearn as sk
 
@@ -545,12 +562,19 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
 
 def expand_ism(ism, Y1_labels):
    """
+   Calculates the voxel-wise stability matrix from a low dimensional representation.
+   
+   Parameters
+    ----------
    ism : individual stabilty matrix. A symmetric array
    
    Y1_labels : 1-D array of voxel to supervoxel labels, created in initial data compression
    
+   Returns
+    -------
+    A voxel-wise representation of the stabilty matrix.
    """
-    
+       
    import random
    import pandas as pd
    import numpy as np
