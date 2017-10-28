@@ -8,7 +8,7 @@ import imp
 from os.path import expanduser
 
 def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
-        """
+    """
     Calculate the group stability maps for each group-level bootstrap
 
     Parameters
