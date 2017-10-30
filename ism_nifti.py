@@ -9,13 +9,13 @@ roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Bilater
 #ism=np.load('/Users/aki.nikolaidis/PyBASC_outputs/Group_CMTestingFullData/dim_400_4_clusters/workflow_output/basc_workflow_runner/basc/individual_stability_matrices/mapflow/_individual_stability_matrices0/individual_stability_matrix.npy')
 n_clusters=4
 output_size=400
-out_dir= '/Users/aki.nikolaidis/PyBASC_outputs/Group_CMTestingFullData/dim_' + str(output_size) + '_' + str(n_clusters) + '_clusters'
+out_dir= '/Users/aki.nikolaidis/PyBASC_outputs/ISM_Testing_1000/dim_' + str(output_size) + '_' + str(n_clusters) + '_clusters'
 
 
 def ism_nifti(roi_mask_file, n_clusters):
     import utils
     import basc
-    import numpy
+    import numpy as np
     import os
 #Individual subject ISM to NIFTI and individual
 
