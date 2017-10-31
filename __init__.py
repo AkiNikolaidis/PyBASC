@@ -17,11 +17,13 @@ from basc import create_basc, \
                  individual_group_clustered_maps, \
                  post_analysis, \
                  save_igcm_nifti, \
-                 create_group_cluster_maps
+                 create_group_cluster_maps, \
+                 ism_nifti
+                 
             
 from basc_workflow_runner import run_basc_workflow
 
-#import RunFile as RunFile
+import RunFile as RunFile
 
               
             
