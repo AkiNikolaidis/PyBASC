@@ -15,7 +15,7 @@ import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 
 
-def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=False, roi2_mask_file=None, affinity_threshold=0.5, out_dir=None, run=True):
+def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=False, roi2_mask_file=None, blocklength=1, affinity_threshold=0.5, out_dir=None, run=True):
     """Run the 'template_workflow' function to execute the modular workflow
     with the provided inputs.
     :type input_resource: str
@@ -68,6 +68,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     basc.inputs.inputspec.bootstrap_list=bootstrap_list
     basc.inputs.inputspec.proc_mem=proc_mem
     basc.inputs.inputspec.cross_cluster=cross_cluster
+    basc.inputs.inputspec.blocklength=blocklength
     basc.inputs.inputspec.roi2_mask_file=roi2_mask_file
     basc.inputs.inputspec.affinity_threshold=affinity_threshold
     

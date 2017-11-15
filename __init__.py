@@ -18,12 +18,12 @@ from basc import create_basc, \
                  post_analysis, \
                  save_igcm_nifti, \
                  create_group_cluster_maps, \
-                 ism_nifti
-                 
+                 ism_nifti, \
+                 gsm_nifti
             
 from basc_workflow_runner import run_basc_workflow
 
-import RunFile as RunFile
+#import RunFile as RunFile
 
               
             

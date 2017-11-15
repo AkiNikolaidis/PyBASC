@@ -459,8 +459,66 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir):
 
     return
 
+def gsm_nifti(roi_mask_file, n_clusters, out_dir):
+    import utils
+    import basc
+    import numpy as np
+    import os
+#Individual subject ISM to NIFTI and individual
 
-def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster=False, roi2_mask_file=None, cbb_block_size=None, affinity_threshold=0.5):
+#Inputs Subject ISM, ROIFile, 
+
+
+    
+    
+    #for i in range(nSubjects):
+    gsmdir=out_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/'
+    os.chdir(gsmdir)
+
+    gsm=np.load(gsmdir + '/group_stability_matrix.npy')
+    clusters_gsm = utils.cluster_timeseries(gsm, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
+    clusters_gsm = clusters_gsm+1
+    #niftifilename = gsmdir  +'/gsm_clust.nii.gz'
+    #clusters_gsm_file = gsmdir +'/clusters_gsm.npy'
+    #Saving Individual Level Cluster Solution
+#    ndarray_to_vol(clusters_gsm, roi_mask_file, roi_mask_file, niftifilename)
+#    np.save(clusters_gsm_file, clusters_gsm)
+    
+    
+    cluster_ids = np.unique(clusters_gsm)
+    nClusters = cluster_ids.shape[0]
+    nVoxels = clusters_gsm.shape[0]
+    gsm_cluster_voxel_scores = np.zeros((nClusters, nVoxels))
+    k_mask=np.zeros((nVoxels, nVoxels))
+    gsm_cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(gsm, clusters_gsm)
+    gsm_cluster_voxel_scores=gsm_cluster_voxel_scores.astype("uint8")
+    
+    grp_cluster_stability=[]
+    grp_cluster_INSTABILITY=[]
+    grp_cluster_stability_Diff=[]
+    
+    grp_cluster_stability_file = os.path.join(os.getcwd(), 'grp_cluster_stability.npy')
+    grp_cluster_INSTABILITY_file = os.path.join(os.getcwd(), 'grp_cluster_INSTABILITY.npy')
+    grp_cluster_stability_Diff_file = os.path.join(os.getcwd(), 'grp_cluster_stability_Diff.npy')
+    gsm_cluster_voxel_scores_file = os.path.join(os.getcwd(), 'gsm_cluster_voxel_scores.npy')
+    
+    for k in cluster_ids:
+        grp_cluster_stability.append(gsm_cluster_voxel_scores[(k-1),clusters_gsm==k].mean())
+        grp_cluster_INSTABILITY.append(gsm_cluster_voxel_scores[(k-1),clusters_gsm!=k].mean())
+        A, B = basc.ndarray_to_vol(gsm_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'gsm_single_cluster%i_stability.nii.gz' % k)
+    grp_cluster_stability=np.asarray(grp_cluster_stability)
+    grp_cluster_INSTABILITY=np.asarray(grp_cluster_INSTABILITY)
+    grp_cluster_stability_Diff=grp_cluster_stability-grp_cluster_INSTABILITY
+    
+    np.save(grp_cluster_stability_file, grp_cluster_stability)
+    np.save(grp_cluster_INSTABILITY_file, grp_cluster_INSTABILITY)
+    np.save(grp_cluster_stability_Diff_file, grp_cluster_stability_Diff)
+    np.save(gsm_cluster_voxel_scores_file, gsm_cluster_voxel_scores)
+
+
+    return
+
+def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster=False, roi2_mask_file=None, blocklength=1, cbb_block_size=None, affinity_threshold=0.5):
     """
     Calculate the individual stability matrix for a single subject by using Circular Block Bootstrapping method
     for time-series data.
@@ -529,7 +587,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         #print( 'Y2 compressed')
         
         print('Going into ism')
-        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, Y2_compressed, cross_cluster, cbb_block_size, affinity_threshold)
+        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
 
         
@@ -562,7 +620,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         Y1_labels=np.array(Y1_labels)
         print('debug2')
 
-        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, cross_cluster, cbb_block_size, affinity_threshold)
+        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
         print('debug3')
         #import pdb; pdb.set_trace()
@@ -620,8 +678,9 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
         out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
         out_vol[roi_mask_file] = data_array
     elif(len(data_array.shape) == 2):
-        out_vol = np.zeros((roi_mask_file.shape[0], roi_mask_file.shape[1], roi_mask_file.shape[2], data_array.shape[0]), dtype=data_array.dtype)
-        out_vol[roi_mask_file] = data_array.T
+        out_vol = np.zeros((roi_mask_file.shape[0], roi_mask_file.shape[1], roi_mask_file.shape[2], data_array.shape[1]), dtype=data_array.dtype)
+        #import pdb; pdb.set_trace()
+        out_vol[roi_mask_file] = data_array
     else:
         raise ValueError('data_array is %i dimensional, must be either 1 or 2 dimensional' % len(data_array.shape) )
     nii = None
@@ -728,6 +787,7 @@ def create_basc(proc_mem, name='basc'):
                                                        'proc_mem',
                                                        'cross_cluster',
                                                        'roi2_mask_file',
+                                                       'blocklength',
                                                        'affinity_threshold']),
                         name='inputspec')
 
@@ -756,6 +816,7 @@ def create_basc(proc_mem, name='basc'):
                                                 'cross_cluster',
                                                 'roi2_mask_file',
                                                 'cbb_block_size',
+                                                'blocklength',
                                                 'affinity_threshold'],
                                    output_names=['ism_file'],
                                    function=nifti_individual_stability),
@@ -901,7 +962,10 @@ def create_basc(proc_mem, name='basc'):
     basc.connect(inputspec, 'output_size',                  nis, 'output_size')
     basc.connect(inputspec, 'cross_cluster',                nis, 'cross_cluster')
     basc.connect(inputspec, 'roi2_mask_file',               nis, 'roi2_mask_file')
+    basc.connect(inputspec, 'blocklength',                  nis, 'blocklength')
     basc.connect(inputspec, 'affinity_threshold',           nis, 'affinity_threshold')
+    
+
     basc.connect(inputspec, 'bootstrap_list',               mgsm, 'bootstrap_list')
     basc.connect(inputspec, 'n_clusters',                   mgsm, 'n_clusters')
     basc.connect(inputspec, 'dataset_bootstraps',           jgsm, 'n_bootstraps')

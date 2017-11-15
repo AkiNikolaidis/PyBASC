@@ -212,7 +212,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, nei
       
     clustertime= time.time()
     X = np.array(X)
-    X_dist = sp.spatial.distance.pdist(X, metric = 'correlation')
+    X_dist = sp.spatial.distance.pdist(X, metric = similarity_metric)
     #print(X_dist)
     #print('Creating Clustering2')
     #print(X_dist)
@@ -299,14 +299,14 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     print("Calculating pairwise distances between areas")
     
     clustertime=time.time()
-    dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = 'correlation'))
+    dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = similarity_metric))
     sim_btwn_data_1_2=1-dist_btwn_data_1_2
     sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
     sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
 
     print("Calculating Cross-clustering2")
 
-    dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'correlation')
+    dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = similarity_metric)
     #dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
     print("Calculating Cross-clustering3")
@@ -471,7 +471,7 @@ def compare_stability_matrices(ism1, ism2):
     similarity= 1-distance
     return similarity
 
-def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_cluster=False, cbb_block_size = None, affinity_threshold = 0.5):
+def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_cluster=False, cbb_block_size = None, blocklength=1, affinity_threshold = 0.5):
     """
     Calculate the individual stability matrix of a single subject by bootstrapping their time-series
 
@@ -515,7 +515,8 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
     print('V1',V1)
     print(int(np.sqrt(N1)))
     print('block size is- ', cbb_block_size)
-    cbb_block_size = int(np.sqrt(N1))
+    temp_block_size = int(np.sqrt(N1))
+    cbb_block_size = int(temp_block_size * blocklength)
 #    if(cbb_block_size is None):
 #        cbb_block_size = int(np.sqrt(N1))
     print('block size now is- ', cbb_block_size)
@@ -525,7 +526,9 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
         for bootstrap_i in range(n_bootstraps):
         
             N2 = Y2.shape[1]
-            cbb_block_size2 = int(np.sqrt(N2))
+            temp_block_size2 = int(np.sqrt(N2))
+            cbb_block_size2 = int(temp_block_size2 * blocklength)
+
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             Y_b2 = utils.timeseries_bootstrap(Y2, cbb_block_size2)
             #import pdb; pdb.set_trace()

@@ -537,29 +537,30 @@ def test_basc_workflow_runner():
 
     from basc_workflow_runner import run_basc_workflow
     #import utils
-    subject_file_list= [home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-                        home + '/git_repo/BASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
+    subject_file_list= [home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
+                        home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
 
-    roi_mask_file= home + '/git_repo/BASC/masks/LC_Quarter_Res.nii.gz'
+    roi_mask_file= home + '/git_repo/PyBASC/masks/LC_Quarter_Res.nii.gz'
     dataset_bootstraps=20
     timeseries_bootstraps=20
     n_clusters=4
-    output_size=10
+    output_size=10  
+    blocklength=0.5
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
-    roi2_mask_file= home + '/git_repo/BASC/masks/RC_Quarter_Res.nii.gz'
+    roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/outputs_savetest4'
+    out_dir= home + '/PyBASC_outputs/Testing_BlockLength2'
     run=True
     
     
 
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 #%%
@@ -568,29 +569,30 @@ def heavy_test_basc_workflow_runner():
     from basc_workflow_runner import run_basc_workflow
     import utils
     subject_file_list=    ['/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060280/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
-                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060384/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
-                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060429/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
-                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060503/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
-                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060603/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
-                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060864/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz']
+                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060384/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz']#,
+#                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060429/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+#                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060503/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+#                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060603/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz',
+#                           '/Users/aki.nikolaidis/Desktop/NKI_SampleData/A00060864/3mm_bandpassed_demeaned_filtered_antswarp.nii.gz']
 
     proc_mem= [3,6] #first is number of proc , second total number of mem
 
-    roi_mask_file=home + '/git_repo/basc/masks/BG_3mm.nii.gz'
-    dataset_bootstraps=5
-    timeseries_bootstraps=5
-    n_clusters=2
-    output_size=400
+    roi_mask_file=home + '/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
+    dataset_bootstraps=2
+    timeseries_bootstraps=100
+    n_clusters=8
+    output_size=500
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
-    roi2_mask_file=home + '/git_repo/basc/masks/yeo2_3mm.nii.gz'
+    blocklength=2
+    roi2_mask_file=home + '/git_repo/PyBASC/masks/Yeo7_3mmMasks/YeoTest2.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/BASC_outputs/IGCM_Test5'
+    out_dir= home + '/PyBASC_outputs/BlockLength_2_Test'
     run=True
     
     
 
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 #%%
@@ -792,6 +794,27 @@ def NED_heavy_basc_workflow_test():
     print((time.time() - matrixtime))
 #%% TESTS UNDER CONSTRUCTION
 # NDARRAY TO VOL
+def test_ndarray_to_vol():
+    import basc
+    import nibabel as nb
+    
+    subject_file = home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz'
+    subject_file = home + '/git_repo/PyBASC/sample_data/test.nii.gz'
+    data = nb.load(subject_file).get_data().astype('float32')
+    roi_mask_file= home + '/git_repo/PyBASC/masks/LC_Quarter_Res.nii.gz'
+    print( 'Data Loaded')
+
+    
+    roi_mask_file_nb = nb.load(roi_mask_file)
+
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+    roi1data = data[roi_mask_nparray]
+    
+    data_array=roi1data
+    sample_file=subject_file
+    filename=home + '/git_repo/PyBASC/sample_data/ndarray_to_vol_test.nii.gz'
+    
+    basc.ndarray_to_vol(data_array, roi_mask_file, roi_mask_file, filename)
 
 
 def test_co_clustering():
