@@ -300,6 +300,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     
     clustertime=time.time()
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = similarity_metric))
+    #import pdb; pdb.set_trace()
     sim_btwn_data_1_2=1-dist_btwn_data_1_2
     sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
     sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
@@ -471,7 +472,7 @@ def compare_stability_matrices(ism1, ism2):
     similarity= 1-distance
     return similarity
 
-def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_cluster=False, cbb_block_size = None, blocklength=1, affinity_threshold = 0.5):
+def individual_stability_matrix(Y1, n_bootstraps, n_clusters, similarity_metric, Y2=None, cross_cluster=False, cbb_block_size = None, blocklength=1, affinity_threshold = 0.5):
     """
     Calculate the individual stability matrix of a single subject by bootstrapping their time-series
 
@@ -532,7 +533,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
             Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
             Y_b2 = utils.timeseries_bootstrap(Y2, cbb_block_size2)
             #import pdb; pdb.set_trace()
-            S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = 'correlation', affinity_threshold= affinity_threshold))
+            S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = similarity_metric, affinity_threshold= affinity_threshold))
 
             
         S /= n_bootstraps
@@ -548,7 +549,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, Y2=None, cross_clu
             #import pdb; pdb.set_trace()
             print('ismcalc2')
             #import pdb;pdb.set_trace()
-            S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = 'correlation', affinity_threshold = affinity_threshold)[:,np.newaxis])
+            S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold)[:,np.newaxis])
             
             print('S shape0', S.shape[0])
             print('S shape1', S.shape[1])

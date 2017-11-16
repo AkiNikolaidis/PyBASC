@@ -518,7 +518,7 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir):
 
     return
 
-def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster=False, roi2_mask_file=None, blocklength=1, cbb_block_size=None, affinity_threshold=0.5):
+def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, similarity_metric, cross_cluster=False, roi2_mask_file=None, blocklength=1, cbb_block_size=None, affinity_threshold=0.5):
     """
     Calculate the individual stability matrix for a single subject by using Circular Block Bootstrapping method
     for time-series data.
@@ -587,7 +587,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         #print( 'Y2 compressed')
         
         print('Going into ism')
-        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
+        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
 
         
@@ -620,7 +620,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         Y1_labels=np.array(Y1_labels)
         print('debug2')
 
-        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
+        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, similarity_metric, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
         print('debug3')
         #import pdb; pdb.set_trace()
@@ -785,6 +785,7 @@ def create_basc(proc_mem, name='basc'):
                                                        'output_size',
                                                        'bootstrap_list',
                                                        'proc_mem',
+                                                       'similarity_metric',
                                                        'cross_cluster',
                                                        'roi2_mask_file',
                                                        'blocklength',
@@ -813,6 +814,7 @@ def create_basc(proc_mem, name='basc'):
                                                 'n_bootstraps',
                                                 'n_clusters',
                                                 'output_size',
+                                                'similarity_metric',
                                                 'cross_cluster',
                                                 'roi2_mask_file',
                                                 'cbb_block_size',
@@ -953,13 +955,14 @@ def create_basc(proc_mem, name='basc'):
 
 ##############################################
     # Gather outside workflow inputs
-    
-    
+                                   
     basc.connect(inputspec, 'subject_file_list',            nis, 'subject_file')
     basc.connect(inputspec, 'roi_mask_file',                nis, 'roi_mask_file')
     basc.connect(inputspec, 'timeseries_bootstraps',        nis, 'n_bootstraps')
     basc.connect(inputspec, 'n_clusters',                   nis, 'n_clusters')
     basc.connect(inputspec, 'output_size',                  nis, 'output_size')
+    basc.connect(inputspec, 'similarity_metric',            nis, 'similarity_metric')
+
     basc.connect(inputspec, 'cross_cluster',                nis, 'cross_cluster')
     basc.connect(inputspec, 'roi2_mask_file',               nis, 'roi2_mask_file')
     basc.connect(inputspec, 'blocklength',                  nis, 'blocklength')

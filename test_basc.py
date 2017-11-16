@@ -555,7 +555,7 @@ def test_basc_workflow_runner():
     cross_cluster=True
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/Testing_BlockLength2'
+    out_dir= home + '/PyBASC_outputs/Testing_BlockLength1'
     run=True
     
     
@@ -585,14 +585,14 @@ def heavy_test_basc_workflow_runner():
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
     blocklength=2
+    similarity_metric='correlation'
     roi2_mask_file=home + '/git_repo/PyBASC/masks/Yeo7_3mmMasks/YeoTest2.nii.gz'
-    affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/BlockLength_2_Test'
+    affinity_threshold= [0.0] * len(subject_file_list)
+    out_dir= home + '/PyBASC_outputs/Similarity_Metric_test_correlation'
     run=True
     
-    
 
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, similarity_metric, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 #%%
