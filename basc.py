@@ -776,7 +776,6 @@ def create_basc(proc_mem, name='basc'):
     """
     import nipype.pipeline.engine as pe
 
-
     inputspec = pe.Node(util.IdentityInterface(fields=['subject_file_list',
                                                        'roi_mask_file',
                                                        'dataset_bootstraps',
@@ -827,7 +826,8 @@ def create_basc(proc_mem, name='basc'):
                                 'affinity_threshold'])
     
 #    nis.interface.num_threads = proc_mem[0]
-    nis.interface.estimated_memory_gb = int(proc_mem[1]/proc_mem[0])
+    #mport pdb; pdb.set_trace()
+    nis.interface.estimated_memory_gb = int(int(proc_mem[1])/int(proc_mem[0]))
 
 
     nis.inputs.cbb_block_size=None
