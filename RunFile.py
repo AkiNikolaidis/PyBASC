@@ -10,6 +10,7 @@
 #from BASC import *
 import utils
 import os
+import gc
 import numpy as np
 import scipy.stats
 from os.path import expanduser
@@ -121,6 +122,8 @@ for timeseries_bootstraps in timeseries_bootstrap_list:
                         #import pdb; pdb.set_trace()
                         out_dir= home + '/PyBASC_outputs/ISM_Testing_affinity00/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
                         PyBASC_test=run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+                        del PyBASC_test
+                        gc.collect()
                         #import pdb; pdb.set_trace()
                         ism_gsm_stability.append(np.load(out_dir + '/workflow_output/ism_gsm_corr_file/ism_gsm_corr.npy'))
                         ind_clust_stab_mat = np.load(out_dir + '/workflow_output/ind_group_cluster_stability_set/ind_group_cluster_stability_set.npy')
