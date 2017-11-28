@@ -8,6 +8,7 @@
 #
 #import BASC
 #from BASC import *
+import __init__
 import utils
 import os
 import gc
@@ -33,59 +34,59 @@ proc_mem= [3,6]
 #
 
 subject_file_list = ['/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_100_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_100_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_100_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_171_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_171_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_171_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_200_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_200_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_200_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_285_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_285_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_285_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_300_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_300_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_300_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_42_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_42_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_42_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_50_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_50_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_50_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_85_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_85_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_85_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_100_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_100_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_100_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_186_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_186_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_186_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_200_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_200_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_200_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_300_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_300_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_300_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_372_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_372_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_372_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_50_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_50_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_50_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_600_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_600_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_600_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_620_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_620_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_620_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00040915.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_93_A00029979.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_93_A00031217.nii.gz',
-'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_93_A00040915.nii.gz']
+'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_100_A00031217.nii.gz']
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_100_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_171_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_171_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_171_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_200_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_200_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_200_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_285_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_285_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_285_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_300_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_300_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_300_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_42_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_42_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_42_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_50_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_50_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_50_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_85_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_85_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/1400_Data/TimeTest/1400_85_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_100_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_100_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_100_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_186_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_186_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_186_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_200_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_200_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_200_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_300_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_300_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_300_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_372_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_372_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_372_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_50_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_50_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_50_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_600_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_600_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_600_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_620_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_620_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_620_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00040915.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_93_A00029979.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_93_A00031217.nii.gz',
+#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_93_A00040915.nii.gz']
 
 roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
 roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
@@ -99,11 +100,11 @@ roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_Al
 #roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
 
 dataset_bootstraps=2
-timeseries_bootstrap_list=[1,10,100,200]
-n_clusters_list=[2,6,12,20]
-output_sizes=[10,100,600,1200]
-blocklength_list=[0.5,1,2]
+timeseries_bootstrap_list=[1]#[1,10,100,200]
 similarity_metric_list= ['correlation','euclidean','cityblock', 'cosine']
+blocklength_list=[0.5,1,2]#[0.5,1,2]
+n_clusters_list=[2]#[2,6,12,20]
+output_sizes=[10,100]#[10,100,600,1200]
 
 bootstrap_list=list(range(0,dataset_bootstraps))
 cross_cluster=True
@@ -120,7 +121,7 @@ for timeseries_bootstraps in timeseries_bootstrap_list:
                 for n_clusters in n_clusters_list:
                     for output_size in output_sizes:
                         #import pdb; pdb.set_trace()
-                        out_dir= home + '/PyBASC_outputs/ISM_Testing_affinity00/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
+                        out_dir= home + '/PyBASC_outputs/ISM_Testing_affinity00_terminaltest/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
                         PyBASC_test=run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
                         del PyBASC_test
                         gc.collect()

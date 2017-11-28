@@ -327,7 +327,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     print("Clustering")
     print(sim_matrix)
     plt.imshow(sim_matrix)
-    spectral.fit(sim_matrix)
+    spectral.fit(sim_matrix) #CRASH- AKI
     print("Calculating Cross-clustering")
     y_pred = spectral.labels_.astype(np.int)
     return y_pred
