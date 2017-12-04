@@ -104,11 +104,11 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
         node, out_file = resource_pool[output]
         workflow.connect(node, out_file, ds, output)
 
-    plugin_args = { 'n_procs' : int(proc_mem[0]),'memory_gb': int(proc_mem[1]), 'raise_insufficient': True, 'maxtasksperchild': 1,'chunksize':1}
+    plugin_args = { 'n_procs' : int(proc_mem[0]),'memory_gb': int(proc_mem[1])}#, 'raise_insufficient': True, 'maxtasksperchild': 1,'chunksize':1}
 
 
     if run == True:
-        workflow.run(plugin='MultiProc', plugin_args= plugin_args) #
+        workflow.run(plugin='Linear', plugin_args= plugin_args) #
                      # {'n_procs': 1})
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
         return outpath

@@ -87,7 +87,8 @@ def timeseries_bootstrap(tseries, block_size):
 #           [ 4, 14, 24, 34, 44]])
     import numpy as np
     import time
-    
+    #import pdb; pdb.set_trace()
+    #import os; os.system('say "HI AKI I AM WORKING"') 
     #print('Calculating Timeseries Bootstrap')
     bootstraptime=time.time()
     #print('timeseries1')
@@ -104,6 +105,8 @@ def timeseries_bootstrap(tseries, block_size):
     block_offsets = np.dot(np.ones([block_size,1]), r_ind)
     block_mask = (blocks + block_offsets).flatten('F')[:tseries.shape[0]]
     block_mask = np.mod(block_mask, tseries.shape[0])
+    
+    
     #print('block_offsets shape0', block_offsets.shape[0])
     #print('block_offsets shape1', block_offsets.shape[1])
     #print('block_mask shape0', block_mask.shape[0])
@@ -111,7 +114,9 @@ def timeseries_bootstrap(tseries, block_size):
     #print('tseries shape0', tseries[block_mask.astype('int'), :].shape[0])
     #print('tseries shape1', tseries[block_mask.astype('int'), :].shape[1])
     #print('Finished: ', (time.time() - bootstraptime), ' seconds')
-    return tseries[block_mask.astype('int'), :]
+    #import pdb; pdb.set_trace()
+    
+    return tseries[block_mask.astype('int'), :], block_mask.astype('int')
 
 
 def standard_bootstrap(dataset):
@@ -205,7 +210,6 @@ def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, nei
     from sklearn import cluster, datasets
     import scipy as sp
     import time 
-    from sklearn import cluster, datasets
     #print('Creating Clustering')
     
     print('hello1')
@@ -294,11 +298,12 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     from sklearn import cluster
     import scipy as sp
     import time
-    from sklearn import cluster, datasets
+    from sklearn import cluster, datasets, preprocessing
     print("Calculating Cross-clustering")
     print("Calculating pairwise distances between areas")
     
     clustertime=time.time()
+    #import pdb; pdb.set_trace()
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1, data2, metric = similarity_metric))
     #import pdb; pdb.set_trace()
     sim_btwn_data_1_2=1-dist_btwn_data_1_2
@@ -307,9 +312,11 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
 
     print("Calculating Cross-clustering2")
 
-    dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = similarity_metric)
+    dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'correlation')
     #dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
+    
+    #sim_matrix=1-preprocessing.normalize(dist_matrix, norm='max')
     print("Calculating Cross-clustering3")
     sim_matrix=1-dist_matrix
 
@@ -361,7 +368,7 @@ def adjacency_matrix(cluster_pred):
            [1, 0, 0, 0, 1]])
 
     """
-    print('adjacency start')
+    #print('adjacency start')
     x = cluster_pred.copy()
     if(len(x.shape) == 1):
         x = x[:, np.newaxis]
@@ -370,7 +377,7 @@ def adjacency_matrix(cluster_pred):
         x += -x.min() + 1
 
     A = np.dot(x**-1., x.T) == 1
-    print('adjacency end')
+    #print('adjacency end')
     return A
 
 def cluster_matrix_average(M, cluster_assignments):
@@ -530,8 +537,10 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, similarity_metric,
             temp_block_size2 = int(np.sqrt(N2))
             cbb_block_size2 = int(temp_block_size2 * blocklength)
 
-            Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
-            Y_b2 = utils.timeseries_bootstrap(Y2, cbb_block_size2)
+            Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
+            Y_b2 = Y2[block_mask.astype('int'), :]
+            
+            #tseries[block_mask.astype('int'), :]
             #import pdb; pdb.set_trace()
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, n_clusters, similarity_metric = similarity_metric, affinity_threshold= affinity_threshold))
 
@@ -545,7 +554,7 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, similarity_metric,
         for bootstrap_i in range(n_bootstraps):
             print('ismcalc1')
             print('block size', cbb_block_size)
-            Y_b1 = utils.timeseries_bootstrap(Y1, cbb_block_size)
+            Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
             #import pdb; pdb.set_trace()
             print('ismcalc2')
             #import pdb;pdb.set_trace()

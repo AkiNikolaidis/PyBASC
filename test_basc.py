@@ -45,7 +45,7 @@ def test_timeseries_bootstrap():
     
     # Create a 10x5 matrix which counts up by column-wise
     x = np.arange(50).reshape((5,10)).T
-    actual = timeseries_bootstrap(x,3)
+    actual= timeseries_bootstrap(x,3)
     desired = np.array([[ 4, 14, 24, 34, 44],
                        [ 5, 15, 25, 35, 45],
                        [ 6, 16, 26, 36, 46],
@@ -553,14 +553,15 @@ def test_basc_workflow_runner():
     blocklength=0.5
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
+    similarity_metric='correlation'
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
-    affinity_threshold= [0.5] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/Testing_BlockLength1'
+    affinity_threshold= [0.0] * len(subject_file_list)
+    out_dir= home + '/PyBASC_outputs/TestingWorkflowWorkers'
     run=True
     
     
 
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 #%%
@@ -588,11 +589,11 @@ def heavy_test_basc_workflow_runner():
     similarity_metric='correlation'
     roi2_mask_file=home + '/git_repo/PyBASC/masks/Yeo7_3mmMasks/YeoTest2.nii.gz'
     affinity_threshold= [0.0] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/Similarity_Metric_test_correlation'
+    out_dir= home + '/PyBASC_outputs/NewWOrkerTest'
     run=True
     
 
-    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, similarity_metric, bootstrap_list, proc_mem, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+    basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 #%%
