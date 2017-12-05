@@ -224,7 +224,7 @@ def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, nei
     #print(X_dist)
     #print('Creating Clustering3')
     #import pdb; pdb.set_trace()
-    sim_matrix=1-X_dist
+    sim_matrix=1-preprocessing.normalize(dist_matrix, norm='max')
     sim_matrix[np.isnan((sim_matrix))]=0
     sim_matrix[sim_matrix<affinity_threshold]=0
     sim_matrix[sim_matrix>1]=1
@@ -234,10 +234,10 @@ def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, nei
     #print('Creating Clusterin5')
     print('hello2')
 
-    plt.imshow(sim_matrix)
+    #plt.imshow(sim_matrix)
     print('hello3')
     spectral.fit(sim_matrix)
-    print('Creating Clustering6')
+    #print('Creating Clustering6')
     y_pred = spectral.labels_.astype(np.int)
     return y_pred
 
@@ -316,9 +316,9 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     #dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
     
-    #sim_matrix=1-preprocessing.normalize(dist_matrix, norm='max')
+    sim_matrix=1-preprocessing.normalize(dist_matrix, norm='max')
     print("Calculating Cross-clustering3")
-    sim_matrix=1-dist_matrix
+    #sim_matrix=1-dist_matrix
 
     
     #matrix must be sparse
@@ -327,7 +327,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     #sim_matrix[sim_matrix<0]=0
 
     sim_matrix[sim_matrix<affinity_threshold]=0
-    sim_matrix[sim_matrix>1]=1
+    #sim_matrix[sim_matrix>1]=1
     print("Calculating Cross-clustering4")
     spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
     print("Calculating Cross-clustering5")
