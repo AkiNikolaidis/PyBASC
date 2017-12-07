@@ -142,13 +142,13 @@ import seaborn as sns; sns.set(style="ticks", color_codes=True)
 
 
 
-numsub_list=[50]
-numvox_list=[50]
+numsub_list=[1]
+numvox_list=[6171]
 n_list=[200]
 n_clusters_list=[2]
-corrstrength_list=[0.4]
-bootstraps_list=[10, 50, 90, 140, 200, 250, 300]
-noiselevel_list=[2]
+corrstrength_list=[0.6]
+bootstraps_list=[1]
+noiselevel_list=[1]
 
 #create matrix that has all accuracy and parameter information in it. Use Seaborne to plot the effects of different parameters on accuracy of group clustering.
 SimResults=pd.DataFrame(columns=['Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel'])

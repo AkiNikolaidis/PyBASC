@@ -362,55 +362,7 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir):
         end_file = Path(ism_cluster_voxel_scores_file)
         
         if end_file.exists():
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
-            print("IT WORKED")
+            
             return
         else:
             
@@ -551,6 +503,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     import utils
     import pandas as pd
     import sklearn as sk
+    from sklearn import preprocessing
     
 
     print( 'Calculating individual stability matrix of:', subject_file)
@@ -567,6 +520,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
         #print( 'Compressing data')
         data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
+        #import pdb; pdb.set_trace()
         Y1_compressed = data_dict1['data']
         Y1_compressed = Y1_compressed.T
         Y1_labels = pd.DataFrame(data_dict1['labels'])
