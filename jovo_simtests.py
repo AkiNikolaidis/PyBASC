@@ -24,18 +24,18 @@ def simbootstrap(data):
 
 
 
-#%%
+#%% FIRST APPROXiMATION- SIMULATION OF ONE DIMENSION
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-resamples=1000 #how many times we sample the population
+resamples=100 #how many times we sample the population
 n=100 # how many data points we have in our sample
-bootstraps=1000 #how many bootstraps samples are collected on this sample
+bootstraps=100 #how many bootstraps samples are collected on this sample
 
 #adding 'noisy' data
-intercept=5
-variance=10
-error_rarity=n/2
+intercept=50
+variance=2
+error_rarity=n/25
 
 #initializing
 bootstrapdata=[];
@@ -46,10 +46,13 @@ finalbootstrapmeans=[];
 for num in range(resamples):
     bootstrapdata=[]
     data=np.random.randn(n) #create data
-#        m=n/error_rarity #length of 'noisy' data
-#        morevariancedata= variance * np.random.randn(int(m)) + intercept #create noisy data
-#        alldata=data.tolist() + morevariancedata.tolist() #add noisy data
-#        data=np.asarray(alldata)
+    ######
+    #CREATE NOISE DATA
+    m=n/error_rarity #length of 'noisy' data
+    morevariancedata= variance * np.random.randn(int(m)) + intercept #create noisy data
+    alldata=data.tolist() + morevariancedata.tolist() #add noisy data
+    data=np.asarray(alldata)
+    ######
     samplemeans.append(data.mean()) #create sample mean and append to sample mean list
     
     for nums in range(bootstraps):
@@ -64,6 +67,10 @@ for num in range(resamples):
 finalbootstrapmeans=np.asarray(finalbootstrapmeans).ravel()
 samplemeans=np.asarray(samplemeans)
 error=samplemeans-finalbootstrapmeans
+
+true_sample_error=0-samplemeans
+true_bs_error=0-finalbootstrapmeans
+
 #import pdb; pdb.set_trace()
 
 #import matplotlib.pyplot as plt
@@ -82,14 +89,18 @@ print('Samplemean Variance is ', samplemeans.var())
 
 sns.kdeplot(samplemeans, label="samplemeans")
 sns.kdeplot(finalbootstrapmeans, label="bootstrapmeans")
-sns.kdeplot(error, label="error")
+
+#sns.kdeplot(error, label="error")
+#sns.kdeplot(true_sample_error, label="true_sample_error")
+#sns.kdeplot(true_bs_error, label="true_bs_error")
+
 #ns.kdeplot(samplemeans, bw=.2, label="bw: 0.2")
 #sns.kdeplot(samplemeans, bw=2, label="bw: 2")
 plt.legend();
 
 
 
-#%% MiniSim
+#%% MINI SIM OF  SEPARATE SIGNAL SOURCES
 import numpy as np
 import scipy as sp
 import seaborn as sns
@@ -141,12 +152,15 @@ from sklearn import cluster, datasets, preprocessing
 import seaborn as sns; sns.set(style="ticks", color_codes=True)
 
 
+Reg1_True=np.load('/Users/aki.nikolaidis/git_repo/PyBASC/Reg1_True.npy')
+Reg2_True=np.load('/Users/aki.nikolaidis/git_repo/PyBASC/Reg2_True.npy')
 
-numsub_list=[1]
-numvox_list=[6171]
+
+numsub_list=[10]
+numvox_list=[50]#[6171]
 n_list=[200]
 n_clusters_list=[2]
-corrstrength_list=[0.6]
+corrstrength_list=[0.4]
 bootstraps_list=[1]
 noiselevel_list=[1]
 
@@ -166,6 +180,8 @@ for noiselevel in noiselevel_list:
                         for numsub in numsub_list:
                             GSM1=np.zeros((numvox*3, numvox*3))
                             GSM2=np.zeros((numvox*3, numvox*3))
+                            pred1_stack=[];
+                            pred2_stack=[];
                             for subs in range(numsub):
                                 #CREATING DATA
                                 one=np.random.randn(n,1)
@@ -176,7 +192,8 @@ for noiselevel in noiselevel_list:
                                 region_B=[];
                                 region_C=[];
                                 for vox in range(numvox):
-                                    A=0.0 + corrstrength*one + (corrstrength/10)*two
+                                    print(vox)
+                                    A=0.0 + corrstrength*one +  (corrstrength/10)*two
                                     A=A+(noiselevel*(np.random.rand(n,1)))
                                     
                                     B=0.0 + (corrstrength/2)*one + (corrstrength/2)*two
@@ -212,7 +229,7 @@ for noiselevel in noiselevel_list:
                                 reg2_ism = np.zeros((V1, V1))
                                 
                                 for i in range(bootstraps):
-                                    
+                                    print('bootstraps num is', i)
                                     if bootstraps==1:
                                         Regions_b1=Regions
                                         region_one_b1=region_one
@@ -238,7 +255,7 @@ for noiselevel in noiselevel_list:
                                         region_one_b1 = region_one[block_mask.astype('int'), :]
                                         region_two_b1 = region_two[block_mask.astype('int'), :]  
                                     
-                                    #Creating Similarity Data between voxels in ABC and region One
+                                    print('Creating Similarity Data between voxels in ABC and region One')
                                     Dist_to_One= sp.spatial.distance.cdist(Regions_b1.T,region_one_b1.T, metric='correlation') # Try using 1- and euclidean? (Critical point here- correlation first then euclidean distance!!))
                                     Dist_of_ABC_One = sp.spatial.distance.pdist(Dist_to_One, metric = 'euclidean')
                                     Dist_mat_of_ABC_One = sp.spatial.distance.squareform(Dist_of_ABC_One)
@@ -247,7 +264,7 @@ for noiselevel in noiselevel_list:
                                     Sim_mat_of_ABC_One[Sim_mat_of_ABC_One>1]=1   
                                     #import pdb;pdb.set_trace()
                                     
-                                    #Creating Similarity Data between voxels in ABC and region Two
+                                    print('Creating Similarity Data between voxels in ABC and region Two')
                                     Dist_to_Two=sp.spatial.distance.cdist(Regions_b1.T,region_two_b1.T, metric='correlation') # Try using 1- and euclidean?
                                     Dist_of_ABC_Two =  sp.spatial.distance.pdist(Dist_to_Two, metric = 'euclidean')
                                     Dist_mat_of_ABC_Two = sp.spatial.distance.squareform(Dist_of_ABC_Two)
@@ -255,14 +272,16 @@ for noiselevel in noiselevel_list:
                                     Sim_mat_of_ABC_Two[Sim_mat_of_ABC_Two<0]=0
                                     Sim_mat_of_ABC_Two[Sim_mat_of_ABC_Two>1]=1
                                     #import pdb; pdb.set_trace()
-                                    #Clustering ABC according to connectivity to region 1
+                                    
+                                    print('Clustering ABC according to connectivity to region 1')
                                     spectral1 = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
                                     spectral2 = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-                                
+                                    
+                                    
                                     spectral1.fit(Sim_mat_of_ABC_One)
                                     y_pred1 = spectral1.labels_.astype(np.int)
                                     
-                                    #Clustering ABC according to connectivity to region 2
+                                    print('Clustering ABC according to connectivity to region 2')
                                     spectral2.fit(Sim_mat_of_ABC_Two)
                                     y_pred2 = spectral2.labels_.astype(np.int)
                                 
@@ -280,6 +299,9 @@ for noiselevel in noiselevel_list:
                                     #print('No Bootstraps!')
                                     reg1_final=reg1_ism
                                     reg2_final=reg2_ism
+                                    reg1_pred=y_pred1
+                                    reg2_pred=y_pred2
+                                    
                                 else:
                                     #import pdb;pdb.set_trace()
                                 
@@ -297,6 +319,10 @@ for noiselevel in noiselevel_list:
                                 
                                 GSM1+=reg1_final
                                 GSM2+=reg2_final
+                                pred1_stack.append(reg1_pred)
+                                pred2_stack.append(reg2_pred)
+                                
+                                print('All Done')
                                    
                             Reg1Acc=np.corrcoef(GSM1.ravel(),Reg1_True.ravel())
                             Reg1Acc=Reg1Acc[0,1]
@@ -309,10 +335,18 @@ for noiselevel in noiselevel_list:
                             frames=[SimResults, newdata]
                             SimResults= pd.concat(frames)
                             
-                            
-plotframe= pd.DataFrame([[SimResults['corrstrength'], SimResults['bootstraps'], SimResults['Reg1Acc'], SimResults['Reg2Acc']]], columns=['corrstrength','bootstraps','Reg1Acc','Reg2Acc'])                            
-#plotdata=pd.DataFrame(plotframe)
-plot = sns.pairplot(SimResults)
+#                            
+#plotframe= pd.DataFrame([[SimResults['corrstrength'], SimResults['bootstraps'], SimResults['Reg1Acc'], SimResults['Reg2Acc']]], columns=['corrstrength','bootstraps','Reg1Acc','Reg2Acc'])                            
+##plotdata=pd.DataFrame(plotframe)
+#plot = sns.pairplot(SimResults)
+
+plt.imshow(GSM1)
+plt.imshow(GSM2)
+plt.imshow(Reg1_True)
+plt.imshow(Reg2_True)
+
+pred1_stack=np.asarray(pred1_stack)
+pred2_stack=np.asarray(pred2_stack)
 
 #for noiselevel in noiselevel_list:
 #    for bootstraps in bootstraps_list:
@@ -326,6 +360,200 @@ plot = sns.pairplot(SimResults)
 
 #print('Region One Correlation is ', Reg1Acc)
 #print('Region Two Correlation is ', Reg2Acc)
+
+
+#%% JACCARD INDEX PERMUTATION TESTING
+from sklearn.metrics import jaccard_similarity_score
+permutations=100
+
+np.random.permutation(pred1_stack)
+permscore=[];
+pred_fullstack=np.vstack((pred1_stack,pred2_stack))
+pred_fullstack_perm=np.random.permutation(pred_fullstack)
+test_stat=jaccard_similarity_score(pred1_stack[0,:],pred2_stack[0,:])
+#plt.imshow(pred_fullstack_perm)
+
+for perm in range(permutations):
+    pred_fullstack_perm=np.random.permutation(pred_fullstack)
+    permscore.append(jaccard_similarity_score(pred_fullstack_perm[0,:],pred_fullstack_perm[1,:]))
+    
+    
+permscore=np.asarray(permscore)
+plt.hist(permscore)
+print(test_stat)
+
+
+#One way to do this would be to 
+#1 - Take the group level GSM and calculate difference to other.
+#2 - For perm in permutations:
+#        Permute over ISMs
+#        Calculate new GSMs
+#        Test Jaccard Distance between groups
+#        Save.
+#3-  Test difference with original.
+
+#permutation testing
+
+#%% CREATE DATA FOR SIMULATION ON REAL DATA
+
+import numpy as np
+import scipy as sp
+import seaborn as sns
+import pandas as pd
+import basc
+import utils
+import os
+#import __init__
+from utils import timeseries_bootstrap, adjacency_matrix
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn import cluster, datasets, preprocessing
+import seaborn as sns; sns.set(style="ticks", color_codes=True)
+
+
+#Reg1_True=np.load('/Users/aki.nikolaidis/git_repo/PyBASC/Reg1_True.npy')
+#Reg2_True=np.load('/Users/aki.nikolaidis/git_repo/PyBASC/Reg2_True.npy')
+
+
+#NOTES
+thalvox = 1775# voxels- should be a compostiion of signal from both= like region B
+rightvox = 1492 #voxels, should be mostly motor signal
+leftvox = 1460# voxels, should be mostly visual signal.
+fullvox=4727
+
+numsub=10
+BGvox=6171
+motorvox=11771
+visualvox=11941
+
+n=200
+n_clusters_list=[2]
+corrstrength_list=[0.8]
+bootstraps_list=[1]
+noiselevel_list=[0.5]
+
+for subs in range(numsub):
+    print(subs)
+
+
+for noiselevel in noiselevel_list:
+    for corrstrength in corrstrength_list:
+        for subs in range(numsub):
+            #CREATING DATA
+            
+
+            SimBG_right=[];
+            SimBG_thal=[];
+            SimBG_left=[];
+            SimMotor=[];
+            SimVisual=[];
+
+            SimMotor_signal=np.random.randn(n,1)
+            SimVisual_signal=np.random.randn(n,1)
+            
+            interaction=SimMotor_signal*SimVisual_signal # THink about adding this to the model
+
+#            for vox in range(BGvox):
+#                print('BG', vox)
+#                
+#                if (vox < 2000):
+#                    A=0.0 + corrstrength*SimMotor_signal + (corrstrength/10)*SimVisual_signal + (0.1*interaction)
+#                    A=A+(noiselevel*(np.random.rand(n,1)))
+#                    SimBG.append(A+np.random.rand(n,1))
+#                if (2000 <= vox < 4000):
+#                    B=0.0 + (corrstrength/2)*SimMotor_signal + (corrstrength/2)*SimVisual_signal + interaction
+#                    B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
+#                    SimBG.append(B+np.random.rand(n,1))
+#                if (vox>=4000):
+#                    C=0.0 + (corrstrength/10)*SimMotor_signal + corrstrength*SimVisual_signal + (0.1 * interaction)
+#                    C=C+(noiselevel*(np.random.rand(n,1)))
+#                    SimBG.append(C+np.random.rand(n,1))
+            
+            for vox in range(rightvox):
+                A=0.0 + corrstrength*SimMotor_signal# + (corrstrength/10)*SimVisual_signal + (0.1*interaction)
+                A=A+(noiselevel*(np.random.rand(n,1)))
+                SimBG_right.append(A+np.random.rand(n,1))
+        
+            for vox in range(thalvox):
+                B=0.0 + (corrstrength)*SimMotor_signal + (corrstrength)*SimVisual_signal# + 0.5*interaction
+                B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
+                SimBG_thal.append(B+np.random.rand(n,1))
+                    
+            for vox in range(leftvox):
+                C=0.0 + corrstrength*SimVisual_signal #+ (corrstrength/10)*SimMotor_signal  + (0.1*interaction)
+                C=C+(noiselevel*(np.random.rand(n,1)))
+                SimBG_left.append(C+np.random.rand(n,1))            
+            
+            for vox in range(motorvox):
+                print('Motor', vox)
+                Motor=0.0 + SimMotor_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimVisual_signal)
+                SimMotor.append(Motor)
+                
+            for vox in range(visualvox):
+                print('Visual', vox)
+                Visual= 0.0 + SimVisual_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimMotor_signal)
+                SimVisual.append(Visual)
+            
+            SimBG_right=np.asarray(SimBG_right)
+            SimBG_thal=np.asarray(SimBG_thal)
+            SimBG_left=np.asarray(SimBG_left)
+            SimMotor=np.asarray(SimMotor)
+            SimVisual=np.asarray(SimVisual)
+            #region_A=np.reshape(region_A, (numvox,n)).T
+            #SimBG=np.reshape(SimBG,(BGvox,n))
+            
+            SimBG_right=np.reshape(SimBG_right, (rightvox,n))
+            SimBG_thal=np.reshape(SimBG_thal, (thalvox,n))
+            SimBG_left=np.reshape(SimBG_left, (leftvox,n))
+            
+            SimMotor=np.reshape(SimMotor,(motorvox,n))
+            SimVisual=np.reshape(SimVisual,(visualvox,n))
+               
+            data_array_right = SimBG_right
+            roi_mask_file_right = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Right_Caud_Put_Pall_bin3mm.nii.gz'
+            sample_file_right = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Right_Caud_Put_Pall_bin3mm.nii.gz'
+            filename_right = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimBG_right_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+            
+            data_array_thal = SimBG_thal
+            roi_mask_file_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Bilateral_Thalamus3mm.nii.gz'
+            sample_file_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Bilateral_Thalamus3mm.nii.gz'
+            filename_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimBG_Thal_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+            
+            data_array_left = SimBG_left
+            roi_mask_file_left = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Left_Caud_Put_Pall_bin3mm.nii.gz'
+            sample_file_left = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Left_Caud_Put_Pall_bin3mm.nii.gz'
+            filename_left = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimBG_left_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+            
+            #roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
+            #roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
+
+            data_array2 = SimVisual
+            roi_mask_file2 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz'
+            sample_file2 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz'
+            filename2 = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimVisual_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+            
+            data_array3 = SimMotor
+            roi_mask_file3 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
+            sample_file3 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
+            filename3 = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimMotor_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+            
+            #write Regions to nifti file
+            basc.ndarray_to_vol(data_array_right, roi_mask_file_right, sample_file_right, filename_right)
+            basc.ndarray_to_vol(data_array_thal, roi_mask_file_thal, sample_file_thal, filename_thal)
+            basc.ndarray_to_vol(data_array_left, roi_mask_file_left, sample_file_left, filename_left)
+            #write Region One to nifti file
+            basc.ndarray_to_vol(data_array2, roi_mask_file2, sample_file2, filename2)
+            #
+            basc.ndarray_to_vol(data_array3, roi_mask_file3, sample_file3, filename3)
+            
+            niftiadditionfile='fslmaths ' + filename_right + ' -add ' + filename_thal + ' -add ' + filename_left + ' -add ' + filename2 + ' -add ' + filename3 + ' /Users/aki.nikolaidis/git_repo/PyBASC/SimData2/sub_' + str(subs) + '.nii.gz' 
+
+            os.system(niftiadditionfile)
+            
+            os.system('rm /Users/aki.nikolaidis/git_repo/PyBASC/SimData2/Sim*')
+                
+                
+
 #%%    
 #plt.imshow(Sim_to_One)
 #plt.imshow(Sim_of_ABC_One)
