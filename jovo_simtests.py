@@ -195,12 +195,15 @@ for noiselevel in noiselevel_list:
                                     print(vox)
                                     A=0.0 + corrstrength*one +  (corrstrength/10)*two
                                     A=A+(noiselevel*(np.random.rand(n,1)))
+                                    A=preprocessing.normalize(A, norm='max', axis=0)
                                     
                                     B=0.0 + (corrstrength/2)*one + (corrstrength/2)*two
                                     B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
+                                    B=preprocessing.normalize(B, norm='max', axis=0)
                                     
                                     C=0.0 + (corrstrength/10)*one + corrstrength*two
                                     C=C+(noiselevel*(np.random.rand(n,1)))
+                                    C=preprocessing.normalize(C, norm='max', axis=0)
                                     
                                     region_one.append(one+np.random.rand(n,1))
                                     region_two.append(two+np.random.rand(n,1))
@@ -472,26 +475,31 @@ for noiselevel in noiselevel_list:
             for vox in range(rightvox):
                 A=0.0 + corrstrength*SimMotor_signal# + (corrstrength/10)*SimVisual_signal + (0.1*interaction)
                 A=A+(noiselevel*(np.random.rand(n,1)))
-                SimBG_right.append(A+np.random.rand(n,1))
+                A=preprocessing.normalize(A, norm='max', axis=0)
+                SimBG_right.append(A)
         
             for vox in range(thalvox):
                 B=0.0 + (corrstrength)*SimMotor_signal + (corrstrength)*SimVisual_signal# + 0.5*interaction
                 B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
-                SimBG_thal.append(B+np.random.rand(n,1))
+                B=preprocessing.normalize(B, norm='max', axis=0)
+                SimBG_thal.append(B)
                     
             for vox in range(leftvox):
                 C=0.0 + corrstrength*SimVisual_signal #+ (corrstrength/10)*SimMotor_signal  + (0.1*interaction)
                 C=C+(noiselevel*(np.random.rand(n,1)))
-                SimBG_left.append(C+np.random.rand(n,1))            
+                C=preprocessing.normalize(C, norm='max', axis=0)
+                SimBG_left.append(C)            
             
             for vox in range(motorvox):
                 print('Motor', vox)
                 Motor=0.0 + SimMotor_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimVisual_signal)
+                Motor=preprocessing.normalize(Motor, norm='max', axis=0)
                 SimMotor.append(Motor)
                 
             for vox in range(visualvox):
                 print('Visual', vox)
                 Visual= 0.0 + SimVisual_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimMotor_signal)
+                Visual=preprocessing.normalize(Visual, norm='max', axis=0)
                 SimVisual.append(Visual)
             
             SimBG_right=np.asarray(SimBG_right)
@@ -501,7 +509,7 @@ for noiselevel in noiselevel_list:
             SimVisual=np.asarray(SimVisual)
             #region_A=np.reshape(region_A, (numvox,n)).T
             #SimBG=np.reshape(SimBG,(BGvox,n))
-            
+            #import pdb; pdb.set_trace()
             SimBG_right=np.reshape(SimBG_right, (rightvox,n))
             SimBG_thal=np.reshape(SimBG_thal, (thalvox,n))
             SimBG_left=np.reshape(SimBG_left, (leftvox,n))
@@ -550,7 +558,7 @@ for noiselevel in noiselevel_list:
 
             os.system(niftiadditionfile)
             
-            os.system('rm /Users/aki.nikolaidis/git_repo/PyBASC/SimData2/Sim*')
+            os.system('rm /Users/aki.nikolaidis/git_repo/PyBASC/SimData_STD/Sim*')
                 
                 
 

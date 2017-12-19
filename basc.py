@@ -52,6 +52,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
     G=G.astype("uint8")
     G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(G_file, G)
+    #REMOVE
     print ('Saving group stability matrix %s' % (G_file))
     
     return G_file
@@ -117,14 +118,15 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     print(G)
     gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(gsm_file, G)
-    
+    #REMOVE
     print( 'saving files: clusters_G' )
     clusters_G_file = os.path.join(os.getcwd(), 'clusters_G.npy')
     np.save(clusters_G_file, clusters_G)
-        
+    #REMOVE  
     print( 'saving files: ism_gsm_corr')
     ism_gsm_corr_file = os.path.join(os.getcwd(), 'ism_gsm_corr.npy')
     np.save(ism_gsm_corr_file, ism_gsm_corr)
+    #REMOVE
     return G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file
 
 
@@ -195,24 +197,26 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     #print( 'saving files: icvs')
     icvs_file = os.path.join(os.getcwd(), 'icvs.npy')
     np.save(icvs_file, icvs)
+    #REMOVE
     
     print( 'saving files: cluster_voxel_scores')
     cluster_voxel_scores=cluster_voxel_scores.astype("uint8")
     cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
     np.save(cluster_voxel_scores_file, cluster_voxel_scores)
-    
+    #REMOVE
     
     
     #print( 'saving files: k_mask')
     k_mask=k_mask.astype("bool_")
     k_mask_file = os.path.join(os.getcwd(), 'k_mask.npy')
     np.save(k_mask_file, k_mask)
+    #REMOVE
     
     #print( 'saving files: ind_group_cluster_stability')
     #ind_group_cluster_stability=ind_group_cluster_stability.astype("uint8")
     ind_group_cluster_stability_file = os.path.join(os.getcwd(), 'ind_group_cluster_stability.npy')
     np.save(ind_group_cluster_stability_file, ind_group_cluster_stability)
-
+    #REMOVE
 
     
     return  icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file #icvs, cluster_voxel_scores, k_mask
@@ -242,6 +246,7 @@ def post_analysis(ind_group_cluster_stability_file_list):
     
     ind_group_cluster_stability_set_file = os.path.join(os.getcwd(), 'ind_group_cluster_stability_set.npy')
     np.save(ind_group_cluster_stability_set_file, ind_group_cluster_stability_set)
+    #REMOVE
     return ind_group_cluster_stability_set_file
 
 def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
@@ -522,7 +527,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
         #import pdb; pdb.set_trace()
         Y1_compressed = data_dict1['data']
-        Y1_compressed = Y1_compressed.T
+        #Y1_compressed = Y1_compressed.T
         Y1_labels = pd.DataFrame(data_dict1['labels'])
         Y1_labels=np.array(Y1_labels)
         #print( 'Y1 compressed')
@@ -533,14 +538,17 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
         roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
         #print( 'Compressing Y2')
-        data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size)
+        output_size2=output_size+500
+        data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
+        
         Y2_compressed = data_dict2['data']
-        Y2_compressed=Y2_compressed.T
+        #Y2_compressed=Y2_compressed.T
         Y2_labels = pd.DataFrame(data_dict2['labels'])
         Y2_labels=np.array(Y2_labels)
         #print( 'Y2 compressed')
         
         print('Going into ism')
+        #import pdb;pdb.set_trace()
         ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
 
@@ -589,6 +597,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         
         ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
         np.save(ism_file, voxel_ism)
+        #REMOVE
         print('debug4')
         #print( 'Saving individual stability matrix %s for %s' % (ism_file, subject_file))
         return ism_file
