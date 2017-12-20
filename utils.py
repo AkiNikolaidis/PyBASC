@@ -74,50 +74,19 @@ def timeseries_bootstrap(tseries, block_size):
 
     """
     
-#    x = np.arange(50).reshape((5,10)).T
-#    sample_bootstrap(x,3)
-#    array([[ 7, 17, 27, 37, 47],
-#           [ 8, 18, 28, 38, 48],
-#           [ 9, 19, 29, 39, 49],
-#           [ 4, 14, 24, 34, 44],
-#           [ 5, 15, 25, 35, 45],
-#           [ 6, 16, 26, 36, 46],
-#           [ 0, 10, 20, 30, 40],
-#           [ 1, 11, 21, 31, 41],
-#           [ 2, 12, 22, 32, 42],
-#           [ 4, 14, 24, 34, 44]])
     import numpy as np
-    import time
-    #import pdb; pdb.set_trace()
-    #import os; os.system('say "HI AKI I AM WORKING"') 
-    #print('Calculating Timeseries Bootstrap')
-    bootstraptime=time.time()
-    #print('timeseries1')
-    #print('block size: ', block_size)
-    #print('tseries0',tseries.shape[0])
-    #print('tseries1',tseries.shape[1])
-    k = int(np.ceil(float(tseries.shape[0])/block_size))
-    #print('timeseries2')
+   
+    k = int(np.ceil(float(tseries.shape[0])/block_size)) #calculate number of blocks
 
-    r_ind = np.floor(np.random.rand(1,k)*tseries.shape[0])
+    r_ind = np.floor(np.random.rand(1,k)*tseries.shape[0]) #generate random indices of blocks
     blocks = np.dot(np.arange(0,block_size)[:,np.newaxis], np.ones([1,k]))
-    #print('timeseries3')
+
 
     block_offsets = np.dot(np.ones([block_size,1]), r_ind)
     block_mask = (blocks + block_offsets).flatten('F')[:tseries.shape[0]]
     #import pdb;pdb.set_trace()
     block_mask = np.mod(block_mask, tseries.shape[0])
-    #import pdb;pdb.set_trace()
-    
-    #print('block_offsets shape0', block_offsets.shape[0])
-    #print('block_offsets shape1', block_offsets.shape[1])
-    #print('block_mask shape0', block_mask.shape[0])
-    #print('block_mask shape1', block_mask.shape[1])
-    #print('tseries shape0', tseries[block_mask.astype('int'), :].shape[0])
-    #print('tseries shape1', tseries[block_mask.astype('int'), :].shape[1])
-    #print('Finished: ', (time.time() - bootstraptime), ' seconds')
-    #import pdb; pdb.set_trace()
-    
+
     return tseries[block_mask.astype('int'), :], block_mask.astype('int')
 
 
@@ -212,51 +181,31 @@ def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, nei
     from sklearn import cluster, datasets, preprocessing
     import scipy as sp
     import time 
-    #print('Creating Clustering')
-    
-    print('hello1')
-      
-    #clustertime= time.time()
-    X = np.array(X)
-    X_dist = sp.spatial.distance.pdist(X, metric = similarity_metric)
-    #print(X_dist)
-    #print('Creating Clustering2')
-    #print(X_dist)
-    X_dist = sp.spatial.distance.squareform(X_dist)
-    #print(X_dist)
-    #print('Creating Clustering3')
-    #import pdb; pdb.set_trace()
-    sim_matrix=1-sk.preprocessing.normalize(X_dist, norm='max')
-    sim_matrix[np.isnan((sim_matrix))]=0
-    sim_matrix[sim_matrix<affinity_threshold]=0
-    sim_matrix[sim_matrix>1]=1
-    #print('Creating Clusterin4')
-    #print(sim_matrix)
-    
-    #*ACTION* CLEAN UP CLUSTERING - ORGANIZE, COMMENT OUT SPECTRAL AND ADD NOTES FOR IT
-    spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-    #print('Creating Clusterin5')
-    print('hello2')
-
-    #plt.imshow(sim_matrix)
-    print('hello3')
-    #spectral.fit(sim_matrix)
-    #print('Creating Clustering6')
-    
-    
-    #y_pred = spectral.labels_.astype(np.int)
-    
-    #
     from sklearn.cluster import FeatureAgglomeration
-    start = time.time()
-    ward = FeatureAgglomeration(n_clusters=n_clusters, connectivity= sim_matrix, affinity='euclidean',
-                        linkage='ward')
-    ward.fit(sim_matrix)
-    #print("Ward agglomeration compressing voxels into clusters: %.2fs" % (time.time() - start))
-
-
-    y_pred = ward.labels_
     
+    print('Beginning Calculating pairwise distances between voxels')
+      
+    X = np.array(X)
+    X_dist = sp.spatial.distance.pdist(X.T, metric = similarity_metric)
+    X_dist = sp.spatial.distance.squareform(X_dist)
+    sim_matrix=1-sk.preprocessing.normalize(X_dist, norm='max')
+    sim_matrix[sim_matrix<affinity_threshold]=0
+    
+    ### BEGIN WARD CLUSTERING CODE 
+    print("Calculating Hierarchical Cross-clustering")
+    ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
+    ward.fit(sim_matrix)
+    y_pred = ward.labels_.astype(np.int)
+    
+    ### END WARD CLUSTERING CODE 
+    
+    # BEGIN SPECTRAL CLUSTERING CODE 
+    #spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
+    #spectral.fit(sim_matrix)
+    #y_pred = spectral.labels_.astype(np.int)
+    # END SPECTRAL CLUSTERING CODE 
+
+
 
     return y_pred
 
@@ -314,79 +263,46 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html#scipy.spatial.distance.cdist
     http://scikit-learn.org/stable/modules/clustering.html#spectral-clustering
     """
+    
+    
+    
     import scipy as sp
     import time
     import sklearn as sk
     from sklearn import cluster, datasets, preprocessing
+    from sklearn.cluster import FeatureAgglomeration
     
-    #import pdb; pdb.set_trace()
-    #from sklearn. import normalize
     print("Calculating Cross-clustering")
     print("Calculating pairwise distances between areas")
     
-    clustertime=time.time()
-    #import pdb; pdb.set_trace()
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1.T, data2.T, metric = similarity_metric))
-    #import pdb; pdb.set_trace()
     sim_btwn_data_1_2=1-dist_btwn_data_1_2
     sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
     sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
 
-    print("Calculating Cross-clustering2")
-
+    print("Calculating pairwise distances between voxels in ROI 1 ")
     dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'euclidean')
-    #dist_of_1[np.isnan((dist_of_1))]=1
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
-    
     sim_matrix=1-sk.preprocessing.normalize(dist_matrix, norm='max')
-    print("Calculating Cross-clustering3")
-    #sim_matrix=1-dist_matrix
-
-    #*ACTION* CLEAN UP CLUSTERING - ORGANIZE, COMMENT OUT SPECTRAL AND ADD NOTES FOR IT
-    #matrix must be sparse
-    #import pdb; pdb.set_trace()
-    sim_matrix[np.isnan((sim_matrix))]=0
-    sim_matrix[sim_matrix<0]=0
-
     sim_matrix[sim_matrix<affinity_threshold]=0
-    sim_matrix[sim_matrix>1]=1
-    print("Calculating Cross-clustering4")
-    ### TESTING
-    from sklearn.cluster import FeatureAgglomeration
-    
-    start = time.time()
-    ward = FeatureAgglomeration(n_clusters=n_clusters, connectivity= sim_matrix, affinity='euclidean',
-                        linkage='ward')
-    
-    #Try adding connectivity=sim_matrix
-    
+
+#    sim_matrix[np.isnan((sim_matrix))]=0
+#    sim_matrix[sim_matrix<0]=0
+#    sim_matrix[sim_matrix>1]=1
+
+    ### BEGIN WARD CLUSTERING CODE 
+    print("Calculating Hierarchical Cross-clustering")
+    ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
     ward.fit(sim_matrix)
-    #print("Ward agglomeration compressing voxels into clusters: %.2fs" % (time.time() - start))
-
-
-    y_pred = ward.labels_
+    y_pred = ward.labels_.astype(np.int)
     
-    #import pdb;pdb.set_trace()
+    ### END WARD CLUSTERING CODE 
     
-    
-    ### TESTING
-    
-    
-    
-    spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize')
-    print("Calculating Cross-clustering5")
-    print("Clustering")
-    print(sim_matrix)
-    #import pdb;pdb.set_trace()
-    #print(np.dtype(sim_matrix))
-    #plt.imshow(sim_matrix)
-    
-    
-    #spectral.fit(sim_matrix) #CRASH- AKI
-    
-    
-    #print("Calculating Cross-clustering")
+    # BEGIN SPECTRAL CLUSTERING CODE 
+    #spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
+    #spectral.fit(sim_matrix)
     #y_pred = spectral.labels_.astype(np.int)
+    # END SPECTRAL CLUSTERING CODE 
     
     return y_pred
 
