@@ -7,7 +7,7 @@ import nipype.interfaces.utility as util
 import imp
 from os.path import expanduser
 
-def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
+def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_mask_file):
     """
     Calculate the group stability maps for each group-level bootstrap
 
@@ -29,6 +29,10 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
     import numpy as np
     import nibabel as nb
     import utils
+    
+    
+    
+    
 
     print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
 
@@ -40,12 +44,12 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
 
     G = np.zeros((V,V))
     J = utils.standard_bootstrap(indiv_stability_set).mean(0)
-    
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
    
     J=J.astype("uint8")
     
     #print( 'calculating adjacency matrix')
-    G = utils.adjacency_matrix(utils.cluster_timeseries(J, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)[:,np.newaxis])
+    G = utils.adjacency_matrix(utils.cluster_timeseries(J, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)[:,np.newaxis])
     #print("finished calculating group stability matrix")
     
     G=G.astype("uint8")
@@ -57,7 +61,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list):
        
     
 
-def join_group_stability(indiv_stability_list, group_stability_list, n_bootstraps, n_clusters):
+def join_group_stability(indiv_stability_list, group_stability_list, n_bootstraps, n_clusters, roi_mask_file):
     """
     Merges the group stability maps for all and compares to all individual stability maps
 
@@ -96,7 +100,9 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
 
     print( 'calculating clusters_G')
    #import pdb; pdb.set_trace()
-    clusters_G = utils.cluster_timeseries(G, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+
+    clusters_G = utils.cluster_timeseries(G, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
     #APPLY THIS METHOD TO THE INDIVIDUAL LEVEL CLUSTER
  
     print( 'calculating cluster_voxel scores' )
@@ -352,7 +358,8 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir):
     os.chdir(ismdir)
     subdirs_all = [x[1] for x in os.walk(ismdir)]                                                                            
     subdirs=subdirs_all[0]
-    
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+
     for subdir in subdirs:
         os.chdir(ismdir + subdir)
         
@@ -369,7 +376,7 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir):
         else:
             
             ism=np.load(ismdir + subdir + '/individual_stability_matrix.npy')
-            clusters_ism = utils.cluster_timeseries(ism, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
+            clusters_ism = utils.cluster_timeseries(ism, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
             clusters_ism = clusters_ism+1
             niftifilename = ismdir + subdir +'/ism_clust.nii.gz'
             clusters_ism_file = ismdir + subdir +'/clusters_ism.npy'
@@ -424,13 +431,14 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir):
 
 
     
-    
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+
     #for i in range(nSubjects):
     gsmdir=out_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/'
     os.chdir(gsmdir)
 
     gsm=np.load(gsmdir + '/group_stability_matrix.npy')
-    clusters_gsm = utils.cluster_timeseries(gsm, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
+    clusters_gsm = utils.cluster_timeseries(gsm, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
     clusters_gsm = clusters_gsm+1
     #niftifilename = gsmdir  +'/gsm_clust.nii.gz'
     #clusters_gsm_file = gsmdir +'/clusters_gsm.npy'
@@ -513,38 +521,33 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
 
     data = nb.load(subject_file).get_data().astype('float32')
     #print( 'Data Loaded')
-
+    roi_mask_file_nb = nb.load(roi_mask_file)
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+#    roi_np_mask_file = os.path.join(os.getcwd(), 'mask_nparray.npy')
+#    np.save(roi_np_mask_file, roi_mask_nparray)
+#    import pdb; pdb.set_trace()
+    
+    roi1data = data[roi_mask_nparray]
+    roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
+    data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
+    Y1_compressed = data_dict1['data']
+    #Y1_compressed = Y1_compressed.T
+    Y1_labels = pd.DataFrame(data_dict1['labels'])
+    Y1_labels=np.array(Y1_labels)
+    
     if (roi2_mask_file != None):
-       #print( 'Setting up NIS')
-       #*ACTION MAKE SURE THE CROSS CLUSTER AND NORMAL CLUSTER HAVE THE SAME ORIENTATION OF FILES
-        roi_mask_file_nb = nb.load(roi_mask_file)
-        roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-        roi1data = data[roi_mask_nparray]
-        roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
-        #print( 'Compressing data')
-        data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
-        #import pdb; pdb.set_trace()
-        Y1_compressed = data_dict1['data']
-        #Y1_compressed = Y1_compressed.T
-        Y1_labels = pd.DataFrame(data_dict1['labels'])
-        Y1_labels=np.array(Y1_labels)
-        #print( 'Y1 compressed')
         
         roi2_mask_file_nb= nb.load(roi2_mask_file)
         roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
         roi2data = data[roi2_mask_nparray]
-        #add code that uploads the roi1data and roi2data, divides by the mean and standard deviation of the timeseries
         roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
         #print( 'Compressing Y2')
-        #*ACTION* (optional) ADD SECOND INPUT SIZE FOR DIM REDUCTION OF ROI2?
         output_size2=output_size
         data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
         
         Y2_compressed = data_dict2['data']
-        #Y2_compressed=Y2_compressed.T
         Y2_labels = pd.DataFrame(data_dict2['labels'])
         Y2_labels=np.array(Y2_labels)
-        #print( 'Y2 compressed')
         
         print('Going into ism')
         #import pdb;pdb.set_trace()
@@ -568,18 +571,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
 
     else:
 
-        roi_mask_file_nb=nb.load(roi_mask_file)
-        roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-        roi1data = data[roi_mask_nparray]
-        roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
-        print('debug1')
-        #print( '(%i voxels, %i timepoints and %i bootstraps' % (roi1data.shape[0], roi1data.shape[1], n_bootstraps))
-        data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
-        import pdb; pdb.set_trace()
-        Y1_compressed = data_dict1['data']
-        #Y1_compressed = Y1_compressed.T
-        Y1_labels = pd.DataFrame(data_dict1['labels'])
-        Y1_labels=np.array(Y1_labels)
         print('debug2')
 
         ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, similarity_metric, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
@@ -798,7 +789,8 @@ def create_basc(proc_mem, name='basc'):
     
     mgsm= pe.MapNode(util.Function(input_names= ['indiv_stability_list',
                                                  'n_clusters',
-                                                 'bootstrap_list'],
+                                                 'bootstrap_list',
+                                                 'roi_mask_file'],
                                 output_names=['G_file'],
                                 function=map_group_stability),
                                 name='map_group_stability',
@@ -810,7 +802,8 @@ def create_basc(proc_mem, name='basc'):
     jgsm= pe.Node(util.Function(input_names=['indiv_stability_list',
                                              'group_stability_list',
                                              'n_bootstraps',
-                                             'n_clusters'],
+                                             'n_clusters',
+                                             'roi_mask_file'],
                                 output_names=['G',
                                               'clusters_G',
                                               'ism_gsm_corr',
@@ -934,8 +927,10 @@ def create_basc(proc_mem, name='basc'):
 
     basc.connect(inputspec, 'bootstrap_list',               mgsm, 'bootstrap_list')
     basc.connect(inputspec, 'n_clusters',                   mgsm, 'n_clusters')
+    basc.connect(inputspec, 'roi_mask_file',                mgsm, 'roi_mask_file')
     basc.connect(inputspec, 'dataset_bootstraps',           jgsm, 'n_bootstraps')
     basc.connect(inputspec, 'n_clusters',                   jgsm, 'n_clusters')
+    basc.connect(inputspec, 'roi_mask_file',                jgsm, 'roi_mask_file')
     basc.connect(inputspec, 'subject_file_list',            gs_cluster_vol, 'sample_file')
     basc.connect(inputspec, 'roi_mask_file',                gs_cluster_vol, 'roi_mask_file') 
     basc.connect(inputspec, 'roi_mask_file',                igcm, 'roi_mask_file')

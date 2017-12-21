@@ -111,7 +111,7 @@ def standard_bootstrap(dataset):
     b = np.random.randint(0, high=n-1, size=n)
     return dataset[b]
 
-def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, neighbors = 10):
+def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affinity_threshold, neighbors = 10):
     """
     Cluster a given timeseries
 
@@ -182,6 +182,8 @@ def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, nei
     import scipy as sp
     import time 
     from sklearn.cluster import FeatureAgglomeration
+    from sklearn.feature_extraction import image
+
     
     print('Beginning Calculating pairwise distances between voxels')
       
@@ -192,11 +194,21 @@ def cluster_timeseries(X, n_clusters, similarity_metric, affinity_threshold, nei
     sim_matrix[sim_matrix<affinity_threshold]=0
     
     ### BEGIN WARD CLUSTERING CODE 
-    print("Calculating Hierarchical Cross-clustering")
-    ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
-    ward.fit(sim_matrix)
-    y_pred = ward.labels_.astype(np.int)
+    if roi_mask_nparray!='empty':
+        shape = roi_mask_nparray.shape
+        connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
+                                           n_z=shape[2], mask=roi_mask_nparray)
     
+        ward = FeatureAgglomeration(n_clusters=n_clusters, connectivity=connectivity,
+                                linkage='ward')
+        ward.fit(sim_matrix)
+        y_pred = ward.labels_.astype(np.int)
+    else:
+        print("Calculating Hierarchical Cross-clustering")
+        ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
+        ward.fit(sim_matrix)
+        y_pred = ward.labels_.astype(np.int)
+        
     ### END WARD CLUSTERING CODE 
     
     # BEGIN SPECTRAL CLUSTERING CODE 
@@ -525,7 +537,8 @@ def individual_stability_matrix(Y1, n_bootstraps, n_clusters, similarity_metric,
             #import pdb; pdb.set_trace()
             print('ismcalc2')
             #import pdb;pdb.set_trace()
-            S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold)[:,np.newaxis])
+            roi_mask_nparray='empty'
+            S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold)[:,np.newaxis])
             
             print('S shape0', S.shape[0])
             print('S shape1', S.shape[1])
