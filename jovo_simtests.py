@@ -160,7 +160,7 @@ numsub_list=[10]
 numvox_list=[50]#[6171]
 n_list=[200]
 n_clusters_list=[2]
-corrstrength_list=[0.4]
+corrstrength_list=[0.8]
 bootstraps_list=[1]
 noiselevel_list=[1]
 
@@ -366,25 +366,32 @@ pred2_stack=np.asarray(pred2_stack)
 
 
 #%% JACCARD INDEX PERMUTATION TESTING
-from sklearn.metrics import jaccard_similarity_score
+from sklearn.metrics import jaccard_similarity_score, adjusted_mutual_info_score
+
 permutations=100
 
 np.random.permutation(pred1_stack)
 permscore=[];
+permscore2=[];
 pred_fullstack=np.vstack((pred1_stack,pred2_stack))
 pred_fullstack_perm=np.random.permutation(pred_fullstack)
 test_stat=jaccard_similarity_score(pred1_stack[0,:],pred2_stack[0,:])
+test_stat2=adjusted_mutual_info_score(pred1_stack[0,:],pred2_stack[0,:])
 #plt.imshow(pred_fullstack_perm)
 
 for perm in range(permutations):
     pred_fullstack_perm=np.random.permutation(pred_fullstack)
     permscore.append(jaccard_similarity_score(pred_fullstack_perm[0,:],pred_fullstack_perm[1,:]))
-    
+    permscore2.append(adjusted_mutual_info_score(pred_fullstack_perm[0,:], pred_fullstack_perm[1,:]))
     
 permscore=np.asarray(permscore)
 plt.hist(permscore)
 print(test_stat)
 
+
+permscore2=np.asarray(permscore2)
+plt.hist(permscore2)
+print(test_stat2)
 
 #One way to do this would be to 
 #1 - Take the group level GSM and calculate difference to other.
@@ -429,136 +436,136 @@ BGvox=6171
 motorvox=11771
 visualvox=11941
 
-n=200
+n_list=[20,100,400]
 n_clusters_list=[2]
-corrstrength_list=[0.8]
+corrstrength_list=[0.05,0.3,0.7]
 bootstraps_list=[1]
-noiselevel_list=[0.5]
+noiselevel_list=[0.5, 2]
 
 for subs in range(numsub):
     print(subs)
 
-
-for noiselevel in noiselevel_list:
-    for corrstrength in corrstrength_list:
-        for subs in range(numsub):
-            #CREATING DATA
-            
-
-            SimBG_right=[];
-            SimBG_thal=[];
-            SimBG_left=[];
-            SimMotor=[];
-            SimVisual=[];
-
-            SimMotor_signal=np.random.randn(n,1)
-            SimVisual_signal=np.random.randn(n,1)
-            
-            interaction=SimMotor_signal*SimVisual_signal # THink about adding this to the model
-
-#            for vox in range(BGvox):
-#                print('BG', vox)
-#                
-#                if (vox < 2000):
-#                    A=0.0 + corrstrength*SimMotor_signal + (corrstrength/10)*SimVisual_signal + (0.1*interaction)
-#                    A=A+(noiselevel*(np.random.rand(n,1)))
-#                    SimBG.append(A+np.random.rand(n,1))
-#                if (2000 <= vox < 4000):
-#                    B=0.0 + (corrstrength/2)*SimMotor_signal + (corrstrength/2)*SimVisual_signal + interaction
-#                    B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
-#                    SimBG.append(B+np.random.rand(n,1))
-#                if (vox>=4000):
-#                    C=0.0 + (corrstrength/10)*SimMotor_signal + corrstrength*SimVisual_signal + (0.1 * interaction)
-#                    C=C+(noiselevel*(np.random.rand(n,1)))
-#                    SimBG.append(C+np.random.rand(n,1))
-            
-            for vox in range(rightvox):
-                A=0.0 + corrstrength*SimMotor_signal# + (corrstrength/10)*SimVisual_signal + (0.1*interaction)
-                A=A+(noiselevel*(np.random.rand(n,1)))
-                A=preprocessing.normalize(A, norm='max', axis=0)
-                SimBG_right.append(A)
-        
-            for vox in range(thalvox):
-                B=0.0 + (corrstrength)*SimMotor_signal + (corrstrength)*SimVisual_signal# + 0.5*interaction
-                B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
-                B=preprocessing.normalize(B, norm='max', axis=0)
-                SimBG_thal.append(B)
-                    
-            for vox in range(leftvox):
-                C=0.0 + corrstrength*SimVisual_signal #+ (corrstrength/10)*SimMotor_signal  + (0.1*interaction)
-                C=C+(noiselevel*(np.random.rand(n,1)))
-                C=preprocessing.normalize(C, norm='max', axis=0)
-                SimBG_left.append(C)            
-            
-            for vox in range(motorvox):
-                print('Motor', vox)
-                Motor=0.0 + SimMotor_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimVisual_signal)
-                Motor=preprocessing.normalize(Motor, norm='max', axis=0)
-                SimMotor.append(Motor)
+for n in n_list:
+    for noiselevel in noiselevel_list:
+        for corrstrength in corrstrength_list:
+            for subs in range(numsub):
+                #CREATING DATA
                 
-            for vox in range(visualvox):
-                print('Visual', vox)
-                Visual= 0.0 + SimVisual_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimMotor_signal)
-                Visual=preprocessing.normalize(Visual, norm='max', axis=0)
-                SimVisual.append(Visual)
+    
+                SimBG_right=[];
+                SimBG_thal=[];
+                SimBG_left=[];
+                SimMotor=[];
+                SimVisual=[];
+    
+                SimMotor_signal=np.random.randn(n,1)
+                SimVisual_signal=np.random.randn(n,1)
+                
+                interaction=SimMotor_signal*SimVisual_signal # THink about adding this to the model
+    
+    #            for vox in range(BGvox):
+    #                print('BG', vox)
+    #                
+    #                if (vox < 2000):
+    #                    A=0.0 + corrstrength*SimMotor_signal + (corrstrength/10)*SimVisual_signal + (0.1*interaction)
+    #                    A=A+(noiselevel*(np.random.rand(n,1)))
+    #                    SimBG.append(A+np.random.rand(n,1))
+    #                if (2000 <= vox < 4000):
+    #                    B=0.0 + (corrstrength/2)*SimMotor_signal + (corrstrength/2)*SimVisual_signal + interaction
+    #                    B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
+    #                    SimBG.append(B+np.random.rand(n,1))
+    #                if (vox>=4000):
+    #                    C=0.0 + (corrstrength/10)*SimMotor_signal + corrstrength*SimVisual_signal + (0.1 * interaction)
+    #                    C=C+(noiselevel*(np.random.rand(n,1)))
+    #                    SimBG.append(C+np.random.rand(n,1))
+                
+                for vox in range(rightvox):
+                    A=0.0 + corrstrength*SimMotor_signal# + (corrstrength/10)*SimVisual_signal + (0.1*interaction)
+                    A=A+(noiselevel*(np.random.rand(n,1)))
+                    A=preprocessing.normalize(A, norm='max', axis=0)
+                    SimBG_right.append(A)
             
-            SimBG_right=np.asarray(SimBG_right)
-            SimBG_thal=np.asarray(SimBG_thal)
-            SimBG_left=np.asarray(SimBG_left)
-            SimMotor=np.asarray(SimMotor)
-            SimVisual=np.asarray(SimVisual)
-            #region_A=np.reshape(region_A, (numvox,n)).T
-            #SimBG=np.reshape(SimBG,(BGvox,n))
-            #import pdb; pdb.set_trace()
-            SimBG_right=np.reshape(SimBG_right, (rightvox,n))
-            SimBG_thal=np.reshape(SimBG_thal, (thalvox,n))
-            SimBG_left=np.reshape(SimBG_left, (leftvox,n))
-            
-            SimMotor=np.reshape(SimMotor,(motorvox,n))
-            SimVisual=np.reshape(SimVisual,(visualvox,n))
-               
-            data_array_right = SimBG_right
-            roi_mask_file_right = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Right_Caud_Put_Pall_bin3mm.nii.gz'
-            sample_file_right = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Right_Caud_Put_Pall_bin3mm.nii.gz'
-            filename_right = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimBG_right_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
-            
-            data_array_thal = SimBG_thal
-            roi_mask_file_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Bilateral_Thalamus3mm.nii.gz'
-            sample_file_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Bilateral_Thalamus3mm.nii.gz'
-            filename_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimBG_Thal_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
-            
-            data_array_left = SimBG_left
-            roi_mask_file_left = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Left_Caud_Put_Pall_bin3mm.nii.gz'
-            sample_file_left = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Left_Caud_Put_Pall_bin3mm.nii.gz'
-            filename_left = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimBG_left_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
-            
-            #roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
-            #roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
-
-            data_array2 = SimVisual
-            roi_mask_file2 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz'
-            sample_file2 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz'
-            filename2 = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimVisual_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
-            
-            data_array3 = SimMotor
-            roi_mask_file3 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
-            sample_file3 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
-            filename3 = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData2/SimMotor_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
-            
-            #write Regions to nifti file
-            basc.ndarray_to_vol(data_array_right, roi_mask_file_right, sample_file_right, filename_right)
-            basc.ndarray_to_vol(data_array_thal, roi_mask_file_thal, sample_file_thal, filename_thal)
-            basc.ndarray_to_vol(data_array_left, roi_mask_file_left, sample_file_left, filename_left)
-            #write Region One to nifti file
-            basc.ndarray_to_vol(data_array2, roi_mask_file2, sample_file2, filename2)
-            #
-            basc.ndarray_to_vol(data_array3, roi_mask_file3, sample_file3, filename3)
-            
-            niftiadditionfile='fslmaths ' + filename_right + ' -add ' + filename_thal + ' -add ' + filename_left + ' -add ' + filename2 + ' -add ' + filename3 + ' /Users/aki.nikolaidis/git_repo/PyBASC/SimData2/sub_' + str(subs) + '.nii.gz' 
-
-            os.system(niftiadditionfile)
-            
-            os.system('rm /Users/aki.nikolaidis/git_repo/PyBASC/SimData_STD/Sim*')
+                for vox in range(thalvox):
+                    B=0.0 + (corrstrength)*SimMotor_signal + (corrstrength)*SimVisual_signal# + 0.5*interaction
+                    B=B+ (noiselevel*(np.random.rand(n,1))) #Could add more noise to each
+                    B=preprocessing.normalize(B, norm='max', axis=0)
+                    SimBG_thal.append(B)
+                        
+                for vox in range(leftvox):
+                    C=0.0 + corrstrength*SimVisual_signal #+ (corrstrength/10)*SimMotor_signal  + (0.1*interaction)
+                    C=C+(noiselevel*(np.random.rand(n,1)))
+                    C=preprocessing.normalize(C, norm='max', axis=0)
+                    SimBG_left.append(C)            
+                
+                for vox in range(motorvox):
+                    print('Motor', vox)
+                    Motor=0.0 + SimMotor_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimVisual_signal)
+                    Motor=preprocessing.normalize(Motor, norm='max', axis=0)
+                    SimMotor.append(Motor)
+                    
+                for vox in range(visualvox):
+                    print('Visual', vox)
+                    Visual= 0.0 + SimVisual_signal + (noiselevel*np.random.rand(n,1)) #+ (0.1*SimMotor_signal)
+                    Visual=preprocessing.normalize(Visual, norm='max', axis=0)
+                    SimVisual.append(Visual)
+                
+                SimBG_right=np.asarray(SimBG_right)
+                SimBG_thal=np.asarray(SimBG_thal)
+                SimBG_left=np.asarray(SimBG_left)
+                SimMotor=np.asarray(SimMotor)
+                SimVisual=np.asarray(SimVisual)
+                #region_A=np.reshape(region_A, (numvox,n)).T
+                #SimBG=np.reshape(SimBG,(BGvox,n))
+                #import pdb; pdb.set_trace()
+                SimBG_right=np.reshape(SimBG_right, (rightvox,n))
+                SimBG_thal=np.reshape(SimBG_thal, (thalvox,n))
+                SimBG_left=np.reshape(SimBG_left, (leftvox,n))
+                
+                SimMotor=np.reshape(SimMotor,(motorvox,n))
+                SimVisual=np.reshape(SimVisual,(visualvox,n))
+                   
+                data_array_right = SimBG_right
+                roi_mask_file_right = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Right_Caud_Put_Pall_bin3mm.nii.gz'
+                sample_file_right = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Right_Caud_Put_Pall_bin3mm.nii.gz'
+                filename_right = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData3/SimBG_right_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+                
+                data_array_thal = SimBG_thal
+                roi_mask_file_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Bilateral_Thalamus3mm.nii.gz'
+                sample_file_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Bilateral_Thalamus3mm.nii.gz'
+                filename_thal = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData3/SimBG_Thal_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+                
+                data_array_left = SimBG_left
+                roi_mask_file_left = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Left_Caud_Put_Pall_bin3mm.nii.gz'
+                sample_file_left = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Left_Caud_Put_Pall_bin3mm.nii.gz'
+                filename_left = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData3/SimBG_left_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+                
+                #roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
+                #roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
+    
+                data_array2 = SimVisual
+                roi_mask_file2 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz'
+                sample_file2 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz'
+                filename2 = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData3/SimVisual_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+                
+                data_array3 = SimMotor
+                roi_mask_file3 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
+                sample_file3 = '/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
+                filename3 = '/Users/aki.nikolaidis/git_repo/PyBASC/SimData3/SimMotor_' + 'sub_'+ str(subs) +'corrstrength_' + str(corrstrength) + 'noise_' + str(noiselevel) + '.nii.gz'
+                
+                #write Regions to nifti file
+                basc.ndarray_to_vol(data_array_right, roi_mask_file_right, sample_file_right, filename_right)
+                basc.ndarray_to_vol(data_array_thal, roi_mask_file_thal, sample_file_thal, filename_thal)
+                basc.ndarray_to_vol(data_array_left, roi_mask_file_left, sample_file_left, filename_left)
+                #write Region One to nifti file
+                basc.ndarray_to_vol(data_array2, roi_mask_file2, sample_file2, filename2)
+                #
+                basc.ndarray_to_vol(data_array3, roi_mask_file3, sample_file3, filename3)
+                
+                niftiadditionfile='fslmaths ' + filename_right + ' -add ' + filename_thal + ' -add ' + filename_left + ' -add ' + filename2 + ' -add ' + filename3 + ' /Users/aki.nikolaidis/git_repo/PyBASC/SimData3/sub_' + str(subs) +'corr_' + str(corrstrength) + '_noise_' + str(noiselevel) + '_TRs_' + str(n) + '.nii.gz'
+    
+                os.system(niftiadditionfile)
+                
+                os.system('rm /Users/aki.nikolaidis/git_repo/PyBASC/SimData3/Sim*')
                 
                 
 

@@ -177,6 +177,7 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
     y_pred = np.dot(eigen_discrete.toarray(), np.diag(np.arange(n_clusters))).sum(1)
 
     """
+    
     import sklearn as sk
     from sklearn import cluster, datasets, preprocessing
     import scipy as sp
@@ -195,6 +196,7 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
     
     ### BEGIN WARD CLUSTERING CODE 
     if roi_mask_nparray!='empty':
+        #import pdb; pdb.set_trace()
         shape = roi_mask_nparray.shape
         connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                            n_z=shape[2], mask=roi_mask_nparray)
@@ -209,13 +211,13 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
         ward.fit(sim_matrix)
         y_pred = ward.labels_.astype(np.int)
         
-    ### END WARD CLUSTERING CODE 
+    ## END WARD CLUSTERING CODE 
     
-    # BEGIN SPECTRAL CLUSTERING CODE 
-    #spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
-    #spectral.fit(sim_matrix)
-    #y_pred = spectral.labels_.astype(np.int)
-    # END SPECTRAL CLUSTERING CODE 
+#    # BEGIN SPECTRAL CLUSTERING CODE 
+#    spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
+#    spectral.fit(sim_matrix)
+#    y_pred = spectral.labels_.astype(np.int)
+#    # END SPECTRAL CLUSTERING CODE 
 
 
 
@@ -284,6 +286,7 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
     from sklearn import cluster, datasets, preprocessing
     from sklearn.cluster import FeatureAgglomeration
     
+    
     print("Calculating Cross-clustering")
     print("Calculating pairwise distances between areas")
     
@@ -302,19 +305,19 @@ def cross_cluster_timeseries(data1, data2, n_clusters, similarity_metric, affini
 #    sim_matrix[sim_matrix<0]=0
 #    sim_matrix[sim_matrix>1]=1
 
-    ### BEGIN WARD CLUSTERING CODE 
+    ## BEGIN WARD CLUSTERING CODE 
     print("Calculating Hierarchical Cross-clustering")
     ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
     ward.fit(sim_matrix)
     y_pred = ward.labels_.astype(np.int)
     
-    ### END WARD CLUSTERING CODE 
+    ## END WARD CLUSTERING CODE 
     
-    # BEGIN SPECTRAL CLUSTERING CODE 
-    #spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
-    #spectral.fit(sim_matrix)
-    #y_pred = spectral.labels_.astype(np.int)
-    # END SPECTRAL CLUSTERING CODE 
+#    # BEGIN SPECTRAL CLUSTERING CODE 
+#    spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
+#    spectral.fit(sim_matrix)
+#    y_pred = spectral.labels_.astype(np.int)
+#    # END SPECTRAL CLUSTERING CODE 
     
     return y_pred
 
@@ -383,7 +386,7 @@ def cluster_matrix_average(M, cluster_assignments):
     array([  6.,   6.,   6.,  21.,  21.])
 
     """
-#
+
 #    #TODO FIGURE OUT TEST FOR THIS FUNCTION
 #    
 #    ## from individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_file)

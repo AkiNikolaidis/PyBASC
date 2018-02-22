@@ -45,7 +45,7 @@ def test_timeseries_bootstrap():
     
     # Create a 10x5 matrix which counts up by column-wise
     x = np.arange(50).reshape((5,10)).T
-    actual= timeseries_bootstrap(x,3)
+    actual, other= timeseries_bootstrap(x,3)
     desired = np.array([[ 4, 14, 24, 34, 44],
                        [ 5, 15, 25, 35, 45],
                        [ 6, 16, 26, 36, 46],
@@ -58,6 +58,7 @@ def test_timeseries_bootstrap():
                        [ 8, 18, 28, 38, 48]])
     np.testing.assert_equal(actual, desired)
 
+ 
 
 def test_standard_bootstrap():
     """
@@ -126,8 +127,10 @@ def test_cluster_timeseries():
     """
     Tests the cluster_timeseries method on three blobs in three dimensions (to make correlation possible)
     """
+    roi_mask_nparray='empty'
     blobs = generate_blobs_3d()
-    y_predict = cluster_timeseries(blobs, 3, similarity_metric = 'correlation', affinity_threshold=0.0)
+    n_clusters=2
+    y_predict = cluster_timeseries(blobs, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, neighbors=10)
 
 
 def test_cross_cluster_timeseries():
@@ -153,7 +156,7 @@ def test_individual_stability_matrix():
     import scipy as sp
     desired = np.load(home + '/git_repo/PyBASC/tests/ism_test.npy')
     blobs = generate_blobs()
-    ism = utils.individual_stability_matrix(blobs, 20, 3)
+    ism = utils.individual_stability_matrix(blobs, 20, 3, similarity_metric='correlation')
     #how to use test here?
 #    np.corrcoef(ism.flatten(),desired.flatten())
 #    np.testing.assert_equal(ism,desired)
@@ -255,6 +258,7 @@ def test_expand_ism_options():
     target_mat_slow==target_mat_XM
     
 def test_data_compress_expand():
+    
     import os
     import numpy as np
     import nibabel as nb
@@ -338,10 +342,10 @@ def test_nifti_individual_stability():
     n_clusters=2
     output_size=20
     cross_cluster=False
-    
+    similarity_metric='correlation'
     cbb_block_size=None
     affinity_threshold=0.5
-    nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
+    nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, similarity_metric, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
 
 
 def test_cluster_matrix_average():
@@ -350,11 +354,16 @@ def test_cluster_matrix_average():
     import basc
     import matplotlib.pyplot as plt
     
-    
+    roi_mask_nparray='empty'
     blobs = generate_blobs()
-    ism = utils.individual_stability_matrix(blobs, 100, 3)
-    y_predict = utils.cluster_timeseries(blobs, 3, similarity_metric = 'correlation', affinity_threshold=0.0)
+    n_clusters=3
+    similarity_metric='correlation'
+    ism = utils.individual_stability_matrix(blobs, 100, n_clusters, similarity_metric)
+
+    y_predict = utils.cluster_timeseries(blobs, roi_mask_nparray, n_clusters, similarity_metric, affinity_threshold=0.0, neighbors = 10)
     cluster_voxel_scores, K_mask = utils.cluster_matrix_average(ism, y_predict)
+
+
     
     plt.imshow(K_mask)
     
@@ -383,7 +392,7 @@ def new_test_group_stability_matrix():
     indiv_stability_list=[]
     
     for i in range(ism_dataset.shape[0]):
-        ism_dataset[i] = utils.individual_stability_matrix(blobs + 0.2*np.random.randn(blobs.shape[0], blobs.shape[1]), bootstrap, 3, affinity_threshold = 0.0)
+        ism_dataset[i] = utils.individual_stability_matrix(blobs + 0.2*np.random.randn(blobs.shape[0], blobs.shape[1]), bootstrap, 3, similarity_metric='correlation',affinity_threshold = 0.0)
         f = 'ism_dataset_%i.npy' % i
         indiv_stability_list.append(f)
         np.save(f, ism_dataset[i])
@@ -462,28 +471,33 @@ def test_individual_group_clustered_maps():
     timeseries_bootstraps=5
     n_clusters=3
     output_size=10
+    similarity_metric = 'correlation'
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
+    blocklength=1
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     cbb_block_size=None
     affinity_threshold= 0.5 #* len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/IGCMDebug2'
+    out_dir= home + '/PyBASC_outputs/IGCM_HowsItWork'
     run=True
     indiv_stability_list=[]
     for i in range(0,len(subject_file_list)):
-        temp = basc.nifti_individual_stability(subject_file_list[i], roi_mask_file, timeseries_bootstraps, n_clusters, output_size, cross_cluster, roi2_mask_file, cbb_block_size, affinity_threshold)
+        temp = basc.nifti_individual_stability(subject_file_list[i], roi_mask_file, timeseries_bootstraps, n_clusters, output_size,similarity_metric, cross_cluster, roi2_mask_file, blocklength, cbb_block_size, affinity_threshold)
+        #def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, similarity_metric, cross_cluster=False, roi2_mask_file=None, blocklength=1, cbb_block_size=None, affinity_threshold=0.5):
+
         #temp=temp/timeseries_bootstraps
         indiv_stability_list.append(temp)
         
     G_file=[]
     for i in range(0,dataset_bootstraps):
-        temp2= map_group_stability(indiv_stability_list, n_clusters, bootstrap_list)
+        temp2= map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_mask_file)
         G_file.append(temp2)
         
-    G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(indiv_stability_list, G_file, dataset_bootstraps, n_clusters)
+    G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(indiv_stability_list, G_file, dataset_bootstraps, n_clusters, roi_mask_file)
     #k_mask,k_mask_file, icvs, cluster_voxel_scores,
     for i in range(0,len(subject_file_list)):
         icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file =basc.individual_group_clustered_maps(indiv_stability_list[i], clusters_G, roi_mask_file)
+
 
     return icvs, G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
 
@@ -556,12 +570,13 @@ def test_basc_workflow_runner():
     similarity_metric='correlation'
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.0] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/TestingWorkflowWorkers'
+    out_dir= home + '/PyBASC_outputs/BASC_Retesting3'
     run=True
     
     
 
     basc_test= run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
+    #PyBASC_test=run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 
 
 #%%

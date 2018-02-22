@@ -88,6 +88,11 @@ subject_file_list = ['/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_100_A000299
 '/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_93_A00031217.nii.gz',
 '/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_93_A00040915.nii.gz']
 
+
+#subject_file_list = ['/Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/NKI_Dev/645_Data/TimeTest/645_852_A00029979.nii.gz',
+#                     '/Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/NKI_Dev/645_Data/TimeTest/645_852_A00031217.nii.gz']
+
+
 roi_mask_file='/home/ec2-user/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
 roi2_mask_file='/home/ec2-user/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
 
