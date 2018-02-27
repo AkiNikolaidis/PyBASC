@@ -478,7 +478,7 @@ def test_individual_group_clustered_maps():
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     cbb_block_size=None
     affinity_threshold= 0.5 #* len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/IGCM_HowsItWork'
+    out_dir= home + '/PyBASC_outputs/IGCM_HowsItWork3'
     run=True
     indiv_stability_list=[]
     for i in range(0,len(subject_file_list)):
@@ -496,10 +496,17 @@ def test_individual_group_clustered_maps():
     G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file= basc.join_group_stability(indiv_stability_list, G_file, dataset_bootstraps, n_clusters, roi_mask_file)
     #k_mask,k_mask_file, icvs, cluster_voxel_scores,
     for i in range(0,len(subject_file_list)):
-        icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file =basc.individual_group_clustered_maps(indiv_stability_list[i], clusters_G, roi_mask_file)
+        icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file, individualized_group_clusters_img_file =basc.individual_group_clustered_maps(indiv_stability_list[i], clusters_G, roi_mask_file)
 
 
-    return icvs, G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, cluster_voxel_scores_file, ism_gsm_corr_file
+    return icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file, individualized_group_clusters_img_file #  G, clusters_G, cluster_voxel_scores, ism_gsm_corr, gsm_file, clusters_G_file, , ism_gsm_corr_file
+
+#output_names=['icvs_file',
+#                                               'cluster_voxel_scores_file',
+#                                               'k_mask_file',
+#                                               'ind_group_cluster_stability_file',
+#                                               'individualized_group_clusters_img_file'],
+
 
 def test_save_igcm_nifti(cluster_voxel_scores_file):
     
@@ -570,7 +577,7 @@ def test_basc_workflow_runner():
     similarity_metric='correlation'
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.0] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/BASC_Retesting3'
+    out_dir= home + '/PyBASC_outputs/indivudalizedGroupVoxels6'
     run=True
     
     

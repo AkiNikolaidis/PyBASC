@@ -127,6 +127,8 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     return G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file
 
 
+
+
 def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_file):
     """
     Calculate the individual stability maps of each subject based on the group stability clustering solution.
@@ -151,7 +153,7 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     import utils
     import basc
     print('starting igcm')
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     print("igcm debug 1")
     # *REMOVE LINE* indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
@@ -202,6 +204,12 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     cluster_voxel_scores_file = os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
     #*REMOVE LINE*np.save(cluster_voxel_scores_file, cluster_voxel_scores)
     #REMOVE
+    #import pdb; pdb.set_trace()
+    
+    #np.save(individualized_group_clusters_img_file, img)
+    #return img_file, img
+    #For each column, which row has the largest number?
+#    Creates a single row with voxel labels.
     
     
     #print( 'saving files: k_mask')
@@ -215,9 +223,49 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     ind_group_cluster_stability_file = os.path.join(os.getcwd(), 'ind_group_cluster_stability.npy')
     np.save(ind_group_cluster_stability_file, ind_group_cluster_stability)
 
-
+    import pdb; pdb.set_trace()
+    Individualized_Group_Cluster= np.argmax(cluster_voxel_scores, axis=0)
+    individualized_group_clusters_img_file, img = basc.ndarray_to_vol(Individualized_Group_Cluster, roi_mask_file, roi_mask_file, os.path.join(os.getcwd(), 'IndividualizedGroupClusters.nii.gz'))
+    img.to_filename(individualized_group_clusters_img_file)
     
-    return  icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file #icvs, cluster_voxel_scores, k_mask
+    return  icvs_file, cluster_voxel_scores_file, k_mask_file, ind_group_cluster_stability_file, individualized_group_clusters_img_file #icvs, cluster_voxel_scores, k_mask
+
+
+
+#def individualized_group_clusters(indiv_stability_list, cluster_voxel_scores_file, roi_mask_file):
+#
+##    Pseudocode=
+##Just a function for now (eventually map node)
+##
+##Input- subject list, cluster voxel scores.npy, ROI mask file
+##
+##Load cluster_voxel_scores.npy (rows = cluster number, column = voxel)
+##
+##For each column, which row has the largest number?
+##    Creates a single row with voxel labels.
+##
+##Put this individualized label through basc.ndarray_to_vol and save.
+#    
+#    import os
+#    import numpy as np
+#    import utils
+#    import basc
+#    print('starting igcm')
+#    #import pdb; pdb.set_trace()
+#    print("igcm debug 1")
+#    # *REMOVE LINE* indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
+#    indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
+#    indiv_stability_set = indiv_stability_mat[0]
+#    #*REMOVE LINE*nSubjects = indiv_stability_set.shape[0]
+#    nVoxels = indiv_stability_set.shape[1]
+#
+#    cluster_ids = np.unique(clusters_G)
+#    nClusters = cluster_ids.shape[0]
+#    print("igcm debug 2")
+#    os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
+#    
+#    return
+
 
 def post_analysis(ind_group_cluster_stability_file_list):
     """
@@ -791,7 +839,8 @@ def create_basc(proc_mem, name='basc'):
                                                         'cluster_voxel_scores',
                                                         'k_mask',
                                                         'ind_group_cluster_stability',
-                                                        'ind_group_cluster_stability_set']),
+                                                        'ind_group_cluster_stability_set',
+                                                        'individualized_group_clusters_img_file']),
                         name='outputspec')
     basc = pe.Workflow(name=name)
 
@@ -853,7 +902,8 @@ def create_basc(proc_mem, name='basc'):
                                  output_names=['icvs_file',
                                                'cluster_voxel_scores_file',
                                                'k_mask_file',
-                                               'ind_group_cluster_stability_file'],
+                                               'ind_group_cluster_stability_file',
+                                               'individualized_group_clusters_img_file'],
                                  function=individual_group_clustered_maps),
                    name='individual_group_clustered_maps',
                    iterfield='indiv_stability_list')
@@ -872,6 +922,14 @@ def create_basc(proc_mem, name='basc'):
 #                                            function = 
 #                                )
 
+#    individualized_grp_clusters=pe.Node(util.Function(input_names=['data_array',
+#                                                        'roi_mask_file',
+#                                                        'sample_file',
+#                                                        'filename'],
+#                                           output_names=['img_file', 'img'],
+#                                           function=ndarray_to_vol),
+#                             name='individualized_grp_clusters')
+    
     gs_cluster_vol = pe.Node(util.Function(input_names=['data_array',
                                                         'roi_mask_file',
                                                         'sample_file',
@@ -950,8 +1008,9 @@ def create_basc(proc_mem, name='basc'):
     basc.connect(igcm, 'cluster_voxel_scores_file',         outputspec, 'cluster_voxel_scores')
     basc.connect(igcm, 'k_mask_file',                       outputspec, 'k_mask')
     basc.connect(igcm, 'ind_group_cluster_stability_file',  outputspec, 'ind_group_cluster_stability')
-    basc.connect(post, 'ind_group_cluster_stability_set_file',   outputspec, 'ind_group_cluster_stability_set')
+    basc.connect(igcm, 'individualized_group_clusters_img_file',   outputspec, 'individualized_group_clusters_img_file')
 
+    basc.connect(post, 'ind_group_cluster_stability_set_file',   outputspec, 'ind_group_cluster_stability_set')
 
 
  
