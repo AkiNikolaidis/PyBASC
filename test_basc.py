@@ -577,7 +577,7 @@ def test_basc_workflow_runner():
     similarity_metric='correlation'
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.0] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/indivudalizedGroupVoxels6'
+    out_dir= home + '/PyBASC_outputs/Testing_ClusterMethod3'
     run=True
     
     

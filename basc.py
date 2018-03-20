@@ -29,6 +29,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     import numpy as np
     import nibabel as nb
     import utils
+    
  
     print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
 
@@ -45,10 +46,11 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     J=J.astype("uint8")
     
     #print( 'calculating adjacency matrix')
-    G = utils.adjacency_matrix(utils.cluster_timeseries(J, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)[:,np.newaxis])
+    G = utils.adjacency_matrix(utils.cluster_timeseries(J, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='ward')[:,np.newaxis])
     #print("finished calculating group stability matrix")
     
     G=G.astype("uint8")
+    
     G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
     np.save(G_file, G)
     print ('Saving group stability matrix %s' % (G_file))
@@ -96,7 +98,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
    #import pdb; pdb.set_trace()
     roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
 
-    clusters_G = utils.cluster_timeseries(G, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
+    clusters_G = utils.cluster_timeseries(G, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='spectral')
     #APPLY THIS METHOD TO THE INDIVIDUAL LEVEL CLUSTER
  
     print( 'calculating cluster_voxel scores' )
@@ -223,8 +225,8 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     ind_group_cluster_stability_file = os.path.join(os.getcwd(), 'ind_group_cluster_stability.npy')
     np.save(ind_group_cluster_stability_file, ind_group_cluster_stability)
 
-    import pdb; pdb.set_trace()
-    Individualized_Group_Cluster= np.argmax(cluster_voxel_scores, axis=0)
+    #import pdb; pdb.set_trace()
+    Individualized_Group_Cluster= np.argmax(cluster_voxel_scores, axis=0) +1
     individualized_group_clusters_img_file, img = basc.ndarray_to_vol(Individualized_Group_Cluster, roi_mask_file, roi_mask_file, os.path.join(os.getcwd(), 'IndividualizedGroupClusters.nii.gz'))
     img.to_filename(individualized_group_clusters_img_file)
     
@@ -438,7 +440,7 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir):
         else:
             
             ism=np.load(ismdir + subdir + '/individual_stability_matrix.npy')
-            clusters_ism = utils.cluster_timeseries(ism, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
+            clusters_ism = utils.cluster_timeseries(ism, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='ward')
             clusters_ism = clusters_ism+1
             niftifilename = ismdir + subdir +'/ism_clust.nii.gz'
             clusters_ism_file = ismdir + subdir +'/clusters_ism.npy'
@@ -521,7 +523,7 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir):
     os.chdir(gsmdir)
 
     gsm=np.load(gsmdir + '/group_stability_matrix.npy')
-    clusters_gsm = utils.cluster_timeseries(gsm, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0)
+    clusters_gsm = utils.cluster_timeseries(gsm, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='ward')
     clusters_gsm = clusters_gsm+1
     #niftifilename = gsmdir  +'/gsm_clust.nii.gz'
     #clusters_gsm_file = gsmdir +'/clusters_gsm.npy'
