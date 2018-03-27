@@ -46,7 +46,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     J=J.astype("uint8")
     
     #print( 'calculating adjacency matrix')
-    G = utils.adjacency_matrix(utils.cluster_timeseries(J, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='ward')[:,np.newaxis])
+    G = utils.adjacency_matrix(utils.cluster_timeseries(J, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='spectral')[:,np.newaxis])
     #print("finished calculating group stability matrix")
     
     G=G.astype("uint8")
@@ -619,7 +619,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     #Y1_compressed = Y1_compressed.T
     Y1_labels = pd.DataFrame(data_dict1['labels'])
     Y1_labels=np.array(Y1_labels)
-    
+    #import pdb;pdb.set_trace()
     if (roi2_mask_file != None):
         
         roi2_mask_file_nb= nb.load(roi2_mask_file)
@@ -636,7 +636,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         
         print('Going into ism')
         #import pdb;pdb.set_trace()
-        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
+        ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
 
         
@@ -657,11 +657,13 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     else:
 
         print('debug2')
+        #Y2_compressed=None
+        #import pdb; pdb.set_trace()
+        Y2=None
+        ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2 ,cross_cluster, cbb_block_size, blocklength, affinity_threshold)
 
-        ism = utils.individual_stability_matrix(Y1_compressed, n_bootstraps, n_clusters, similarity_metric, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         #ism=ism/n_bootstraps # was already done in ism
         print('debug3')
-        #import pdb; pdb.set_trace()
         print(Y1_labels)
 
         print('expanding ism')

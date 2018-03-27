@@ -571,13 +571,13 @@ def test_basc_workflow_runner():
     timeseries_bootstraps=20
     n_clusters=4
     output_size=10  
-    blocklength=0.5
+    blocklength=1
     bootstrap_list=list(range(0,dataset_bootstraps))
     cross_cluster=True
     similarity_metric='correlation'
     roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
     affinity_threshold= [0.0] * len(subject_file_list)
-    out_dir= home + '/PyBASC_outputs/Testing_ClusterMethod3'
+    out_dir= home + '/PyBASC_outputs/Testing_spatialconstraint'
     run=True
     
     
