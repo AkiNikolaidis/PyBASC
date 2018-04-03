@@ -102,7 +102,7 @@ subject_file_list = ['/Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_
 #
 #
 roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
-roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
+roi2_mask_file=None#'/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
 
 
 
@@ -118,8 +118,8 @@ n_clusters_list=[6]#[2,6,12,20]
 output_sizes=[800]#[10,100,600,1200]
 
 bootstrap_list=list(range(0,dataset_bootstraps))
-cross_cluster=True
-affinity_threshold= [0.0] * len(subject_file_list)
+cross_cluster=False
+affinity_threshold= [0.3] * len(subject_file_list)
 
 ism_gsm_stability=[]
 ind_clust_stab_mat=[]
@@ -132,7 +132,7 @@ for timeseries_bootstraps in timeseries_bootstrap_list:
                 for n_clusters in n_clusters_list:
                     for output_size in output_sizes:
                         #import pdb; pdb.set_trace()
-                        out_dir= home + '/PyBASC_outputs/TestingIndividualization/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
+                        out_dir= home + '/PyBASC_outputs/SelfClusterTest5/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
                         #out_dir= '/Users/aki.nikolaidis/PyBASC_outputs/Testing_Ward/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
                         PyBASC_test=run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
 #                        del PyBASC_test

@@ -156,13 +156,13 @@ Reg1_True=np.load('/Users/aki.nikolaidis/git_repo/PyBASC/Reg1_True.npy')
 Reg2_True=np.load('/Users/aki.nikolaidis/git_repo/PyBASC/Reg2_True.npy')
 
 
-numsub_list=[10]
-numvox_list=[50]#[6171]
+numsub_list=[1]
+numvox_list=[500]#[6171]
 n_list=[200]
 n_clusters_list=[2]
-corrstrength_list=[0.8]
-bootstraps_list=[1]
-noiselevel_list=[1]
+corrstrength_list=[0.4]
+bootstraps_list=[50]
+noiselevel_list=[1.2]
 
 #create matrix that has all accuracy and parameter information in it. Use Seaborne to plot the effects of different parameters on accuracy of group clustering.
 SimResults=pd.DataFrame(columns=['Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel'])
@@ -327,11 +327,11 @@ for noiselevel in noiselevel_list:
                                 
                                 print('All Done')
                                    
-                            Reg1Acc=np.corrcoef(GSM1.ravel(),Reg1_True.ravel())
-                            Reg1Acc=Reg1Acc[0,1]
-                            
-                            Reg2Acc=np.corrcoef(GSM2.ravel(),Reg2_True.ravel())
-                            Reg2Acc=Reg2Acc[0,1]
+#                            Reg1Acc=np.corrcoef(GSM1.ravel(),Reg1_True.ravel())
+#                            Reg1Acc=Reg1Acc[0,1]
+#                            
+#                            Reg2Acc=np.corrcoef(GSM2.ravel(),Reg2_True.ravel())
+#                            Reg2Acc=Reg2Acc[0,1]
                             #Reg2Acc=1-sp.spatial.distance.cdist((GSM2.ravel(),Reg2_True.ravel()), metric='correlation')
                             
                             newdata=pd.DataFrame([[Reg1Acc, Reg2Acc, numsub, numvox, n, n_clusters, corrstrength, bootstraps, noiselevel]], columns=['Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel'])
@@ -345,11 +345,31 @@ for noiselevel in noiselevel_list:
 
 plt.imshow(GSM1)
 plt.imshow(GSM2)
-plt.imshow(Reg1_True)
-plt.imshow(Reg2_True)
+plt.imshow(reg1_ism)
+plt.imshow(reg2_ism)
 
-pred1_stack=np.asarray(pred1_stack)
-pred2_stack=np.asarray(pred2_stack)
+
+truth1500_1=np.zeros((1500,1500))
+truth1500_1[0:1000,0:1000]=1
+truth1500_1[1000:1500,1000:1500]=1
+
+truth1500_2=np.zeros((1500,1500))
+truth1500_2[0:500,0:500]=1
+truth1500_2[500:1500,500:1500]=1
+
+np.corrcoef(truth1500_1.ravel(),reg1_ism.ravel())
+np.corrcoef(truth1500_2.ravel(),reg2_ism.ravel())
+
+np.corrcoef(truth1500_1.ravel(),GSM1.ravel())
+np.corrcoef(truth1500_2.ravel(),GSM2.ravel())
+
+#plt.imshow(Reg1_True)
+#plt.imshow(Reg2_True)
+#
+#pred1_stack=np.asarray(pred1_stack)
+#pred2_stack=np.asarray(pred2_stack)
+
+
 
 #for noiselevel in noiselevel_list:
 #    for bootstraps in bootstraps_list:
@@ -366,7 +386,7 @@ pred2_stack=np.asarray(pred2_stack)
 
 
 #%% JACCARD INDEX PERMUTATION TESTING
-from sklearn.metrics import jaccard_similarity_score, adjusted_mutual_info_score
+from sklearn.metrics import adjusted_rand_score, jaccard_similarity_score, adjusted_mutual_info_score
 
 permutations=100
 
@@ -375,14 +395,15 @@ permscore=[];
 permscore2=[];
 pred_fullstack=np.vstack((pred1_stack,pred2_stack))
 pred_fullstack_perm=np.random.permutation(pred_fullstack)
-test_stat=jaccard_similarity_score(pred1_stack[0,:],pred2_stack[0,:])
+test_stat=adjusted_rand_score(pred1_stack[0,:],pred2_stack[0,:])
 test_stat2=adjusted_mutual_info_score(pred1_stack[0,:],pred2_stack[0,:])
 #plt.imshow(pred_fullstack_perm)
 
 for perm in range(permutations):
     pred_fullstack_perm=np.random.permutation(pred_fullstack)
-    permscore.append(jaccard_similarity_score(pred_fullstack_perm[0,:],pred_fullstack_perm[1,:]))
-    permscore2.append(adjusted_mutual_info_score(pred_fullstack_perm[0,:], pred_fullstack_perm[1,:]))
+    
+    permscore.append(adjusted_rand_score(pred_fullstack_perm[0,:],pred_fullstack_perm[1,:]))
+    #permscore2.append(adjusted_mutual_info_score(pred_fullstack_perm[0,:], pred_fullstack_perm[1,:]))
     
 permscore=np.asarray(permscore)
 plt.hist(permscore)
