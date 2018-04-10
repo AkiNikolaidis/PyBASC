@@ -158,14 +158,24 @@ Reg2_True=np.load('/Users/aki.nikolaidis/git_repo/PyBASC/Reg2_True.npy')
 
 numsub_list=[1]
 numvox_list=[500]#[6171]
-n_list=[200]
+n_list=[100,200,400,800]
 n_clusters_list=[2]
-corrstrength_list=[0.4]
-bootstraps_list=[50]
-noiselevel_list=[1.2]
+corrstrength_list=[0.2,0.3,0.5]
+bootstraps_list=[100,200]
+noiselevel_list=[1, 1.4, 1.8, 2.2, 2.6, 3.0]
+
+truth1500_1=np.zeros((1500,1500))
+truth1500_1[0:1000,0:1000]=1
+truth1500_1[1000:1500,1000:1500]=1
+
+truth1500_2=np.zeros((1500,1500))
+truth1500_2[0:500,0:500]=1
+truth1500_2[500:1500,500:1500]=1
+
+
 
 #create matrix that has all accuracy and parameter information in it. Use Seaborne to plot the effects of different parameters on accuracy of group clustering.
-SimResults=pd.DataFrame(columns=['Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel'])
+SimResults=pd.DataFrame(columns=['AvgAcc', 'Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel', 'SNR'])
 
 
 
@@ -333,35 +343,40 @@ for noiselevel in noiselevel_list:
 #                            Reg2Acc=np.corrcoef(GSM2.ravel(),Reg2_True.ravel())
 #                            Reg2Acc=Reg2Acc[0,1]
                             #Reg2Acc=1-sp.spatial.distance.cdist((GSM2.ravel(),Reg2_True.ravel()), metric='correlation')
+                            SNR=corrstrength/noiselevel
                             
-                            newdata=pd.DataFrame([[Reg1Acc, Reg2Acc, numsub, numvox, n, n_clusters, corrstrength, bootstraps, noiselevel]], columns=['Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel'])
+                            Reg1Acc=np.corrcoef(truth1500_1.ravel(),reg1_ism.ravel())[0,1]
+                            Reg2Acc=np.corrcoef(truth1500_2.ravel(),reg2_ism.ravel())[0,1]
+                            
+                            AvgAcc=(Reg1Acc+Reg2Acc)/2
+                            
+                            newdata=pd.DataFrame([[AvgAcc, Reg1Acc, Reg2Acc, numsub, numvox, n, n_clusters, corrstrength, bootstraps, noiselevel, SNR]], columns=['AvgAcc', 'Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel', 'SNR'])
+                            #newdata=pd.DataFrame([[numsub, numvox, n, n_clusters, corrstrength, bootstraps, noiselevel]], columns=['numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel'])
+
                             frames=[SimResults, newdata]
                             SimResults= pd.concat(frames)
+                            
+SimResults.to_csv('/Users/aki.nikolaidis/git_repo/PyBASC/SimResults_Vols100200400800_bsTest100200.csv')
                             
 #                            
 #plotframe= pd.DataFrame([[SimResults['corrstrength'], SimResults['bootstraps'], SimResults['Reg1Acc'], SimResults['Reg2Acc']]], columns=['corrstrength','bootstraps','Reg1Acc','Reg2Acc'])                            
 ##plotdata=pd.DataFrame(plotframe)
 #plot = sns.pairplot(SimResults)
 
-plt.imshow(GSM1)
-plt.imshow(GSM2)
-plt.imshow(reg1_ism)
-plt.imshow(reg2_ism)
+#plt.imshow(GSM1)
+#plt.imshow(GSM2)
+#plt.imshow(reg1_ism)
+#plt.imshow(reg2_ism)
+#
+#
+#Reg1Acc=np.corrcoef(truth1500_1.ravel(),reg1_ism.ravel())
+#Reg2Acc=np.corrcoef(truth1500_2.ravel(),reg2_ism.ravel())
+#
+#np.corrcoef(truth1500_1.ravel(),GSM1.ravel())
+#np.corrcoef(truth1500_2.ravel(),GSM2.ravel())
 
-
-truth1500_1=np.zeros((1500,1500))
-truth1500_1[0:1000,0:1000]=1
-truth1500_1[1000:1500,1000:1500]=1
-
-truth1500_2=np.zeros((1500,1500))
-truth1500_2[0:500,0:500]=1
-truth1500_2[500:1500,500:1500]=1
-
-np.corrcoef(truth1500_1.ravel(),reg1_ism.ravel())
-np.corrcoef(truth1500_2.ravel(),reg2_ism.ravel())
-
-np.corrcoef(truth1500_1.ravel(),GSM1.ravel())
-np.corrcoef(truth1500_2.ravel(),GSM2.ravel())
+#FILL COLUMNS OF THE MATRIX WITH THESE VALUES
+#olumns: [bootstraps, Signal/Noise ratio, accuracy1, accuracy2]
 
 #plt.imshow(Reg1_True)
 #plt.imshow(Reg2_True)
