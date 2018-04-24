@@ -603,13 +603,26 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             N2 = Y2.shape[1]
             temp_block_size2 = int(np.sqrt(N2))
             cbb_block_size2 = int(temp_block_size2 * blocklength)
-
-            Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
-            Y_b2 = Y2[block_mask.astype('int'), :]
+            
+            if (bootstrap_i==1):
+                Y_b1=Y1
+                Y_b2=Y2
+            else:
+                Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
+                Y_b2 = Y2[block_mask.astype('int'), :]
             #import pdb;pdb.set_trace()
             #tseries[block_mask.astype('int'), :]
             #import pdb; pdb.set_trace()
+            
+            #SPATIAL CONSTRAINT EXPERIMENT#
             roi_mask_nparray='empty'
+            #SPATIAL CONSTRAINT EXPERIMENT#
+            
+#            if spatial_constraint==true:
+#                roi_mask_nparray='empty'
+#            else:
+#                roi_mask_nparray=roi_mask_nparray
+            #import pdb; pdb.set_trace()
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold= affinity_threshold, cluster_method='ward'))
 
             
@@ -623,12 +636,20 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             print('ismcalc1')
             print('block size', cbb_block_size)
             #import pdb; pdb.set_trace()
-            Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
+            
+            if (bootstrap_i==1):
+                Y_b1=Y1
+                Y_b2=Y2
+            else:
+                Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
             
             print('ismcalc2')
             #import pdb;pdb.set_trace()
-            #COMMENTED OUT 3-22-2018
+            
+            #SPATIAL CONSTRAINT EXPERIMENT#
             roi_mask_nparray='empty'
+            #SPATIAL CONSTRAINT EXPERIMENT#
+            
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold, cluster_method='ward')[:,np.newaxis])
             
             print('S shape0', S.shape[0])

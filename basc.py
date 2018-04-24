@@ -40,13 +40,21 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     V = indiv_stability_set.shape[2]
 
     G = np.zeros((V,V))
-    J = utils.standard_bootstrap(indiv_stability_set).mean(0)
+    
+    if (bootstrap_list==1):
+        J=indiv_stability_set.mean(0)
+    else:
+        J = utils.standard_bootstrap(indiv_stability_set).mean(0)
+    
     roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-   
     J=J.astype("uint8")
     
+    #SPATIAL CONSTRAINT EXPERIMENT#
+    #roi_mask_nparray='empty'
+    #SPATIAL CONSTRAINT EXPERIMENT#
+    
     #print( 'calculating adjacency matrix')
-    G = utils.adjacency_matrix(utils.cluster_timeseries(J, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='spectral')[:,np.newaxis])
+    G = utils.adjacency_matrix(utils.cluster_timeseries(J, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='ward')[:,np.newaxis])
     #print("finished calculating group stability matrix")
     
     G=G.astype("uint8")
@@ -94,11 +102,15 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     G=G*100
     G=G.astype("uint8")
 
+    #SPATIAL CONSTRAINT EXPERIMENT#
+    roi_mask_nparray='empty'
+    #SPATIAL CONSTRAINT EXPERIMENT#
+
     print( 'calculating clusters_G')
    #import pdb; pdb.set_trace()
     roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
 
-    clusters_G = utils.cluster_timeseries(G, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='spectral')
+    clusters_G = utils.cluster_timeseries(G, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='ward')
     #APPLY THIS METHOD TO THE INDIVIDUAL LEVEL CLUSTER
  
     print( 'calculating cluster_voxel scores' )
