@@ -138,6 +138,25 @@ sns.pairplot(new, kind="reg", markers="+", diag_kind="kde")
 #plt.scatter(A,two)
 #np.corr(one[:,],two[:,])
 
+
+#%% Null Generator
+import numpy as np
+import matplotlib.pyplot as plt
+
+truth1500_1=np.zeros((1500,1500))
+truth1500_1[0:1000,0:1000]=1
+truth1500_1[1000:1500,1000:1500]=1
+
+nullacclist=[]
+nullrange=1000
+
+for permutations in range(nullrange):
+    null=np.random.rand(2250000)
+    nullacc=np.corrcoef(truth1500_1.ravel(),null)[0,1]
+    nullacclist.append(nullacc)
+
+plt.hist(nullacclist)
+
 #%%LargerSim
 
 import numpy as np
@@ -506,7 +525,7 @@ numsub=10
 motorvox=11656
 visualvox=11941
 
-n_list=[100]
+n_list=[200]
 n_clusters_list=[2]
 corrstrength_list=[0.05,0.3]
 bootstraps_list=[1]
