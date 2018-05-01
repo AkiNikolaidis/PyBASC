@@ -24,15 +24,19 @@ GS=[1,10,30,60,100]
 SNR=['0.05corr_2noise', '0.3corr_3noise','0.3corr_2noise']
 Volumes=[100,200,400]
 
-TrueClust=nb.load('/Users/aki.nikolaidis/git_repo/PyBASC/masks/TrueBGClust.nii.gz').get_data()
-roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
+TrueClust=nb.load('/Users/aki.nikolaidis/git_repo/PyBASC/masks/TrueBGClust.nii.gz').get_data().astype('float32').astype('bool')
+roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/BG_3mm_TrueClust.nii.gz'
 roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-TrueBG = TrueClust[roi_mask_nparray]
+TrueBG = roi_mask_nparray[roi_mask_nparray]
+
+
+
+
 
 TrueBG_GSM=adjacency_matrix(TrueBG)
 TrueBG_GSM=TrueBG_GSM*1
 
-
+import pdb; pdb.set_trace()
 
 #SimResults=pd.DataFrame(columns=['AvgAcc', 'Reg1Acc', 'Reg2Acc', 'numsub', 'numvox', 'TRs', 'n_clusters', 'corrstrength', 'bootstraps', 'noiselevel', 'SNR'])
 SimResults=pd.DataFrame(columns=['GBS', 'IBS', 'group_label_acc', 'gsm_acc', 'ism_gsm_corrmean', 'ism_gsm_corrstd'])
