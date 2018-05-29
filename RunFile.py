@@ -22,114 +22,37 @@ home = expanduser("~")
 proc_mem= [3,16]
 
 
-
-
-#subject_file_list= [home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-#                    home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-#                    home + '/git_repo/PyBASC/sample_data/sub3/Func_Quarter_Res.nii.gz',
-#                    home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-#                    home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz',
-#                    home + '/git_repo/PyBASC/sample_data/sub1/Func_Quarter_Res.nii.gz',
-#                    home + '/git_repo/PyBASC/sample_data/sub2/Func_Quarter_Res.nii.gz']
-#
-
-#subject_file_list = ['/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_100_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_100_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_100_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_171_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_171_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_171_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_200_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_200_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_200_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_285_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_285_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_285_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_300_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_300_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_300_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_42_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_42_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_42_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_50_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_50_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_50_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_85_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_85_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/1400_Data/TimeTest/1400_85_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_100_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_100_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_100_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_186_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_186_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_186_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_200_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_200_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_200_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_300_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_300_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_300_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_372_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_372_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_372_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_50_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_50_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_50_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_600_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_600_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_600_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_620_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_620_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_620_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_852_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_852_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_852_A00040915.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_93_A00029979.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_93_A00031217.nii.gz',
-#'/home/ec2-user/NKI_Dev/645_Data/TimeTest/645_93_A00040915.nii.gz']
-#
-
 subject_file_list = ['/Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/NKI_Dev/645_Data/TimeTest/645_852_A00029979.nii.gz',
                      '/Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/NKI_Dev/645_Data/TimeTest/645_852_A00031217.nii.gz']
 
 
-#roi_mask_file='/home/ec2-user/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
-#roi2_mask_file='/home/ec2-user/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
-
-
-#subject_file_list = ['/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00031217.nii.gz',
-#'/Users/aki.nikolaidis/Desktop/NKI_Dev/645_Data/TimeTest/645_852_A00029979.nii.gz']#,
-#
 #
 roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
-roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
 
 
-roi2_mask_file=None#'/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
+roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
 
 
 
-##
-#roi_mask_file= home + '/git_repo/PyBASC/masks/LC_Quarter_Res.nii.gz'
-#roi2_mask_file= home + '/git_repo/PyBASC/masks/RC_Quarter_Res.nii.gz'
-
-dataset_bootstraps=5
-timeseries_bootstrap_list=[100]#[1,10,100,200]
+dataset_bootstrap_list=[1,10,30,60,100]
+timeseries_bootstrap_list=[1,10,30,60,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
-n_clusters_list=[6]#[2,6,12,20]
+n_clusters_list=[2,4,6,8,10,12,14,16]
 output_sizes=[800]#[10,100,600,1200]
 
-bootstrap_list=list(range(0,dataset_bootstraps))
 cross_cluster=False
-affinity_threshold= [0.3] * len(subject_file_list)
+affinity_threshold= [0.0] * len(subject_file_list)
 
 ism_gsm_stability=[]
 ind_clust_stab_mat=[]
 ind_clust_stab_summary=[[1, 2, 3, 4, 5]]
 run=True
 
-for timeseries_bootstraps in timeseries_bootstrap_list:
+for (dataset_bootstraps, timeseries_bootstraps) in zip(dataset_bootstrap_list,timeseries_bootstrap_list):
+    
+    bootstrap_list= list(np.ones(dataset_bootstraps, dtype=int)*dataset_bootstraps)
+
     for similarity_metric in similarity_metric_list:
         for blocklength in blocklength_list:
                 for n_clusters in n_clusters_list:
@@ -155,8 +78,11 @@ for timeseries_bootstraps in timeseries_bootstrap_list:
                         clusters_G_file= out_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/clusters_G.npy'
                         #clusters_G = np.load(clusters_G_file)
                         
-                        ism_nifti(roi_mask_file, n_clusters, out_dir)
-                        gsm_nifti(roi_mask_file, n_clusters, out_dir)
+                        #ism_nifti(roi_mask_file, n_clusters, out_dir)
+                        #gsm_nifti(roi_mask_file, n_clusters, out_dir)
+                
+                
+                
                 #        subdirs_all = [x[1] for x in os.walk(clustvoxscoredir)]                                                                            
                 #        subdirs=subdirs_all[0]
                 #        for subdir in subdirs:
