@@ -8,6 +8,7 @@ Created on Fri May  4 15:58:30 2018
 
 import numpy as np
 import pandas as pd
+import os
 
 Replications=['10Min','20Min','30Min','40Min']
 
@@ -103,18 +104,18 @@ for Replication in Replications:
         #GBS=bootstraps
         #import pdb; pdb.set_trace()
        
-       rep_ism_gsm_corr=np.load(newdir+'/workflow_output/basc_workflow_runner/basc/join_group_stability/ism_gsm_corr.npy')
-       ref_ism_gsm_corr=np.load(refdir+'/workflow_output/basc_workflow_runner/basc/join_group_stability/ism_gsm_corr.npy')
+        rep_ism_gsm_corr=np.load(newdir+'/workflow_output/basc_workflow_runner/basc/join_group_stability/ism_gsm_corr.npy')
+        ref_ism_gsm_corr=np.load(refdir+'/workflow_output/basc_workflow_runner/basc/join_group_stability/ism_gsm_corr.npy')
        
-       rep_ref_ism_gsm_corr_corr= ism_corr= np.corrcoef(rep_ism_gsm_corr.ravel(),ref_ism_gsm_corr.ravel())[0][1]
+        rep_ref_ism_gsm_corr_corr= ism_corr= np.corrcoef(rep_ism_gsm_corr.ravel(),ref_ism_gsm_corr.ravel())[0][1]
        
-       SubjectNum=0
-       subjectpath = newdir+'/workflow_output/basc_workflow_runner/basc/individual_stability_matrices/mapflow/'
-       refpath = refdir +'/workflow_output/basc_workflow_runner/basc/individual_stability_matrices/mapflow/'
+        SubjectNum=0
+        subjectpath = newdir+'/workflow_output/basc_workflow_runner/basc/individual_stability_matrices/mapflow/'
+        refpath = refdir +'/workflow_output/basc_workflow_runner/basc/individual_stability_matrices/mapflow/'
        
-       subjectdirs_all = [x[1] for x in os.walk(subjectpath)]                                                                            
-       subjectdirs=subjectdirs_all[0]
-       for subject in subjectdirs:
+        subjectdirs_all = [x[1] for x in os.walk(subjectpath)]                                                                            
+        subjectdirs=subjectdirs_all[0]
+        for subject in subjectdirs:
            #NEED TO FIGURE OUT WHETHER POSSIBLE TO USE A SINGLE SUBJECT LEVEL FOR LOOP TO GET THE REFERENCE ONES AS WELL?
            #LOAD REF DATA
            
