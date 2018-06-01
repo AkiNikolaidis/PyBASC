@@ -39,7 +39,7 @@ roi_mask_file='/home/ec2-user/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
 roi2_mask_file='/home/ec2-user/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
 
 dataset_bootstraps_list=[10,20]#,10,30,100]
-timeseries_bootstrap_list=[1]#,10,30,100]
+timeseries_bootstrap_list=[10]#,10,30,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
 n_clusters_list=[2]#[2,6,12,20]
