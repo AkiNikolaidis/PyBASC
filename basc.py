@@ -7,6 +7,179 @@ import nipype.interfaces.utility as util
 import imp
 from os.path import expanduser
 
+
+def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, similarity_metric, cross_cluster=False, roi2_mask_file=None, blocklength=1, cbb_block_size=None, affinity_threshold=0.5):
+    """
+    Calculate the individual stability matrix for a single subject by using Circular Block Bootstrapping method
+    for time-series data.
+
+    Parameters
+    ----------
+    subject_file : string
+        Nifti file of a subject
+    roi_mask_file : string
+        Region of interest (this method is too computationally intensive to perform on a whole-brain volume)
+    n_bootstraps : integer
+        Number of bootstraps
+    n_clusters : integer
+        Number of clusters
+    cbb_block_size : integer, optional
+        Size of the time-series block when performing circular block bootstrap
+    affinity_threshold : float, optional
+        Minimum threshold for similarity matrix based on correlation to create an edge
+
+    Returns
+    -------
+    ism : array_like
+        Individual stability matrix of shape (`V`, `V`), `V` voxels
+    """
+
+
+    import os
+    import numpy as np
+    import nibabel as nb
+    import utils
+    import pandas as pd
+    import sklearn as sk
+    from sklearn import preprocessing
+    
+
+    print( 'Calculating individual stability matrix of:', subject_file)
+
+
+    data = nb.load(subject_file).get_data().astype('float32')
+    #print( 'Data Loaded')
+    roi_mask_file_nb = nb.load(roi_mask_file)
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+#    roi_np_mask_file = os.path.join(os.getcwd(), 'mask_nparray.npy')
+#    np.save(roi_np_mask_file, roi_mask_nparray)
+#    import pdb; pdb.set_trace()
+    
+    roi1data = data[roi_mask_nparray]
+    roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
+    data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
+    Y1_compressed = data_dict1['data']
+    #Y1_compressed = Y1_compressed.T
+    Y1_labels = pd.DataFrame(data_dict1['labels'])
+    Y1_labels=np.array(Y1_labels)
+    #import pdb;pdb.set_trace()
+    if (roi2_mask_file != None):
+        
+        roi2_mask_file_nb= nb.load(roi2_mask_file)
+        roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
+        roi2data = data[roi2_mask_nparray]
+        roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
+        #print( 'Compressing Y2')
+        output_size2=output_size + 5
+        data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
+        
+        Y2_compressed = data_dict2['data']
+        Y2_labels = pd.DataFrame(data_dict2['labels'])
+        Y2_labels=np.array(Y2_labels)
+        
+        print('Going into ism')
+        #import pdb;pdb.set_trace()
+        ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
+        #ism=ism/n_bootstraps # was already done in ism
+
+        
+        
+        print('Expanding ism')
+        voxel_num=roi1data.shape[0]
+        voxel_ism = utils.expand_ism(ism, Y1_labels)
+      
+        
+        #voxel_ism=voxel_ism*100 # was already done in ism
+        voxel_ism=voxel_ism.astype("uint8")
+
+        ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
+        np.save(ism_file, voxel_ism)
+        #print ('Saving individual stability matrix %s for %s' % (ism_file, subject_file))
+        return ism_file
+
+    else:
+
+        print('debug2')
+        #Y2_compressed=None
+        #import pdb; pdb.set_trace()
+        Y2=None
+        ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2 ,cross_cluster, cbb_block_size, blocklength, affinity_threshold)
+
+        #ism=ism/n_bootstraps # was already done in ism
+        print('debug3')
+        print(Y1_labels)
+
+        print('expanding ism')
+        voxel_num=roi1data.shape[0]
+        voxel_ism = utils.expand_ism(ism, Y1_labels)
+        print('debug3b')
+        #voxel_ism=voxel_ism*100 # was already done in ism
+        voxel_ism=voxel_ism.astype("uint8")
+        
+        ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
+        np.save(ism_file, voxel_ism)
+        
+        print('debug4')
+        #print( 'Saving individual stability matrix %s for %s' % (ism_file, subject_file))
+        return ism_file
+    return ism_file
+
+
+def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
+    """
+    Converts a numpy array to a nifti file given an roi mask
+
+    Parameters
+    ----------
+    data_array : array_like
+        A data array with the same column length and index alignment as the given roi_mask_file.  If data_array is two dimensional,
+        first dimension is considered temporal dimension
+    roi_mask_file : string
+        Path of the roi_mask_file
+    sample_file : string or list of strings
+        Path of sample nifti file(s) to use for header of the output.  If list, the first file is chosen.
+    filename : string
+        Name of output file
+
+    Returns
+    -------
+    img_file : string
+        Path of the nifti file output
+
+    """
+   
+    
+    import nibabel as nb
+    import numpy as np
+    import os
+    
+    print('data array is', data_array)
+    print('roi mask file', roi_mask_file)
+    print('filename', filename)
+    #import pdb;pdb.set_trace()
+    roi_mask_file = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+    if(len(data_array.shape) == 1):
+        out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
+        out_vol[roi_mask_file] = data_array
+    elif(len(data_array.shape) == 2):
+        out_vol = np.zeros((roi_mask_file.shape[0], roi_mask_file.shape[1], roi_mask_file.shape[2], data_array.shape[1]), dtype=data_array.dtype)
+        #import pdb; pdb.set_trace()
+        out_vol[roi_mask_file] = data_array
+    else:
+        raise ValueError('data_array is %i dimensional, must be either 1 or 2 dimensional' % len(data_array.shape) )
+    nii = None
+    if type(sample_file) is list:
+        nii = nb.load(sample_file[0])
+    else:
+        nii = nb.load(sample_file)
+    
+    img = nb.Nifti1Image(out_vol, header=nii.get_header(), affine=nii.get_affine())
+    img_file = os.path.join(os.getcwd(), filename)
+    img.to_filename(img_file)
+    
+    return img_file, img
+
+
 def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_mask_file):
     """
     Calculate the group stability maps for each group-level bootstrap
@@ -576,176 +749,7 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir):
 
     return
 
-def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clusters, output_size, similarity_metric, cross_cluster=False, roi2_mask_file=None, blocklength=1, cbb_block_size=None, affinity_threshold=0.5):
-    """
-    Calculate the individual stability matrix for a single subject by using Circular Block Bootstrapping method
-    for time-series data.
 
-    Parameters
-    ----------
-    subject_file : string
-        Nifti file of a subject
-    roi_mask_file : string
-        Region of interest (this method is too computationally intensive to perform on a whole-brain volume)
-    n_bootstraps : integer
-        Number of bootstraps
-    n_clusters : integer
-        Number of clusters
-    cbb_block_size : integer, optional
-        Size of the time-series block when performing circular block bootstrap
-    affinity_threshold : float, optional
-        Minimum threshold for similarity matrix based on correlation to create an edge
-
-    Returns
-    -------
-    ism : array_like
-        Individual stability matrix of shape (`V`, `V`), `V` voxels
-    """
-
-
-    import os
-    import numpy as np
-    import nibabel as nb
-    import utils
-    import pandas as pd
-    import sklearn as sk
-    from sklearn import preprocessing
-    
-
-    print( 'Calculating individual stability matrix of:', subject_file)
-
-
-    data = nb.load(subject_file).get_data().astype('float32')
-    #print( 'Data Loaded')
-    roi_mask_file_nb = nb.load(roi_mask_file)
-    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-#    roi_np_mask_file = os.path.join(os.getcwd(), 'mask_nparray.npy')
-#    np.save(roi_np_mask_file, roi_mask_nparray)
-#    import pdb; pdb.set_trace()
-    
-    roi1data = data[roi_mask_nparray]
-    roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
-    data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
-    Y1_compressed = data_dict1['data']
-    #Y1_compressed = Y1_compressed.T
-    Y1_labels = pd.DataFrame(data_dict1['labels'])
-    Y1_labels=np.array(Y1_labels)
-    #import pdb;pdb.set_trace()
-    if (roi2_mask_file != None):
-        
-        roi2_mask_file_nb= nb.load(roi2_mask_file)
-        roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
-        roi2data = data[roi2_mask_nparray]
-        roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
-        #print( 'Compressing Y2')
-        output_size2=output_size + 5
-        data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
-        
-        Y2_compressed = data_dict2['data']
-        Y2_labels = pd.DataFrame(data_dict2['labels'])
-        Y2_labels=np.array(Y2_labels)
-        
-        print('Going into ism')
-        #import pdb;pdb.set_trace()
-        ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
-        #ism=ism/n_bootstraps # was already done in ism
-
-        
-        
-        print('Expanding ism')
-        voxel_num=roi1data.shape[0]
-        voxel_ism = utils.expand_ism(ism, Y1_labels)
-      
-        
-        #voxel_ism=voxel_ism*100 # was already done in ism
-        voxel_ism=voxel_ism.astype("uint8")
-
-        ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
-        np.save(ism_file, voxel_ism)
-        #print ('Saving individual stability matrix %s for %s' % (ism_file, subject_file))
-        return ism_file
-
-    else:
-
-        print('debug2')
-        #Y2_compressed=None
-        #import pdb; pdb.set_trace()
-        Y2=None
-        ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2 ,cross_cluster, cbb_block_size, blocklength, affinity_threshold)
-
-        #ism=ism/n_bootstraps # was already done in ism
-        print('debug3')
-        print(Y1_labels)
-
-        print('expanding ism')
-        voxel_num=roi1data.shape[0]
-        voxel_ism = utils.expand_ism(ism, Y1_labels)
-        print('debug3b')
-        #voxel_ism=voxel_ism*100 # was already done in ism
-        voxel_ism=voxel_ism.astype("uint8")
-        
-        ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
-        np.save(ism_file, voxel_ism)
-        
-        print('debug4')
-        #print( 'Saving individual stability matrix %s for %s' % (ism_file, subject_file))
-        return ism_file
-    return ism_file
-
-
-def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
-    """
-    Converts a numpy array to a nifti file given an roi mask
-
-    Parameters
-    ----------
-    data_array : array_like
-        A data array with the same column length and index alignment as the given roi_mask_file.  If data_array is two dimensional,
-        first dimension is considered temporal dimension
-    roi_mask_file : string
-        Path of the roi_mask_file
-    sample_file : string or list of strings
-        Path of sample nifti file(s) to use for header of the output.  If list, the first file is chosen.
-    filename : string
-        Name of output file
-
-    Returns
-    -------
-    img_file : string
-        Path of the nifti file output
-
-    """
-   
-    
-    import nibabel as nb
-    import numpy as np
-    import os
-    
-    print('data array is', data_array)
-    print('roi mask file', roi_mask_file)
-    print('filename', filename)
-    #import pdb;pdb.set_trace()
-    roi_mask_file = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-    if(len(data_array.shape) == 1):
-        out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
-        out_vol[roi_mask_file] = data_array
-    elif(len(data_array.shape) == 2):
-        out_vol = np.zeros((roi_mask_file.shape[0], roi_mask_file.shape[1], roi_mask_file.shape[2], data_array.shape[1]), dtype=data_array.dtype)
-        #import pdb; pdb.set_trace()
-        out_vol[roi_mask_file] = data_array
-    else:
-        raise ValueError('data_array is %i dimensional, must be either 1 or 2 dimensional' % len(data_array.shape) )
-    nii = None
-    if type(sample_file) is list:
-        nii = nb.load(sample_file[0])
-    else:
-        nii = nb.load(sample_file)
-    
-    img = nb.Nifti1Image(out_vol, header=nii.get_header(), affine=nii.get_affine())
-    img_file = os.path.join(os.getcwd(), filename)
-    img.to_filename(img_file)
-    
-    return img_file, img
 
 
 def create_basc(proc_mem, name='basc'):
