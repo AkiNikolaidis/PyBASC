@@ -75,7 +75,9 @@ def timeseries_bootstrap(tseries, block_size):
     """
     
     import numpy as np
-   
+    randseed=np.random.randint(0,10000)
+    np.random.seed(randseed)
+    
     k = int(np.ceil(float(tseries.shape[0])/block_size)) #calculate number of blocks
 
     r_ind = np.floor(np.random.rand(1,k)*tseries.shape[0]) #generate random indices of blocks
@@ -107,6 +109,9 @@ def standard_bootstrap(dataset):
     Examples
     --------
     """
+    randseed=np.random.randint(0,10000)
+    np.random.seed(randseed)
+    
     n = dataset.shape[0]
     b = np.random.randint(0, high=n-1, size=n)
     return dataset[b]
