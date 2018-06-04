@@ -80,6 +80,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         print('Going into ism')
         #import pdb;pdb.set_trace()
         ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
+        #import pdb; pdb.set_trace()
         #ism=ism/n_bootstraps # was already done in ism
 
         

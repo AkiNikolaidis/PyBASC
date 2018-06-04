@@ -1,5 +1,6 @@
 import os
 import time
+import __init__
 from os.path import expanduser
 import matplotlib
 import numpy as np
@@ -157,6 +158,7 @@ def test_individual_stability_matrix():
     desired = np.load(home + '/git_repo/PyBASC/tests/ism_test.npy')
     blobs = generate_blobs()
     ism = utils.individual_stability_matrix(blobs, 20, 3, similarity_metric='correlation')
+    
     #how to use test here?
 #    np.corrcoef(ism.flatten(),desired.flatten())
 #    np.testing.assert_equal(ism,desired)
