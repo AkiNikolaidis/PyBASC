@@ -4,11 +4,24 @@ import os
 import sys
 import boto3
 
+'''
+usage: UploadDirS3.py /path/to/local/folder thebucketname /path/to/s3/folder
+
+Make sure to read the boto3 credentials placement doc
+'''
+import boto3
+
+
 # get an access token, local (from) directory, and S3 (to) directory
 # from the command-line
 local_directory, bucket, destination = sys.argv[1:4]
 
-client = boto3.client('s3')
+client = boto3.client(
+    's3',
+    aws_access_key_id=os.environ['ACCESS_KEY'],
+    aws_secret_access_key=os.environ['SECRET_KEY']
+)
+
 
 # enumerate local files recursively
 for root, dirs, files in os.walk(local_directory):
