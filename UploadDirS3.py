@@ -16,6 +16,8 @@ import boto3
 # from the command-line
 local_directory, bucket, destination = sys.argv[1:4]
 
+print(os.environ)
+
 client = boto3.client(
     's3',
     aws_access_key_id=os.environ['ACCESS_KEY'],
