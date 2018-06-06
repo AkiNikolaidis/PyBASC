@@ -760,4 +760,4 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
     data_reduced = ward.transform(fmri_masked)
     fmri_masked=[]
     #print('Data compression took ', (time.time()- datacompressiontime), ' seconds')
-    return {'data':data_reduced, 'labels':labels}
+    return {'data':data_reduced, 'labels':labels, 'ward':ward}

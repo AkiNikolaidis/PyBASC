@@ -103,6 +103,8 @@ for (dataset_bootstraps, timeseries_bootstraps) in zip(dataset_bootstrap_list,ti
                 ind_clust_stab_summary_file=os.path.join(out_dir, 'ind_clust_stab_summary.npy')
                 np.save(ind_clust_stab_summary_file, ind_clust_stab_summary)
     
+    
+    
     #PSEUDO CODE- FOR THE ANALYSIS WITH THE HIGHEST MEAN AND LOWEST CV
     # RUN POST ANALYSIS- INCLUDING FOR LOOPING OVER ALL SUBJECTS FOLDERS AND CREATING NIFTI FILES FOR EVERY CLUSTER
     

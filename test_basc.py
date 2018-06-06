@@ -330,7 +330,82 @@ def test_data_compress_expand():
         #voxel_ism=voxel_ism*100 # was already done in ism
         voxel_ism=voxel_ism.astype("uint8")
     
+def test_group_dim_reduce():
+    import os
+    import numpy as np
+    import nibabel as nb
+    import utils
+    import pandas as pd
+    import sklearn as sk
+    from sklearn import preprocessing
+    output_size=800
+    
+    
+    roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
+    roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
 
+    
+    subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_0corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_1corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_2corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_3corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_4corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_5corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_6corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_7corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_8corr_0.05_noise_2_TRs_100.nii.gz',
+                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_9corr_0.05_noise_2_TRs_100.nii.gz']
+
+
+    roi_mask_file_nb = nb.load(roi_mask_file)
+    roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+    
+    x=len(nb.load(subject_file_list[0]).get_data().astype('float16'))
+    y=len(nb.load(subject_file_list[0]).get_data().astype('float16')[1])
+    z=len(nb.load(subject_file_list[0]).get_data().astype('float16')[1][1])
+    group_data=np.zeros((x,y,z,1))[roi_mask_nparray]
+
+    for subs in subject_file_list:
+        ind_data=nb.load(subs).get_data().astype('float16')[roi_mask_nparray]
+        group_data=np.append(group_data, ind_data,axis=1)
+        
+    group_data=group_data[:,1:]  
+    
+    group_data=sk.preprocessing.normalize(group_data, norm='l2')
+    
+    data_dict1 = utils.data_compression(group_data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
+    Y1_compressed = data_dict1['data']
+    #Y1_compressed = Y1_compressed.T
+    Y1_labels = pd.DataFrame(data_dict1['labels'])
+    Y1_labels=np.array(Y1_labels)
+    
+    ward1=data_dict1['ward']
+    #import pdb;pdb.set_trace()
+    if (roi2_mask_file != None):
+        
+        roi2_mask_file_nb= nb.load(roi2_mask_file)
+        roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
+        group_data2=np.zeros((x,y,z,1))[roi2_mask_nparray]
+
+        
+        for subs in subject_file_list:
+            ind_data2=nb.load(subs).get_data().astype('float16')[roi2_mask_nparray]
+            group_data2=np.append(group_data2, ind_data2,axis=1)
+        group_data2=group_data2[:,1:]
+        group_data2=sk.preprocessing.normalize(group_data2, norm='l2')
+        #print( 'Compressing Y2')
+        output_size2=output_size + 5
+        data_dict2 = utils.data_compression(group_data2.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
+        
+        Y2_compressed = data_dict2['data']
+        Y2_labels = pd.DataFrame(data_dict2['labels'])
+        Y2_labels=np.array(Y2_labels)
+        ward2=data_dict2['ward']
+
+    else:
+        ward2=None
+        
+    return (ward1, ward2)
 
 def test_nifti_individual_stability():
 
