@@ -71,7 +71,7 @@ for rerun in reruns:
                             for output_size in output_sizes:
                                 #import pdb; pdb.set_trace()
                                 #out_dir= '/home/ec2-user/PyBASC_outputs/SimTesting/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
-                                out_dir= '/Users/aki.nikolaidis/PyBASC_outputs/GroupDimReduceTest3' + str(int(rerun)) + '_' + str(dataset_bootstraps) + 'GS' +'/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
+                                out_dir= '/Users/aki.nikolaidis/PyBASC_outputs/GroupDimReduceTest4' + str(int(rerun)) + '_' + str(dataset_bootstraps) + 'GS' +'/dim_' + str(output_size) + '_' + str(similarity_metric) + '_' + str(n_clusters) + '_clusters_' +str(timeseries_bootstraps) +'_IndBS_' + str(blocklength) + '_block' + similarity_metric
                                 #import pdb;pdb.set_trace()
                                 PyBASC_test=run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, group_dim_reduce=group_dim_reduce, cross_cluster=cross_cluster, roi2_mask_file=roi2_mask_file, blocklength=blocklength, affinity_threshold=affinity_threshold, out_dir=out_dir, run=run)
                                 

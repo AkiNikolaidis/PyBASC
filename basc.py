@@ -420,9 +420,12 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     
     #print( '2')
     ism_gsm_corr=np.zeros(len(indiv_stability_list))
-    
+    import pdb;pdb.set_trace()
+
     for i in range(0,len(indiv_stability_list)):
-        ism_gsm_corr[i]=utils.compare_stability_matrices(indiv_stability_set[i], G)
+        ism = utils.expand_ism(indiv_stability_set[i], Y1_labels)
+        ism_gsm_corr[i]=utils.compare_stability_matrices(ism, G)
+    import pdb; pdb.set_trace()
     #print( '3')
     print( 'saving files: G')
     print(G)
@@ -440,7 +443,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
 
 
 
-def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_file, group_dim_reduce):
+def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_file, group_dim_reduce, Y1_labels):
     """
     Calculate the individual stability maps of each subject based on the group stability clustering solution.
 
@@ -466,9 +469,14 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     print('starting igcm')
     #import pdb; pdb.set_trace()
     print("igcm debug 1")
+    
+    import pdb; pdb.set_trace()
+    
     # *REMOVE LINE* indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
-    indiv_stability_set = indiv_stability_mat[0]
+    supervox_ism = indiv_stability_mat[0]
+    indiv_stability_set= utils.expand_ism(supervox_ism, Y1_labels)
+
     #*REMOVE LINE*nSubjects = indiv_stability_set.shape[0]
     nVoxels = indiv_stability_set.shape[1]
 
@@ -481,6 +489,8 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     cluster_voxel_scores = np.zeros((nClusters, nVoxels))
     k_mask=np.zeros((nVoxels, nVoxels))
     #*REMOVE LINE*for i in range(nSubjects):
+    
+        import pdb;pdb.set_trace()
     
     cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(indiv_stability_set, clusters_G)
     #*REMOVE LINE*clust5[0,clusters_g==1].mean()
@@ -502,7 +512,9 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     for i in cluster_ids:
         ind_group_cluster_stability.append(cluster_voxel_scores[(i-1),clusters_G==i].mean())
     print("igcm debug 5")
+    
     import pdb;pdb.set_trace()
+    
     ind_group_cluster_stability=np.array(ind_group_cluster_stability)
     #ind_group_cluster_stability=np.array([1,2,3,4,5])
     #print( 'saving files: icvs')
@@ -1060,7 +1072,8 @@ def create_basc(proc_mem, name='basc'):
     igcm = pe.MapNode(util.Function(input_names=['indiv_stability_list',
                                               'clusters_G',
                                               'roi_mask_file',
-                                              'group_dim_reduce'],
+                                              'group_dim_reduce',
+                                              'Y1_labels'],
                                  output_names=['icvs_file',
                                                'cluster_voxel_scores_file',
                                                'k_mask_file',
@@ -1166,6 +1179,8 @@ def create_basc(proc_mem, name='basc'):
     basc.connect(gdr, 'ward1',                              nis, 'ward1')
     basc.connect(gdr, 'ward2',                              nis, 'ward2')
     basc.connect(gdr, 'Y1_labels',                          jgsm, 'Y1_labels')
+    basc.connect(gdr, 'Y1_labels',                          igcm, 'Y1_labels')
+
 
     basc.connect(nis, 'ism_file',                           mgsm, 'indiv_stability_list')
     basc.connect(nis, 'ism_file',                           jgsm, 'indiv_stability_list')
