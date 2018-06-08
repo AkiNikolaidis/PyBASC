@@ -276,7 +276,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     G=G.astype("uint8")
 
     #SPATIAL CONSTRAINT EXPERIMENT#
-    roi_mask_nparray='empty'
+    #roi_mask_nparray='empty'
     #SPATIAL CONSTRAINT EXPERIMENT#
 
     print( 'calculating clusters_G')
@@ -298,6 +298,7 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     ism_gsm_corr=np.zeros(len(indiv_stability_list))
     
     for i in range(0,len(indiv_stability_list)):
+        #import pdb;pdb.set_trace()
         ism_gsm_corr[i]=utils.compare_stability_matrices(indiv_stability_set[i], G)
     #print( '3')
     print( 'saving files: G')

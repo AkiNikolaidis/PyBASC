@@ -55,7 +55,6 @@ run=True
 
 
 for dataset_bootstraps in dataset_bootstraps_list:
-    bootstrap_list=list(range(0, dataset_bootstraps))
     bootstrap_list= list(np.ones(dataset_bootstraps, dtype=int)*dataset_bootstraps)
 
 

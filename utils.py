@@ -604,15 +604,21 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
     #import pdb;pdb.set_trace()
     if (cross_cluster is True):
         for bootstrap_i in range(n_bootstraps):
-        
+            bootstrap_iter=bootstrap_i+1
+            #import pdb; pdb.set_trace()
             N2 = Y2.shape[1]
             temp_block_size2 = int(np.sqrt(N2))
             cbb_block_size2 = int(temp_block_size2 * blocklength)
             
-            if (bootstrap_i==1):
+            if (bootstrap_iter==1):
+                print("right")
+                #import pdb; pdb.set_trace()
+                
                 Y_b1=Y1
                 Y_b2=Y2
             else:
+                print("wrong")
+               # import pdb; pdb.set_trace()
                 Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
                 Y_b2 = Y2[block_mask.astype('int'), :]
             #import pdb;pdb.set_trace()
@@ -638,11 +644,12 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
         #print('ISM calculation took', (time.time() - ismtime), ' seconds')
     else:
         for bootstrap_i in range(n_bootstraps):
+            bootstrap_iter=bootstrap_i+1
             print('ismcalc1')
             print('block size', cbb_block_size)
             #import pdb; pdb.set_trace()
             
-            if (bootstrap_i==1):
+            if (bootstrap_iter==1):
                 Y_b1=Y1
                 Y_b2=Y2
             else:
@@ -699,6 +706,7 @@ def expand_ism(ism, Y1_labels):
    #import pdb; pdb.set_trace()
 
    for i in range(0,voxel_num):
+     #import pdb; pdb.set_trace()
      transform_mat[Y1_labels[i],i]=1
 
    print('debug expand ism3') 
