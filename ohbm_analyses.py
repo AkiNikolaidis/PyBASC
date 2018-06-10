@@ -51,7 +51,7 @@ for clusternum in clusternum_list:
         group_labels_path= current_path + clusterg_path
         #print(group_labels_path)
         #clust_label_temp=np.load(workflowpath to clusters_g.npy)
-        import pdb;pdb.set_trace()
+        #import pdb;pdb.set_trace()
         group_labels=np.load(group_labels_path)
         print(group_labels_path)
         new_column_name= clusternum+ '_clusters_' + network
@@ -80,7 +80,7 @@ for column in all_labels:
         #import pdb; pdb.set_trace()
         label_sim_matrix[column1][column2]= adjusted_rand_score(all_labels[column1],all_labels[column2])
         
-
+#%%
 
 
 #np.save('./all_labels_40Min',all_labels)
@@ -89,8 +89,8 @@ all_labels_40Min=all_labels
 label_sim_matrix_40Min=label_sim_matrix
 label_sim_matrix_40Min=label_sim_matrix_40Min.astype(float)
 
-#label_sim_matrix_Ref=label_sim_matrix
-#label_sim_matrix_Ref=label_sim_matrix_Ref.astype(float)
+label_sim_matrix_Ref=label_sim_matrix
+label_sim_matrix_Ref=label_sim_matrix_Ref.astype(float)
 
 
 a=0
@@ -98,7 +98,11 @@ b=9
 clusters_corr_all=[]
 clusternum_all=[]
 for clusternum in clusternum_list:
-    
+    import pdb; pdb.set_trace()
+    #plt.imshow(label_sim_matrix_Ref[label_sim_matrix_Ref.columns[a:b]][a:b].values);plt.show()
+    #plt.imshow(label_sim_matrix_Ref[label_sim_matrix_40Min.columns[a:b]][a:b].values);plt.show()
+    print(a)
+    print(b)
     rep_cluster=label_sim_matrix_40Min[label_sim_matrix_40Min.columns[a:b]][a:b].values.ravel()
     ref_cluster=label_sim_matrix_Ref[label_sim_matrix_Ref.columns[a:b]][a:b].values.ravel()
     clusters_corr=np.corrcoef(rep_cluster,ref_cluster)[0][1]
@@ -111,6 +115,7 @@ corrdata_perclusternum=pd.DataFrame(
                        'Ref-Rep-Correlation':clusters_corr_all})
 
 global_corrdata=np.corrcoef(label_sim_matrix_40Min.values.ravel(),label_sim_matrix_Ref.values.ravel())[0][1]
+
 
 
 #%%
