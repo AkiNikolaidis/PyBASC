@@ -37,7 +37,7 @@ all_labels=pd.DataFrame()
 
 
 
-clusterg_path='/clusters_G/clusters_g.npy'
+clusterg_path='/clusters_G/clusters_G.npy'
 data_dir='/data2/Projects/BASC/HNU_SSI/PyBASC_outputs/AWS_outputs/40min-data-output'
 ref_dir='/data2/Projects/BASC/HNU_SSI/PyBASC_outputs/AWS_outputs/ref-data-output'
 subjects= np.linspace(0,29,30)
@@ -51,17 +51,19 @@ for clusternum in clusternum_list:
         group_labels_path= current_path + clusterg_path
         #print(group_labels_path)
         #clust_label_temp=np.load(workflowpath to clusters_g.npy)
-        group_labels=[1,2,3]#np.load(group_labels_path)
+        import pdb;pdb.set_trace()
+        group_labels=np.load(group_labels_path)
+        print(group_labels_path)
         new_column_name= clusternum+ '_clusters_' + network
         all_labels[new_column_name] = group_labels
         
         #add a column to a dataframe, where each column of the dataframe is labeled by the clusternum and networklist.
         
         
-        for subject in subjects:
-            subject=str(int(subject))
+        #for subject in subjects:
+        #    subject=str(int(subject))
             #print(subject)
-            ismdir=current_path + 'basc_workflow_runner/basc/individual_stability_matrices/mapflow/_individual_stability_matrices'+ subject
+        #    ismdir=current_path + 'basc_workflow_runner/basc/individual_stability_matrices/mapflow/_individual_stability_matrices'+ subject
             #ism=np.load(ismdir)
             
 
@@ -87,8 +89,8 @@ all_labels_40Min=all_labels
 label_sim_matrix_40Min=label_sim_matrix
 label_sim_matrix_40Min=label_sim_matrix_40Min.astype(float)
 
-label_sim_matrix_Ref=label_sim_matrix
-label_sim_matrix_Ref=label_sim_matrix_Ref.astype(float)
+#label_sim_matrix_Ref=label_sim_matrix
+#label_sim_matrix_Ref=label_sim_matrix_Ref.astype(float)
 
 
 a=0
