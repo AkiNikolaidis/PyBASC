@@ -80,9 +80,38 @@ for column in all_labels:
         #import pdb; pdb.set_trace()
         label_sim_matrix[column1][column2]= adjusted_rand_score(all_labels[column1],all_labels[column2])
         
+        
 #%%
 
+label_sim_matrix_40Min=np.load('label_sim_matrix_40Min.npy')
+label_sim_matrix_Ref=np.load('label_sim_matrix_Ref.npy')
+all_labels_40Min=np.load('all_labels_40Min.npy')
+all_labels_Ref=np.load('all_labels_Ref.npy')
+#%%
+all_labels_total=np.concatenate((all_labels_40Min,all_labels_Ref), axis=1)
 
+all_labels_total_pd=pd.DataFrame(all_labels_total)
+Rep_Ref_label_sim_matrix=pd.DataFrame(columns=list(all_labels_total_pd), index=list(all_labels_total_pd))
+
+for column in all_labels_total_pd:
+    column1=column
+    for column in all_labels_total_pd:
+        column2=column
+        #import pdb; pdb.set_trace()
+        print(column1, column2)
+        col1loc=all_labels_total_pd.columns.get_loc(column1)
+        col2loc=all_labels_total_pd.columns.get_loc(column2)
+        #import pdb; pdb.set_trace()
+        Rep_Ref_label_sim_matrix[column1][column2]= adjusted_rand_score(all_labels_total_pd[column1],all_labels_total_pd[column2])
+        
+Rep_Ref_label_sim_matrix=Rep_Ref_label_sim_matrix.astype(float)
+Rep_Ref_label_sim_matrix_vals=Rep_Ref_label_sim_matrix.values
+
+newmat=Rep_Ref_label_sim_matrix_vals[90:,0:89]
+diag=np.diag(newmat)
+diag_pd=pd.DataFrame(diag, column="RepRefSim")
+diag_pd_sort=diag_pd.sort(columns='RefRepSim')
+#%%
 #np.save('./all_labels_40Min',all_labels)
 #np.save('./label_sim_matrix_40Min',label_sim_matrix)
 all_labels_40Min=all_labels
@@ -94,27 +123,27 @@ label_sim_matrix_Ref=label_sim_matrix_Ref.astype(float)
 
 
 a=0
-b=9
+b=8
 clusters_corr_all=[]
 clusternum_all=[]
 for clusternum in clusternum_list:
-    import pdb; pdb.set_trace()
     #plt.imshow(label_sim_matrix_Ref[label_sim_matrix_Ref.columns[a:b]][a:b].values);plt.show()
     #plt.imshow(label_sim_matrix_Ref[label_sim_matrix_40Min.columns[a:b]][a:b].values);plt.show()
     print(a)
     print(b)
-    rep_cluster=label_sim_matrix_40Min[label_sim_matrix_40Min.columns[a:b]][a:b].values.ravel()
-    ref_cluster=label_sim_matrix_Ref[label_sim_matrix_Ref.columns[a:b]][a:b].values.ravel()
+    rep_cluster=label_sim_matrix_40Min[a:b,a:b].ravel()
+    ref_cluster=label_sim_matrix_Ref[a:b,a:b].ravel()
     clusters_corr=np.corrcoef(rep_cluster,ref_cluster)[0][1]
     clusters_corr_all.append(clusters_corr)
-    a=a+10
-    b=b+10
+    #import pdb; pdb.set_trace()
+    a=a+9
+    b=b+9
     
 corrdata_perclusternum=pd.DataFrame(
         {'clusternum':clusternum_list,
                        'Ref-Rep-Correlation':clusters_corr_all})
 
-global_corrdata=np.corrcoef(label_sim_matrix_40Min.values.ravel(),label_sim_matrix_Ref.values.ravel())[0][1]
+global_corrdata=np.corrcoef(label_sim_matrix_40Min.ravel(),label_sim_matrix_Ref.ravel())[0][1]
 
 
 
