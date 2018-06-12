@@ -304,7 +304,7 @@ clusternum_list= ['2','4','6','8','10','12','14','16','18','20']
 network_list=['Full_BG_Sim_3mm.nii.gz', 'Yeo_1_3mm.nii.gz','Yeo_2_3mm.nii.gz','Yeo_3_3mm.nii.gz','Yeo_4_3mm.nii.gz','Yeo_5_3mm.nii.gz','Yeo_6_3mm.nii.gz','Yeo_7_3mm.nii.gz', 'cerebellum_3mm.nii.gz']
 roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
 
-all_group_cluster_stability=pd.DataFrame()
+all_group_cluster_stability=pd.DataFrame(columns=['network', 'clusternum', 'k', 'stability', 'instability', 'stability_Diff'])
 
 for clusternum in clusternum_list:
     for network in network_list:
@@ -314,7 +314,7 @@ for clusternum in clusternum_list:
         #print(group_labels_path)
         #clust_label_temp=np.load(workflowpath to clusters_g.npy)
         #import pdb;pdb.set_trace()
-        
+        import pdb;pdb.set_trace()
         group_labels=np.load(group_labels_path)
         gsm=np.load(gsm_full_path)
         
@@ -326,17 +326,26 @@ for clusternum in clusternum_list:
         gsm_cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(gsm, group_labels)
         gsm_cluster_voxel_scores=gsm_cluster_voxel_scores.astype("uint8")
         
+        import pdb;pdb.set_trace()
+        
         grp_cluster_stability=[]
         grp_cluster_INSTABILITY=[]
         grp_cluster_stability_Diff=[]
         
         for k in cluster_ids:
-            grp_cluster_stability.append(gsm_cluster_voxel_scores[(k-1),group_labels==k].mean())
-            grp_cluster_INSTABILITY.append(gsm_cluster_voxel_scores[(k-1),group_labels!=k].mean())
-            A, B = basc.ndarray_to_vol(gsm_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'gsm_single_cluster%i_stability.nii.gz' % k)
-        grp_cluster_stability=np.asarray(grp_cluster_stability)
-        grp_cluster_INSTABILITY=np.asarray(grp_cluster_INSTABILITY)
-        grp_cluster_stability_Diff=grp_cluster_stability-grp_cluster_INSTABILITY
+            grp_cluster_stability=gsm_cluster_voxel_scores[(k-1),group_labels==k].mean()
+            grp_cluster_INSTABILITY=gsm_cluster_voxel_scores[(k-1),group_labels!=k].mean()
+            grp_cluster_stability_Diff=grp_cluster_stability-grp_cluster_INSTABILITY
+            #A, B = basc.ndarray_to_vol(gsm_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'gsm_single_cluster%i_stability.nii.gz' % k)
+            # PUT THE ADDING OF VALUES TO THE ALL_GROUP_CLUSTER_STABILITY DATAFRAME
+            newdata=pd.DataFrame([[network, clusternum, k, grp_cluster_stability, grp_cluster_INSTABILITY, grp_cluster_stability_Diff]],columns=['network', 'clusternum', 'k', 'stability', 'instability', 'stability_Diff'])
+            frames=[all_group_cluster_stability, newdata]
+            all_group_cluster_stability=pd.concat(frames)
+        
+#        grp_cluster_stability=np.asarray(grp_cluster_stability)
+#        grp_cluster_INSTABILITY=np.asarray(grp_cluster_INSTABILITY)
+#        grp_cluster_stability_Diff=grp_cluster_stability-grp_cluster_INSTABILITY
+        
         import pdb;pdb.set_trace()
         
         #%%
