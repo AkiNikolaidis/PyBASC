@@ -171,6 +171,98 @@ global_corrdata=np.corrcoef(label_sim_matrix_40Min.ravel(),label_sim_matrix_Ref.
 
 
 
+
+#%%
+#INDIVIDUAL LEVEL CLUSTER STABILITY ASSESSMENT
+import utils
+import basc
+import numpy as np
+import os
+import pandas as pd
+import nibabel as nb
+    #*ACTION - FIGURE OUT IF CAN BE ADDED TO BASC WORKFLOW, OR DIFFERENT WORKFLOW?
+#Individual subject ISM to NIFTI and individual
+
+#Inputs Subject ISM, ROIFile, 
+
+# EXTRACT ALL THE STABILITY INFO FOR EVERY CLUSTER, 
+# AND EVERY CORTICOSTRIATAL NETWORK FOR THE GROUP, 
+# AND FOR EVERY INDIVIDUAL
+roi_mask_file='/home/anikolai/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
+clusterg_path='/clusters_G/clusters_G.npy'
+gsm_path='/group_stability_matrix/group_stability_matrix.npy'
+data_dir='/data2/Projects/BASC/HNU_SSI/PyBASC_outputs/AWS_outputs/40min-data-output'
+ref_dir='/data2/Projects/BASC/HNU_SSI/PyBASC_outputs/AWS_outputs/ref-data-output'
+subjects= np.linspace(0,29,30)
+clusternum_list= ['2','4','6','8','10','12','14','16','18','20']
+
+network_list=['Full_BG_Sim_3mm.nii.gz', 'Yeo_1_3mm.nii.gz','Yeo_2_3mm.nii.gz','Yeo_3_3mm.nii.gz','Yeo_4_3mm.nii.gz','Yeo_5_3mm.nii.gz','Yeo_6_3mm.nii.gz','Yeo_7_3mm.nii.gz', 'cerebellum_3mm.nii.gz']
+roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+
+all_individual_cluster_stability=pd.DataFrame(columns=['network', 'clusternum', 'k', 'subject', 'stability', 'instability', 'stability_Diff'])
+
+for clusternum in clusternum_list:
+    for network in network_list:
+        current_path= ref_dir + '/' + network + '/dim_800_correlation_'+ clusternum + '_clusters_100_IndBS_1_blockcorrelation/workflow_output'
+        group_labels_path= current_path + clusterg_path
+        #gsm_full_path=current_path + gsm_path
+        #print(group_labels_path)
+        #clust_label_temp=np.load(workflowpath to clusters_g.npy)
+        #import pdb;pdb.set_trace()
+        
+        roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+        group_labels=np.load(group_labels_path)
+        #gsm=np.load(gsm_full_path)
+
+        
+        ismdir=current_path + '/basc_workflow_runner/basc/individual_stability_matrices/mapflow/'
+        os.chdir(ismdir)
+        subdirs_all = [x[1] for x in os.walk(ismdir)]                                                                            
+        subdirs=subdirs_all[0]
+        #print(subdirs)
+        path=os.path.normpath(ismdir+subdirs[0])
+        individual=path.split(os.sep)[15]
+        matrices=individual.split('_')[3]
+        subject=matrices[8:]
+        
+        
+        for subdir in subdirs:
+            ism=np.load(ismdir + subdir + '/individual_stability_matrix.npy')
+            cluster_ids = np.unique(group_labels)
+            nClusters = cluster_ids.shape[0]
+            nVoxels = ism.shape[0]
+            os.chdir(ismdir + subdir)
+            k_mask=np.zeros((nVoxels, nVoxels))
+            ism_cluster_voxel_scores = np.zeros((nClusters, nVoxels))
+
+            
+            ism_cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(ism, group_labels)
+            ism_cluster_voxel_scores=ism_cluster_voxel_scores.astype("uint8")
+
+            ind_cluster_stability=[]
+            ind_cluster_INSTABILITY=[]
+            ind_cluster_stability_Diff=[]
+            #import pdb; pdb.set_trace()
+        
+            for k in cluster_ids:
+                ind_cluster_stability=ism_cluster_voxel_scores[(k-1),group_labels==k].mean()
+                ind_cluster_INSTABILITY=ism_cluster_voxel_scores[(k-1),group_labels!=k].mean()
+                ind_cluster_stability_Diff=ind_cluster_stability-ind_cluster_INSTABILITY
+                #A, B = basc.ndarray_to_vol(gsm_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'gsm_single_cluster%i_stability.nii.gz' % k)
+                # PUT THE ADDING OF VALUES TO THE ALL_GROUP_CLUSTER_STABILITY DATAFRAME
+                newdata=pd.DataFrame([[network, clusternum, k, subject, ind_cluster_stability, ind_cluster_INSTABILITY, ind_cluster_stability_Diff]],columns=['network', 'clusternum', 'k', 'subject', 'stability', 'instability', 'stability_Diff'])
+                #import pdb; pdb.set_trace()
+                frames=[all_individual_cluster_stability, newdata]
+                all_individual_cluster_stability=pd.concat(frames) 
+
+
+np.save('all_individual_cluster_stability_Ref',all_individual_cluster_stability)               
+        
+        
+       
+        
+        
+
 #%%
 def ism_nifti(roi_mask_file, n_clusters, out_dir): #NEED TO CHANGE THIS SCRIPT TO:
     #APPLY GROUP LEVEL CLUSTER LABELS TO INDIVIDUAL LEVELS
