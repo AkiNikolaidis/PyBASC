@@ -107,10 +107,34 @@ for column in all_labels_total_pd:
 Rep_Ref_label_sim_matrix=Rep_Ref_label_sim_matrix.astype(float)
 Rep_Ref_label_sim_matrix_vals=Rep_Ref_label_sim_matrix.values
 
-newmat=Rep_Ref_label_sim_matrix_vals[90:,0:89]
+clusternum_list= ['2','4','6','8','10','12','14','16','18','20']
+network_list=['Full_BG_Sim_3mm.nii.gz', 'Yeo_1_3mm.nii.gz','Yeo_2_3mm.nii.gz','Yeo_3_3mm.nii.gz','Yeo_4_3mm.nii.gz','Yeo_5_3mm.nii.gz','Yeo_6_3mm.nii.gz','Yeo_7_3mm.nii.gz', 'cerebellum_3mm.nii.gz']
+
+replication_list=[]
+refrep_clusternum_list=[]
+refrep_network_list=[]
+for clusternum in clusternum_list:
+    for network in network_list:
+        replication= clusternum + '_clusters_' + network
+        refrep_clusternum_list.append(clusternum + '_clusters')
+        refrep_network_list.append(network)
+        replication_list.append(replication)
+
+replist=pd.DataFrame(replication_list)
+clustlist=pd.DataFrame(refrep_clusternum_list)
+networklist=pd.DataFrame(refrep_network_list)
+
+newmat=Rep_Ref_label_sim_matrix_vals[90:,0:90]
 diag=np.diag(newmat)
-diag_pd=pd.DataFrame(diag, column="RepRefSim")
-diag_pd_sort=diag_pd.sort(columns='RefRepSim')
+diag_pd=pd.DataFrame(diag, columns=['RepRefSim'])
+
+frames=[replist, clustlist,networklist, diag_pd]
+
+diag_names=pd.concat(frames, axis=1)
+
+diag_names_sort=diag_names.sort(columns='RepRefSim')
+
+
 #%%
 #np.save('./all_labels_40Min',all_labels)
 #np.save('./label_sim_matrix_40Min',label_sim_matrix)
@@ -245,5 +269,238 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir): #NEED TO CHANGE THIS SCRIPT T
     #        ism_cluster_voxel_scores_file = os.path.join(os.getcwd(), 'ism_cluster_voxel_scores.npy')
     #        
             os.chdir(ismdir + '/' + subdir)
-            
+    
+    
+#%%
 
+
+
+grp_cluster_stability.append(gsm_cluster_voxel_scores[(k-1),clusters_gsm==k].mean())
+grp_cluster_INSTABILITY.append(gsm_cluster_voxel_scores[(k-1),clusters_gsm!=k].mean())    
+#%%    
+    
+#GROUP LEVEL CLUSTER STABILITY ASSESSMENT
+import utils
+import basc
+import numpy as np
+import os
+import pandas as pd
+    #*ACTION - FIGURE OUT IF CAN BE ADDED TO BASC WORKFLOW, OR DIFFERENT WORKFLOW?
+#Individual subject ISM to NIFTI and individual
+
+#Inputs Subject ISM, ROIFile, 
+
+# EXTRACT ALL THE STABILITY INFO FOR EVERY CLUSTER, 
+# AND EVERY CORTICOSTRIATAL NETWORK FOR THE GROUP, 
+# AND FOR EVERY INDIVIDUAL
+roi_mask_file='/home/anikolai/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
+clusterg_path='/clusters_G/clusters_G.npy'
+gsm_path='/group_stability_matrix/group_stability_matrix.npy'
+data_dir='/data2/Projects/BASC/HNU_SSI/PyBASC_outputs/AWS_outputs/40min-data-output'
+ref_dir='/data2/Projects/BASC/HNU_SSI/PyBASC_outputs/AWS_outputs/ref-data-output'
+subjects= np.linspace(0,29,30)
+clusternum_list= ['2','4','6','8','10','12','14','16','18','20']
+
+network_list=['Full_BG_Sim_3mm.nii.gz', 'Yeo_1_3mm.nii.gz','Yeo_2_3mm.nii.gz','Yeo_3_3mm.nii.gz','Yeo_4_3mm.nii.gz','Yeo_5_3mm.nii.gz','Yeo_6_3mm.nii.gz','Yeo_7_3mm.nii.gz', 'cerebellum_3mm.nii.gz']
+roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+
+all_group_cluster_stability=pd.DataFrame()
+
+for clusternum in clusternum_list:
+    for network in network_list:
+        current_path= data_dir + '/' + network + '/dim_800_correlation_'+ clusternum + '_clusters_100_IndBS_1_blockcorrelation/workflow_output'
+        group_labels_path= current_path + clusterg_path
+        gsm_full_path=current_path + gsm_path
+        #print(group_labels_path)
+        #clust_label_temp=np.load(workflowpath to clusters_g.npy)
+        #import pdb;pdb.set_trace()
+        
+        group_labels=np.load(group_labels_path)
+        gsm=np.load(gsm_full_path)
+        
+        cluster_ids = np.unique(group_labels)
+        nClusters = cluster_ids.shape[0]
+        nVoxels = gsm.shape[0]
+        gsm_cluster_voxel_scores = np.zeros((nClusters, nVoxels))
+        k_mask=np.zeros((nVoxels, nVoxels))
+        gsm_cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(gsm, group_labels)
+        gsm_cluster_voxel_scores=gsm_cluster_voxel_scores.astype("uint8")
+        
+        grp_cluster_stability=[]
+        grp_cluster_INSTABILITY=[]
+        grp_cluster_stability_Diff=[]
+        
+        for k in cluster_ids:
+            grp_cluster_stability.append(gsm_cluster_voxel_scores[(k-1),group_labels==k].mean())
+            grp_cluster_INSTABILITY.append(gsm_cluster_voxel_scores[(k-1),group_labels!=k].mean())
+            A, B = basc.ndarray_to_vol(gsm_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'gsm_single_cluster%i_stability.nii.gz' % k)
+        grp_cluster_stability=np.asarray(grp_cluster_stability)
+        grp_cluster_INSTABILITY=np.asarray(grp_cluster_INSTABILITY)
+        grp_cluster_stability_Diff=grp_cluster_stability-grp_cluster_INSTABILITY
+        import pdb;pdb.set_trace()
+        
+        #%%
+
+        print(group_labels_path)
+        new_column_name= clusternum+ '_clusters_' + network
+        all_labels[new_column_name] = group_labels
+        
+
+    #for i in range(nSubjects):
+    gsmdir=out_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/'
+    os.chdir(gsmdir)
+
+    gsm=np.load(gsmdir + '/group_stability_matrix.npy')
+    clusters_gsm =  np.load(group_labels_path)
+    #clusters_gsm = clusters_gsm+1
+    
+    #niftifilename = gsmdir  +'/gsm_clust.nii.gz'
+    #clusters_gsm_file = gsmdir +'/clusters_gsm.npy'
+    #Saving Individual Level Cluster Solution
+#    ndarray_to_vol(clusters_gsm, roi_mask_file, roi_mask_file, niftifilename)
+#    np.save(clusters_gsm_file, clusters_gsm)
+    
+    
+    
+    
+    grp_cluster_stability=[]
+    grp_cluster_INSTABILITY=[]
+    grp_cluster_stability_Diff=[]
+    
+    grp_cluster_stability_file = os.path.join(os.getcwd(), 'grp_cluster_stability.npy')
+    grp_cluster_INSTABILITY_file = os.path.join(os.getcwd(), 'grp_cluster_INSTABILITY.npy')
+    grp_cluster_stability_Diff_file = os.path.join(os.getcwd(), 'grp_cluster_stability_Diff.npy')
+    gsm_cluster_voxel_scores_file = os.path.join(os.getcwd(), 'gsm_cluster_voxel_scores.npy')
+    
+    for k in cluster_ids:
+        grp_cluster_stability.append(gsm_cluster_voxel_scores[(k-1),clusters_gsm==k].mean())
+        grp_cluster_INSTABILITY.append(gsm_cluster_voxel_scores[(k-1),clusters_gsm!=k].mean())
+        A, B = basc.ndarray_to_vol(gsm_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'gsm_single_cluster%i_stability.nii.gz' % k)
+    grp_cluster_stability=np.asarray(grp_cluster_stability)
+    grp_cluster_INSTABILITY=np.asarray(grp_cluster_INSTABILITY)
+    grp_cluster_stability_Diff=grp_cluster_stability-grp_cluster_INSTABILITY
+    
+    np.save(grp_cluster_stability_file, grp_cluster_stability)
+    np.save(grp_cluster_INSTABILITY_file, grp_cluster_INSTABILITY)
+    np.save(grp_cluster_stability_Diff_file, grp_cluster_stability_Diff)
+    np.save(gsm_cluster_voxel_scores_file, gsm_cluster_voxel_scores)
+
+#%%
+def set_style():
+    # This sets reasonable defaults for font size for
+    # a figure that will go in a paper
+    sns.set_context("paper")
+    
+    # Set the font to be serif, rather than sans
+    sns.set(font='serif')
+    
+    # Make the background white, and specify the
+    # specific font family
+    sns.set_style("white", {
+        "font.family": "serif",
+        "font.serif": ["Times", "Palatino", "serif"]
+    })        
+
+def set_size(fig):
+    fig.set_size_inches(8, 8)
+    plt.tight_layout()
+
+plt.subplots(figsize=(13,13))    
+set_style()
+map=sns.heatmap(label_sim_matrix_Ref,cbar=False, yticklabels=9, xticklabels=9)
+set_size(map)
+#%%
+import plotly.plotly as py
+import plotly.graph_objs as go
+import plotly.figure_factory as ff
+
+import numpy as np
+from scipy.spatial.distance import pdist, squareform
+
+
+# get data
+data = label_sim_matrix_Ref# label_sim_matrix_40Min ##
+#np.genfromtxt("http://files.figshare.com/2133304/ExpRawData_E_TABM_84_A_AFFY_44.tab",
+        #             names=True,usecols=tuple(range(1,30)),dtype=float, delimiter="\t")
+data_array = data#data.view((np.float, len(data.dtype.names)))
+data_array = data_array.transpose()
+labels = diag_names.iloc[:,0]#data.dtype.names
+labels=np.asarray(labels)
+
+# Initialize figure by creating upper dendrogram
+figure = ff.create_dendrogram(data_array, orientation='bottom', labels=labels)
+for i in range(len(figure['data'])):
+    figure['data'][i]['yaxis'] = 'y2'
+
+# Create Side Dendrogram
+dendro_side = ff.create_dendrogram(data_array, orientation='right')
+for i in range(len(dendro_side['data'])):
+    dendro_side['data'][i]['xaxis'] = 'x2'
+
+# Add Side Dendrogram Data to Figure
+figure['data'].extend(dendro_side['data'])
+
+# Create Heatmap
+dendro_leaves = dendro_side['layout']['yaxis']['ticktext']
+dendro_leaves = list(map(int, dendro_leaves))
+data_dist = pdist(data_array)
+heat_data = squareform(data_dist)
+heat_data = heat_data[dendro_leaves,:]
+heat_data = heat_data[:,dendro_leaves]
+
+heatmap = [
+    go.Heatmap(
+        x = dendro_leaves,
+        y = dendro_leaves,
+        z = heat_data,
+        colorscale = 'YIGnBu'
+    )
+]
+
+heatmap[0]['x'] = figure['layout']['xaxis']['tickvals']
+heatmap[0]['y'] = dendro_side['layout']['yaxis']['tickvals']
+
+# Add Heatmap Data to Figure
+figure['data'].extend(heatmap)
+
+# Edit Layout
+figure['layout'].update({'width':1600, 'height':1600,
+                         'showlegend':False, 'hovermode': 'closest',
+                         })
+# Edit xaxis
+figure['layout']['xaxis'].update({'domain': [.15, 1],
+                                  'mirror': False,
+                                  'showgrid': False,
+                                  'showline': False,
+                                  'zeroline': False,
+                                  'ticks':""})
+# Edit xaxis2
+figure['layout'].update({'xaxis2': {'domain': [0, .15],
+                                   'mirror': False,
+                                   'showgrid': False,
+                                   'showline': False,
+                                   'zeroline': False,
+                                   'showticklabels': False,
+                                   'ticks':""}})
+
+# Edit yaxis
+figure['layout']['yaxis'].update({'domain': [0, .85],
+                                  'mirror': False,
+                                  'showgrid': False,
+                                  'showline': False,
+                                  'zeroline': False,
+                                  'showticklabels': False,
+                                  'ticks': ""})
+# Edit yaxis2
+figure['layout'].update({'yaxis2':{'domain':[.825, .975],
+                                   'mirror': False,
+                                   'showgrid': False,
+                                   'showline': False,
+                                   'zeroline': False,
+                                   'showticklabels': False,
+                                   'ticks':""}})
+
+# Plot!
+py.plot(figure, filename='dendrogram_with_heatmap')
+
+dendro_side['layout']['xaxis']
