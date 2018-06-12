@@ -21,13 +21,29 @@ from basc import save_igcm_nifti, create_group_cluster_maps, ism_nifti, gsm_nift
 home = expanduser("~")
 proc_mem= [3,16]
 
+#import argparse
+# 
+# See here for more examples- https://docs.python.org/3/library/argparse.html
+#-- makes it a positional argument
+#parser = argparse.ArgumentParser(description='Run BASC analysis')
+#parser.add_argument('--data_dir',  help='')
+#parser.add_argument('--data_dir',  help='')
+#parser.add_argument('integers', metavar='N', type=int, nargs='+',
+#                    help='an integer for the accumulator')
+#
+#args = parser.parse_args()
+#pybasc_dir=args.pybasc_dir
+#data_dir=args.data_dir
+#bootstraps=args.bootstraps
+#n_clusters_list=args.clusters
+
 
 subject_file_list = ['/Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/NKI_Dev/645_Data/TimeTest/645_852_A00029979.nii.gz',
                      '/Users/aki.nikolaidis/Dropbox/1_Projects/1_Research/2_CMI_BG_DEV/NKI_Dev/645_Data/TimeTest/645_852_A00031217.nii.gz']
 
 
 #
-roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
+roi_mask_file=data_dir+'/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz'
 
 
 roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_All_7_3mm.nii.gz'
