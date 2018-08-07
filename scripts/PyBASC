@@ -12,7 +12,7 @@ import sys
 
 config=yaml.load(sys.argv[0])
 
-config=yaml.load(open('/Users/aki.nikolaidis/git_repo/PyBASC_Package/PyBASC/scripts/Template.yaml','r'))
+#config=yaml.load(open('/Users/aki.nikolaidis/git_repo/PyBASC_Package/PyBASC/scripts/Template.yaml','r'))
 
 
 main(config['dataset_bootstrap_list'],config['timeseries_bootstrap_list'], config['similarity_metric_list'], 
