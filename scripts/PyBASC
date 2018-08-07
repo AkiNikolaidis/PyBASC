@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul 19 12:44:06 2018
+
+@author: aki.nikolaidis
+"""
+
+import yaml
+from PyBASC.__main__ import main
+import sys
+
+config=yaml.load(sys.argv[0])
+
+#config=yaml.load(open('/Users/aki.nikolaidis/git_repo/PyBASC_Package/PyBASC/scripts/Template.yaml','r'))
+
+
+main(config['dataset_bootstrap_list'],config['timeseries_bootstrap_list'], config['similarity_metric_list'], 
+         config['blocklength_list'], config['n_clusters_list'], config['output_sizes'], config['subject_file_list'], 
+         config['roi_mask_file'], config['proc_mem'], config['cross_cluster'], config['roi2_mask_file'], config['affinity_thresh'], 
+         config['run'], config['home'], config['reruns'], config['group_dim_reduce'], config['analysis_ID'])

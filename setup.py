@@ -9,6 +9,7 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
+import glob
 
 here = path.abspath(path.dirname(__file__))
 
@@ -22,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.4',
+    version='0.3.0',
 
     description='A bootstrapping clustering algorithm for Python',
     long_description=long_description,
@@ -102,9 +103,10 @@ setup(
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
-#    entry_points={
-#        'console_scripts': [
-#            'sample=sample:main',
-#        ],
-#    },
+    scripts=glob.glob('scripts/*'),
+    entry_points={
+        'console_scripts': [
+            'PyBASC=PyBASC.__main__:main',
+        ],
+    },
 )
