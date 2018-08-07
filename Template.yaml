@@ -1,0 +1,81 @@
+affinity_thresh: 0.0
+
+analysis_ID: crosscluster_T_test
+
+blocklength_list:
+    - 1 
+    
+cross_cluster: True
+
+dataset_bootstrap_list:
+    - 30
+#    - 10
+#    - 30
+#    - 60
+#    - 100
+
+group_dim_reduce: False
+    
+home: /Users/aki.nikolaidis
+
+n_clusters_list:
+    - 2
+#    - 4
+#    - 6
+#    - 8
+#    - 10
+#    - 12
+#    - 14
+#    - 16
+    
+output_sizes:
+    - 800 #[10,100,600,1200]
+
+proc_mem:
+    - 2
+    - 4
+
+reruns: 1
+
+roi_mask_file: masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz
+
+
+roi2_mask_file: masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz #masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
+
+run: True
+
+similarity_metric_list:
+    - correlation #['correlation','euclidean','cityblock', 'cosine']
+
+
+
+subject_file_list: 
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_0corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_1corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_2corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_3corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_4corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_5corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_6corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_7corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_8corr_0.05_noise_2_TRs_100.nii.gz
+    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_9corr_0.05_noise_2_TRs_100.nii.gz
+
+
+timeseries_bootstrap_list:
+    - 100
+#    - 10
+#    - 30
+#    - 60
+#    - 100
+
+
+
+    
+
+
+
+
+
+
+

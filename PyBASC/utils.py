@@ -577,7 +577,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
         A matrix of shape (`V1`, `V1`), each element v1_{ij} representing the stability of the adjacency of voxel i with voxel j
     """
     
-    import utils 
+    import PyBASC.utils as utils
     import time
     import numpy as np
     #print("Calculating Individual Stability Matrix")
@@ -604,21 +604,15 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
     #import pdb;pdb.set_trace()
     if (cross_cluster is True):
         for bootstrap_i in range(n_bootstraps):
-            bootstrap_iter=bootstrap_i+1
-            #import pdb; pdb.set_trace()
+        
             N2 = Y2.shape[1]
             temp_block_size2 = int(np.sqrt(N2))
             cbb_block_size2 = int(temp_block_size2 * blocklength)
             
-            if (bootstrap_iter==1):
-                print("right")
-                #import pdb; pdb.set_trace()
-                
+            if (bootstrap_i==1):
                 Y_b1=Y1
                 Y_b2=Y2
             else:
-                print("wrong")
-               # import pdb; pdb.set_trace()
                 Y_b1, block_mask = utils.timeseries_bootstrap(Y1, cbb_block_size)
                 Y_b2 = Y2[block_mask.astype('int'), :]
             #import pdb;pdb.set_trace()
@@ -644,12 +638,11 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
         #print('ISM calculation took', (time.time() - ismtime), ' seconds')
     else:
         for bootstrap_i in range(n_bootstraps):
-            bootstrap_iter=bootstrap_i+1
             print('ismcalc1')
             print('block size', cbb_block_size)
             #import pdb; pdb.set_trace()
             
-            if (bootstrap_iter==1):
+            if (bootstrap_i==1):
                 Y_b1=Y1
                 Y_b2=Y2
             else:
@@ -696,7 +689,8 @@ def expand_ism(ism, Y1_labels):
    import pandas as pd
    import numpy as np
    import time
-   print('debug expand ism1') 
+   print('debug expand ism1')
+   #import pdb; pdb.set_trace()
    voxel_num=len(Y1_labels)
    voxel_ism = np.zeros((voxel_num,voxel_num))
    transform_mat=np.zeros((len(ism),voxel_num))
@@ -706,7 +700,6 @@ def expand_ism(ism, Y1_labels):
    #import pdb; pdb.set_trace()
 
    for i in range(0,voxel_num):
-     #import pdb; pdb.set_trace()
      transform_mat[Y1_labels[i],i]=1
 
    print('debug expand ism3') 
@@ -768,4 +761,4 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
     data_reduced = ward.transform(fmri_masked)
     fmri_masked=[]
     #print('Data compression took ', (time.time()- datacompressiontime), ' seconds')
-    return {'data':data_reduced, 'labels':labels}
+    return {'data':data_reduced, 'labels':labels, 'ward':ward}
