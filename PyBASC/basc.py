@@ -77,7 +77,7 @@ def group_dim_reduce(subject_file_list, roi_mask_file, output_size, group_dim_re
         ward1=data_dict1['ward']
         #import pdb; pdb.set_trace()
         ##import pdb;pdb.set_trace()
-        if (roi2_mask_file != None):
+        if (cross_cluster == True):
             
             roi2_mask_file_nb= nb.load(roi2_mask_file)
             roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
@@ -90,7 +90,9 @@ def group_dim_reduce(subject_file_list, roi_mask_file, output_size, group_dim_re
             group_data2=group_data2[:,1:]
             group_data2=sk.preprocessing.normalize(group_data2, norm='l2')
             #print( 'Compressing Y2')
+            
             output_size2=output_size + 5
+          
             data_dict2 = utils.data_compression(group_data2.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
             
             Y2_compressed = data_dict2['data']
@@ -158,15 +160,19 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         #import pdb; pdb.set_trace()
         Y1_compressed = data_dict1['data']
         #Y1_compressed = Y1_compressed.T
+        #import pdb; pdb.set_trace()
         Y1_labels = pd.DataFrame(data_dict1['labels'])
         Y1_labels=np.array(Y1_labels)
     else:
-        ward1.fit(roi1data.T)
+        #import pdb;pdb.set_trace()
+        #ward1.fit(roi1data.T)
         Y1_labels = ward1.labels_
         Y1_compressed = ward1.transform(roi1data.T)
+        roi_mask_nparray='empty'
         
-        
-    if (roi2_mask_file != None):
+    #import pdb;pdb.set_trace()
+    
+    if (cross_cluster==True):
         
         roi2_mask_file_nb= nb.load(roi2_mask_file)
         roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
@@ -174,7 +180,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
         #print( 'Compressing Y2')
         output_size2=output_size + 5
-        
         if ward2==False:
             data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
             Y2_compressed = data_dict2['data']
@@ -186,7 +191,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
             Y2_compressed = ward2.transform(roi2data.T)
         
         print('Going into ism')
-        ##import pdb;pdb.set_trace()
+        #import pdb;pdb.set_trace()
         ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
         ##import pdb; pdb.set_trace()
         #ism=ism/n_bootstraps # was already done in ism

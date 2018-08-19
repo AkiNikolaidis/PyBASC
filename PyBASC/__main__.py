@@ -7,6 +7,9 @@ import numpy as np
 import scipy.stats
 from os.path import expanduser
 import pkg_resources
+import yaml
+import sys
+
 
 #from basc_workflow_runner import run_basc_workflow
 #from basc import save_igcm_nifti, create_group_cluster_maps, ism_nifti, gsm_nifti
@@ -14,19 +17,54 @@ import pkg_resources
 #group_dim_reduce=False
 
 
-def main(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
+#def main(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
+#         blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
+#         cross_cluster, roi2_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID):
+
+def main():
+
+    config=yaml.load(open(sys.argv[1], 'r'))
+    print(config)
+
+    dataset_bootstrap_list=config['dataset_bootstrap_list']
+    timeseries_bootstrap_list=config['timeseries_bootstrap_list']
+    similarity_metric_list=config['similarity_metric_list']
+    blocklength_list=config['blocklength_list']
+    n_clusters_list=config['n_clusters_list']
+    output_sizes=config['output_sizes']
+    subject_file_list=config['subject_file_list']
+    roi_mask_file=config['roi_mask_file']
+    proc_mem=config['proc_mem']
+    cross_cluster=config['cross_cluster']
+    roi2_mask_file=config['roi2_mask_file']
+    affinity_thresh=config['affinity_thresh']
+    run=config['run']
+    home=config['home']
+    reruns=config['reruns']
+    group_dim_reduce=config['group_dim_reduce']
+    analysis_ID=config['analysis_ID']
+    
+    run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
+         blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
+         cross_cluster, roi2_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID)
+
+
+def run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
          blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
          cross_cluster, roi2_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID):
+
     ism_gsm_stability=[]
     ind_clust_stab_summary=[[1, 2, 3, 4, 5]]
     rerun_list= np.linspace(1,reruns,reruns)
+    roi_mask_file=pkg_resources.resource_filename('PyBASC', roi_mask_file)
+    roi2_mask_file=pkg_resources.resource_filename('PyBASC', roi2_mask_file)
+    affinity_threshold= [affinity_thresh] * len(subject_file_list)
+
     for rerun in rerun_list:    
         #roi_mask_file=
         #import pdb; pdb.set_trace()
     
-        roi_mask_file=pkg_resources.resource_filename('PyBASC', roi_mask_file)
-        roi2_mask_file=pkg_resources.resource_filename('PyBASC', roi2_mask_file)
-        affinity_threshold= [affinity_thresh] * len(subject_file_list)
+
         
         for (dataset_bootstraps, timeseries_bootstraps) in zip(dataset_bootstrap_list,timeseries_bootstrap_list):
             

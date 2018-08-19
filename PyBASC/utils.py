@@ -195,6 +195,7 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
       
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X.T, metric = similarity_metric)
+
     
     temp=X_dist
     temp[np.isnan(temp)]=0
@@ -202,9 +203,14 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
     
     X_dist = sp.spatial.distance.squareform(X_dist)
     X_dist[np.isnan(X_dist)]=tempmax
-    #import pdb;pdb.set_trace()
+    
     sim_matrix=1-sk.preprocessing.normalize(X_dist, norm='max')
     sim_matrix[sim_matrix<affinity_threshold]=0
+    ##### TESTING ############
+    #Clust_X_simfile= os.path.join(os.getcwd(),'Clust_X_simfile.npy')
+    #np.save(Clust_X_simfile, sim_matrix) 
+    #import pdb; pdb.set_trace()
+    ######### TESTING ##########
     #import pdb;pdb.set_trace()
     if cluster_method == 'ward':
        #    ## BEGIN WARD CLUSTERING CODE 
@@ -324,21 +330,51 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
     from sklearn.feature_extraction import image
 
     
-    
     print("Calculating Cross-clustering")
     print("Calculating pairwise distances between areas")
     
+    #import pdb; pdb.set_trace()
+
+    
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1.T, data2.T, metric = similarity_metric))
-    sim_btwn_data_1_2=1-dist_btwn_data_1_2
-    sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
-    sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
+    #import pdb; pdb.set_trace()
+
+    temp=dist_btwn_data_1_2
+    temp[np.isnan(temp)]=0
+    tempmax=temp.max()
+
+    #dist_btwn_data_1_2 = sp.spatial.distance.squareform(dist_btwn_data_1_2)
+    dist_btwn_data_1_2[np.isnan(dist_btwn_data_1_2)]=tempmax
+    #import pdb; pdb.set_trace()
+
+    #import pdb; pdb.set_trace()
+
+    #sim_matrix=1-sk.preprocessing.normalize(dist_btwn_data_1_2, norm='max')
+    #sim_matrix[sim_matrix<affinity_threshold]=0
+    
+    ##### TESTING ############
+    #Cross_Clust_X_distfile= os.path.join(os.getcwd(),'Cross_Clust_X_distfile.npy')
+    #np.save(Cross_Clust_X_distfile, dist_btwn_data_1_2) 
+    #import pdb; pdb.set_trace()
+    ######### TESTING ##########
+    
+    #sim_btwn_data_1_2=1-dist_btwn_data_1_2
+    #sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
+    #sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
 
     print("Calculating pairwise distances between voxels in ROI 1 ")
-    dist_of_1 = sp.spatial.distance.pdist(sim_btwn_data_1_2, metric = 'euclidean')
+    dist_of_1 = sp.spatial.distance.pdist(dist_btwn_data_1_2, metric = 'euclidean')
+    #import pdb; pdb.set_trace()
+
     dist_matrix = sp.spatial.distance.squareform(dist_of_1)
     sim_matrix=1-sk.preprocessing.normalize(dist_matrix, norm='max')
     sim_matrix[sim_matrix<affinity_threshold]=0
 
+    ##### TESTING ############
+    #Cross_Clust_X_simfile= os.path.join(os.getcwd(),'Cross_Clust_X_simfile.npy')
+    #np.save(Cross_Clust_X_simfile, sim_matrix) 
+    #import pdb; pdb.set_trace()
+    ######### TESTING ##########
 
     if cluster_method == 'ward':
            #    ## BEGIN WARD CLUSTERING CODE 
@@ -355,15 +391,22 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
                 shape = roi_mask_nparray.shape
                 connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                    n_z=shape[2], mask=roi_mask_nparray)
-            
+                #import pdb; pdb.set_trace()
+
                 ward = FeatureAgglomeration(n_clusters=n_clusters, connectivity=connectivity,
                                         linkage='ward')
+                #import pdb; pdb.set_trace()
+
                 ward.fit(sim_matrix)
+                #import pdb; pdb.set_trace()
+
                 y_pred = ward.labels_.astype(np.int)
             else:
                 print("Calculating Hierarchical Cross-clustering")
                 ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
+                #import pdb; pdb.set_trace()
                 ward.fit(sim_matrix)
+                #import pdb; pdb.set_trace()
                 y_pred = ward.labels_.astype(np.int)
             
     #    # END WARD CLUSTERING CODE 
@@ -582,7 +625,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
     import numpy as np
     #print("Calculating Individual Stability Matrix")
     ismtime=time.time()
-   
+    #import pdb;pdb.set_trace()
     
     if affinity_threshold < 0.0:
         raise ValueError('affinity_threshold %d must be non-negative value' % affinity_threshold)
@@ -620,7 +663,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             #import pdb; pdb.set_trace()
             
             #SPATIAL CONSTRAINT EXPERIMENT#
-            roi_mask_nparray='empty'
+            #roi_mask_nparray='empty'
             #SPATIAL CONSTRAINT EXPERIMENT#
             
 #            if spatial_constraint==true:
@@ -629,7 +672,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
 #                roi_mask_nparray=roi_mask_nparray
             #import pdb; pdb.set_trace()
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold= affinity_threshold, cluster_method='ward'))
-
+            #import pdb; pdb.set_trace()
             
         S /= n_bootstraps
         
@@ -652,7 +695,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             #import pdb;pdb.set_trace()
             
             #SPATIAL CONSTRAINT EXPERIMENT#
-            roi_mask_nparray='empty'
+            #roi_mask_nparray='empty'
             #SPATIAL CONSTRAINT EXPERIMENT#
             
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold, cluster_method='ward')[:,np.newaxis])
@@ -760,5 +803,6 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
     #print ('Extracting reduced Dimension Data')
     data_reduced = ward.transform(fmri_masked)
     fmri_masked=[]
+    #import pdb;pdb.set_trace()
     #print('Data compression took ', (time.time()- datacompressiontime), ' seconds')
     return {'data':data_reduced, 'labels':labels, 'ward':ward}
