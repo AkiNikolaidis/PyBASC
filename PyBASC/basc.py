@@ -17,10 +17,8 @@ def group_dim_reduce(subject_file_list, roi_mask_file, output_size, group_dim_re
     import sklearn as sk
     from sklearn import preprocessing
     
-    #import pdb; pdb.set_trace()
     
     if (group_dim_reduce==False):
-        #import pdb; pdb.set_trace()
         ward1=False
         ward2=False
         Y1_labels_file=None
@@ -28,23 +26,7 @@ def group_dim_reduce(subject_file_list, roi_mask_file, output_size, group_dim_re
     
     else:
     
-#    output_size=800
-#    roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
-#    roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
-#
-#    
-#    subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_0corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_1corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_2corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_3corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_4corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_5corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_6corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_7corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_8corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_9corr_0.05_noise_2_TRs_100.nii.gz']
 
-        ##import pdb; pdb.set_trace()
         roi_mask_file_nb = nb.load(roi_mask_file)
         roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
         
@@ -146,31 +128,24 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
 
 
     data = nb.load(subject_file).get_data().astype('float32')
-    #print( 'Data Loaded')
+    print( 'Data Loaded')
     roi_mask_file_nb = nb.load(roi_mask_file)
     roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-#    roi_np_mask_file = os.path.join(os.getcwd(), 'mask_nparray.npy')
-#    np.save(roi_np_mask_file, roi_mask_nparray)
-#    #import pdb; pdb.set_trace()
-    #import pdb;pdb.set_trace()
+
     roi1data = data[roi_mask_nparray]
     roi1data=sk.preprocessing.normalize(roi1data, norm='l2')
     if ward1==False:
         data_dict1 = utils.data_compression(roi1data.T, roi_mask_file_nb, roi_mask_nparray, output_size)
-        #import pdb; pdb.set_trace()
         Y1_compressed = data_dict1['data']
-        #Y1_compressed = Y1_compressed.T
-        #import pdb; pdb.set_trace()
+        
         Y1_labels = pd.DataFrame(data_dict1['labels'])
         Y1_labels=np.array(Y1_labels)
     else:
-        #import pdb;pdb.set_trace()
-        #ward1.fit(roi1data.T)
+        
         Y1_labels = ward1.labels_
         Y1_compressed = ward1.transform(roi1data.T)
         roi_mask_nparray='empty'
         
-    #import pdb;pdb.set_trace()
     
     if (cross_cluster==True):
         
@@ -178,7 +153,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         roi2_mask_nparray = nb.load(roi2_mask_file).get_data().astype('float32').astype('bool')
         roi2data = data[roi2_mask_nparray]
         roi2data=sk.preprocessing.normalize(roi2data, norm='l2')
-        #print( 'Compressing Y2')
         output_size2=output_size + 5
         if ward2==False:
             data_dict2 = utils.data_compression(roi2data.T, roi2_mask_file_nb, roi2_mask_nparray, output_size2)
@@ -191,11 +165,8 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
             Y2_compressed = ward2.transform(roi2data.T)
         
         print('Going into ism')
-        #import pdb;pdb.set_trace()
         ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
-        ##import pdb; pdb.set_trace()
-        #ism=ism/n_bootstraps # was already done in ism
-        ##import pdb; pdb.set_trace()
+
         
         if ward1!=False:
             ism=ism.astype("uint8")
@@ -212,7 +183,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
             voxel_ism = utils.expand_ism(ism, Y1_labels)
           
             
-            #voxel_ism=voxel_ism*100 # was already done in ism
             voxel_ism=voxel_ism.astype("uint8")
     
             ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
@@ -220,20 +190,12 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
             
             Y1_labels_file = os.path.join(os.getcwd(), 'Y1_labels.npy')
             np.save(Y1_labels_file, Y1_labels)
-            #print ('Saving individual stability matrix %s for %s' % (ism_file, subject_file))
             return ism_file, Y1_labels_file
 
     else:
-
-        print('debug2')
-        #Y2_compressed=None
-        ##import pdb; pdb.set_trace()
         Y2=None
         ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2 ,cross_cluster, cbb_block_size, blocklength, affinity_threshold)
 
-        #ism=ism/n_bootstraps # was already done in ism
-        print('debug3')
-        print(Y1_labels)
         if ward1!=False:
             ism=ism.astype("uint8")
             ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
@@ -255,7 +217,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
             np.save(ism_file, voxel_ism)
             
             print('debug4')
-            #print( 'Saving individual stability matrix %s for %s' % (ism_file, subject_file))
             Y1_labels_file = os.path.join(os.getcwd(), 'Y1_labels.npy')
             np.save(Y1_labels_file, Y1_labels)
             return ism_file, Y1_labels_file
@@ -265,59 +226,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     return ism_file, Y1_labels_file
 
 
-def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
-    """
-    Converts a numpy array to a nifti file given an roi mask
 
-    Parameters
-    ----------
-    data_array : array_like
-        A data array with the same column length and index alignment as the given roi_mask_file.  If data_array is two dimensional,
-        first dimension is considered temporal dimension
-    roi_mask_file : string
-        Path of the roi_mask_file
-    sample_file : string or list of strings
-        Path of sample nifti file(s) to use for header of the output.  If list, the first file is chosen.
-    filename : string
-        Name of output file
-
-    Returns
-    -------
-    img_file : string
-        Path of the nifti file output
-
-    """
-   
-    
-    import nibabel as nb
-    import numpy as np
-    import os
-    
-    print('data array is', data_array)
-    print('roi mask file', roi_mask_file)
-    print('filename', filename)
-    ##import pdb;pdb.set_trace()
-    roi_mask_file = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
-    if(len(data_array.shape) == 1):
-        out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
-        out_vol[roi_mask_file] = data_array
-    elif(len(data_array.shape) == 2):
-        out_vol = np.zeros((roi_mask_file.shape[0], roi_mask_file.shape[1], roi_mask_file.shape[2], data_array.shape[1]), dtype=data_array.dtype)
-        ##import pdb; pdb.set_trace()
-        out_vol[roi_mask_file] = data_array
-    else:
-        raise ValueError('data_array is %i dimensional, must be either 1 or 2 dimensional' % len(data_array.shape) )
-    nii = None
-    if type(sample_file) is list:
-        nii = nb.load(sample_file[0])
-    else:
-        nii = nb.load(sample_file)
-    
-    img = nb.Nifti1Image(out_vol, header=nii.get_header(), affine=nii.get_affine())
-    img_file = os.path.join(os.getcwd(), filename)
-    img.to_filename(img_file)
-    
-    return img_file, img
 
     
 def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_mask_file, group_dim_reduce):
@@ -483,7 +392,57 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     return G, clusters_G, ism_gsm_corr, gsm_file, clusters_G_file, ism_gsm_corr_file
 
 
+def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
+    """
+    Converts a numpy array to a nifti file given an roi mask
 
+    Parameters
+    ----------
+    data_array : array_like
+        A data array with the same column length and index alignment as the given roi_mask_file.  If data_array is two dimensional,
+        first dimension is considered temporal dimension
+    roi_mask_file : string
+        Path of the roi_mask_file
+    sample_file : string or list of strings
+        Path of sample nifti file(s) to use for header of the output.  If list, the first file is chosen.
+    filename : string
+        Name of output file
+
+    Returns
+    -------
+    img_file : string
+        Path of the nifti file output
+
+    """
+   
+    
+    import nibabel as nb
+    import numpy as np
+    import os
+    
+    print('data array is', data_array)
+    print('roi mask file', roi_mask_file)
+    print('filename', filename)
+    roi_mask_file = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
+    if(len(data_array.shape) == 1):
+        out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
+        out_vol[roi_mask_file] = data_array
+    elif(len(data_array.shape) == 2):
+        out_vol = np.zeros((roi_mask_file.shape[0], roi_mask_file.shape[1], roi_mask_file.shape[2], data_array.shape[1]), dtype=data_array.dtype)
+        out_vol[roi_mask_file] = data_array
+    else:
+        raise ValueError('data_array is %i dimensional, must be either 1 or 2 dimensional' % len(data_array.shape) )
+    nii = None
+    if type(sample_file) is list:
+        nii = nb.load(sample_file[0])
+    else:
+        nii = nb.load(sample_file)
+    
+    img = nb.Nifti1Image(out_vol, header=nii.get_header(), affine=nii.get_affine())
+    img_file = os.path.join(os.getcwd(), filename)
+    img.to_filename(img_file)
+    
+    return img_file, img
 
 def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_file, group_dim_reduce, Y1_labels_list):
     """
@@ -606,41 +565,6 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
 
 
 
-#def individualized_group_clusters(indiv_stability_list, cluster_voxel_scores_file, roi_mask_file):
-#
-##    Pseudocode=
-##Just a function for now (eventually map node)
-##
-##Input- subject list, cluster voxel scores.npy, ROI mask file
-##
-##Load cluster_voxel_scores.npy (rows = cluster number, column = voxel)
-##
-##For each column, which row has the largest number?
-##    Creates a single row with voxel labels.
-##
-##Put this individualized label through basc.ndarray_to_vol and save.
-#    
-#    import os
-#    import numpy as np
-#    import utils
-#    import basc
-#    print('starting igcm')
-#    ##import pdb; pdb.set_trace()
-#    print("igcm debug 1")
-#    # *REMOVE LINE* indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
-#    indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
-#    indiv_stability_set = indiv_stability_mat[0]
-#    #*REMOVE LINE*nSubjects = indiv_stability_set.shape[0]
-#    nVoxels = indiv_stability_set.shape[1]
-#
-#    cluster_ids = np.unique(clusters_G)
-#    nClusters = cluster_ids.shape[0]
-#    print("igcm debug 2")
-#    os.path.join(os.getcwd(), 'cluster_voxel_scores.npy')
-#    
-#    return
-
-
 def post_analysis(ind_group_cluster_stability_file_list):
     """
     Creates a composite matrix of all the ind_group_cluster_stability files.
@@ -707,55 +631,56 @@ def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
 #        A=[]
 #        B=[]
 
-def create_group_cluster_maps(gsm_file,clusters_G_file,roi_mask_file):
-    """
-    Loops through every row of cluster_voxel_scores and creates nifti files
-    
-    Parameters
-    ----------
-        gsm_file- a cluster number by voxel measure of the stability
-            of group level solutions.
-        clusters_G_file- taken from igcm output
-        roi_mask_file- file you want to transform the data back into.
-
-    Returns
-    -------
-    Creates NIFTI files for all the gsm file for the group across all clusters 
-    
-    """
-    
-    import numpy as np
-    import PyBASC.basc as basc
-    import PyBASC.utils as utils
-    
-    group_stability_mat = np.asarray([np.load(gsm_file)])
-    group_stability_set = group_stability_mat[0]
-    #nSubjects = indiv_stability_set.shape[0]
-    nVoxels = group_stability_set.shape[1]
-    clusters_G=np.load(clusters_G_file)
-    group_cluster_stability=[]
-    cluster_ids = np.unique(clusters_G)
-    nClusters = cluster_ids.shape[0]
-    print("igcm debug 2")
-
-#    cluster_voxel_scores = np.zeros((nSubjects,nClusters, nVoxels))
-#    k_mask=np.zeros((nSubjects,nVoxels, nVoxels))
-    group_cluster_voxel_scores = np.zeros((nClusters, nVoxels))
-    k_mask=np.zeros((nVoxels, nVoxels))
-    #for i in range(nSubjects):
-    
-    group_cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(group_stability_set, clusters_G)    
-
-
-    for i in cluster_ids:
-        group_cluster_stability.append(group_cluster_voxel_scores[(i-1),clusters_G==i].mean())
-    
-    for k in cluster_ids:
-        print('k equals \n\n', k, '\n\n') #Loops through every row of cluster_voxel_scores and creates nifti files
-        print('clustervoxelscores equals \n\n', group_cluster_voxel_scores[k-1,:], '\n\n')
-        A, B = basc.ndarray_to_vol(group_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'group_level_cluster%i_stability.nii.gz' % k)
-        print('Output A equals', A, '\n\n')
-    return
+#######################################
+#def create_group_cluster_maps(gsm_file,clusters_G_file,roi_mask_file):
+#    """
+#    Loops through every row of cluster_voxel_scores and creates nifti files
+#    
+#    Parameters
+#    ----------
+#        gsm_file- a cluster number by voxel measure of the stability
+#            of group level solutions.
+#        clusters_G_file- taken from igcm output
+#        roi_mask_file- file you want to transform the data back into.
+#
+#    Returns
+#    -------
+#    Creates NIFTI files for all the gsm file for the group across all clusters 
+#    
+#    """
+#    
+#    import numpy as np
+#    import PyBASC.basc as basc
+#    import PyBASC.utils as utils
+#    
+#    group_stability_mat = np.asarray([np.load(gsm_file)])
+#    group_stability_set = group_stability_mat[0]
+#    #nSubjects = indiv_stability_set.shape[0]
+#    nVoxels = group_stability_set.shape[1]
+#    clusters_G=np.load(clusters_G_file)
+#    group_cluster_stability=[]
+#    cluster_ids = np.unique(clusters_G)
+#    nClusters = cluster_ids.shape[0]
+#    print("igcm debug 2")
+#
+##    cluster_voxel_scores = np.zeros((nSubjects,nClusters, nVoxels))
+##    k_mask=np.zeros((nSubjects,nVoxels, nVoxels))
+#    group_cluster_voxel_scores = np.zeros((nClusters, nVoxels))
+#    k_mask=np.zeros((nVoxels, nVoxels))
+#    #for i in range(nSubjects):
+#    
+#    group_cluster_voxel_scores[:,:], k_mask[:,:] = utils.cluster_matrix_average(group_stability_set, clusters_G)    
+#
+#
+#    for i in cluster_ids:
+#        group_cluster_stability.append(group_cluster_voxel_scores[(i-1),clusters_G==i].mean())
+#    
+#    for k in cluster_ids:
+#        print('k equals \n\n', k, '\n\n') #Loops through every row of cluster_voxel_scores and creates nifti files
+#        print('clustervoxelscores equals \n\n', group_cluster_voxel_scores[k-1,:], '\n\n')
+#        A, B = basc.ndarray_to_vol(group_cluster_voxel_scores[k-1,:], roi_mask_file, roi_mask_file, 'group_level_cluster%i_stability.nii.gz' % k)
+#        print('Output A equals', A, '\n\n')
+#    return
 
 def ism_nifti(roi_mask_file, n_clusters, out_dir):
     """
@@ -1229,8 +1154,6 @@ def create_basc(proc_mem, name='basc'):
     #Node to Node connections
     basc.connect(gdr, 'ward1',                              nis, 'ward1')
     basc.connect(gdr, 'ward2',                              nis, 'ward2')
-    #basc.connect(gdr, 'Y1_labels',                          jgsm, 'Y1_labels')
-    #basc.connect(gdr, 'Y1_labels',                          igcm, 'Y1_labels')
 
     basc.connect(nis, 'ism_file',                           mgsm, 'indiv_stability_list')
     basc.connect(nis, 'ism_file',                           jgsm, 'indiv_stability_list')

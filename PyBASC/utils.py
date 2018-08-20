@@ -206,12 +206,7 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
     
     sim_matrix=1-sk.preprocessing.normalize(X_dist, norm='max')
     sim_matrix[sim_matrix<affinity_threshold]=0
-    ##### TESTING ############
-    #Clust_X_simfile= os.path.join(os.getcwd(),'Clust_X_simfile.npy')
-    #np.save(Clust_X_simfile, sim_matrix) 
-    #import pdb; pdb.set_trace()
-    ######### TESTING ##########
-    #import pdb;pdb.set_trace()
+
     if cluster_method == 'ward':
        #    ## BEGIN WARD CLUSTERING CODE 
         print("ward")
@@ -223,7 +218,6 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
         print("ward")
         print("ward")
         if roi_mask_nparray!='empty':
-            #import pdb; pdb.set_trace()
             shape = roi_mask_nparray.shape
             connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                n_z=shape[2], mask=roi_mask_nparray)
@@ -237,8 +231,8 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
             ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
             ward.fit(sim_matrix)
             y_pred = ward.labels_.astype(np.int)
+            print("FINISHED CLUSTERING")
         
-#    # END WARD CLUSTERING CODE 
     else:
         
         print("spectral")
@@ -250,17 +244,10 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
         print("spectral")
         print("spectral")
         print("spectral")
-        #cluster_method== 'spectral':
-        #Spectral method
+
         spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
         spectral.fit(sim_matrix)
         y_pred = spectral.labels_.astype(np.int)     
-
-#    
-    # BEGIN SPECTRAL CLUSTERING CODE 
-    
-    # END SPECTRAL CLUSTERING CODE 
-
 
 
     return y_pred
@@ -333,34 +320,16 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
     print("Calculating Cross-clustering")
     print("Calculating pairwise distances between areas")
     
-    #import pdb; pdb.set_trace()
 
     
     dist_btwn_data_1_2 = np.array(sp.spatial.distance.cdist(data1.T, data2.T, metric = similarity_metric))
-    #import pdb; pdb.set_trace()
 
     temp=dist_btwn_data_1_2
     temp[np.isnan(temp)]=0
     tempmax=temp.max()
 
-    #dist_btwn_data_1_2 = sp.spatial.distance.squareform(dist_btwn_data_1_2)
     dist_btwn_data_1_2[np.isnan(dist_btwn_data_1_2)]=tempmax
-    #import pdb; pdb.set_trace()
-
-    #import pdb; pdb.set_trace()
-
-    #sim_matrix=1-sk.preprocessing.normalize(dist_btwn_data_1_2, norm='max')
-    #sim_matrix[sim_matrix<affinity_threshold]=0
     
-    ##### TESTING ############
-    #Cross_Clust_X_distfile= os.path.join(os.getcwd(),'Cross_Clust_X_distfile.npy')
-    #np.save(Cross_Clust_X_distfile, dist_btwn_data_1_2) 
-    #import pdb; pdb.set_trace()
-    ######### TESTING ##########
-    
-    #sim_btwn_data_1_2=1-dist_btwn_data_1_2
-    #sim_btwn_data_1_2[np.isnan(sim_btwn_data_1_2)]=0
-    #sim_btwn_data_1_2[sim_btwn_data_1_2<affinity_threshold]=0
 
     print("Calculating pairwise distances between voxels in ROI 1 ")
     dist_of_1 = sp.spatial.distance.pdist(dist_btwn_data_1_2, metric = 'euclidean')
@@ -370,14 +339,9 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
     sim_matrix=1-sk.preprocessing.normalize(dist_matrix, norm='max')
     sim_matrix[sim_matrix<affinity_threshold]=0
 
-    ##### TESTING ############
-    #Cross_Clust_X_simfile= os.path.join(os.getcwd(),'Cross_Clust_X_simfile.npy')
-    #np.save(Cross_Clust_X_simfile, sim_matrix) 
-    #import pdb; pdb.set_trace()
-    ######### TESTING ##########
 
     if cluster_method == 'ward':
-           #    ## BEGIN WARD CLUSTERING CODE 
+    ## BEGIN WARD CLUSTERING CODE 
             print("ward")
             print("ward")
             print("ward")
@@ -387,29 +351,22 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
             print("ward")
             print("ward")
             if roi_mask_nparray!='empty':
-                #import pdb; pdb.set_trace()
                 shape = roi_mask_nparray.shape
                 connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                    n_z=shape[2], mask=roi_mask_nparray)
-                #import pdb; pdb.set_trace()
 
                 ward = FeatureAgglomeration(n_clusters=n_clusters, connectivity=connectivity,
                                         linkage='ward')
-                #import pdb; pdb.set_trace()
 
                 ward.fit(sim_matrix)
-                #import pdb; pdb.set_trace()
 
                 y_pred = ward.labels_.astype(np.int)
             else:
                 print("Calculating Hierarchical Cross-clustering")
                 ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
-                #import pdb; pdb.set_trace()
                 ward.fit(sim_matrix)
-                #import pdb; pdb.set_trace()
                 y_pred = ward.labels_.astype(np.int)
             
-    #    # END WARD CLUSTERING CODE 
     else:
         
         print("spectral")
@@ -421,36 +378,10 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
         print("spectral")
         print("spectral")
         print("spectral")
-        #cluster_method== 'spectral':
-        #Spectral method
+
         spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
         spectral.fit(sim_matrix)
         y_pred = spectral.labels_.astype(np.int)     
-
-#    
-    # BEGIN SPECTRAL CLUSTERING CODE 
-    
-    # END SPECTRAL CLUSTERING CODE 
-
-
-
-#    sim_matrix[np.isnan((sim_matrix))]=0
-#    sim_matrix[sim_matrix<0]=0
-#    sim_matrix[sim_matrix>1]=1
-
-    ## BEGIN WARD CLUSTERING CODE 
-#    print("Calculating Hierarchical Cross-clustering")
-#    ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
-#    ward.fit(sim_matrix)
-#    y_pred = ward.labels_.astype(np.int)
-#    
-    ## END WARD CLUSTERING CODE 
-    
-#    # BEGIN SPECTRAL CLUSTERING CODE 
-#    spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
-#    spectral.fit(sim_matrix)
-#    y_pred = spectral.labels_.astype(np.int)
-#    # END SPECTRAL CLUSTERING CODE 
     
     return y_pred
 
@@ -535,7 +466,6 @@ def cluster_matrix_average(M, cluster_assignments):
     
 
     if np.any(np.isnan(M)):
-        #np.save('bad_M.npz', M)
         raise ValueError('M matrix has a nan value')
 
     cluster_ids = np.unique(cluster_assignments)
@@ -543,7 +473,6 @@ def cluster_matrix_average(M, cluster_assignments):
     s_idx = 0
     K_mask=np.zeros(M.shape)
     for cluster_id in cluster_ids:
-        #import pdb;pdb.set_trace()
         vox_cluster_label[s_idx, :] = M[:,cluster_assignments == cluster_id].mean(1)
         
         
@@ -555,7 +484,6 @@ def cluster_matrix_average(M, cluster_assignments):
         K[np.diag_indices_from(K)] = False
         Ktemp=K*1
         K_mask=K_mask+Ktemp
-        #import pdb;pdb.set_trace()
         if K.sum() == 0: # Voxel with its own cluster
             #import pdb; pdb.set_trace()
             vox_cluster_label[k[:,0]] = 0.0
@@ -663,22 +591,16 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             #import pdb; pdb.set_trace()
             
             #SPATIAL CONSTRAINT EXPERIMENT#
-            #roi_mask_nparray='empty'
+            roi_mask_nparray='empty'
             #SPATIAL CONSTRAINT EXPERIMENT#
             
-#            if spatial_constraint==true:
-#                roi_mask_nparray='empty'
-#            else:
-#                roi_mask_nparray=roi_mask_nparray
-            #import pdb; pdb.set_trace()
+
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold= affinity_threshold, cluster_method='ward'))
-            #import pdb; pdb.set_trace()
             
         S /= n_bootstraps
         
         S=S*100
         S=S.astype("uint8")
-        #print('ISM calculation took', (time.time() - ismtime), ' seconds')
     else:
         for bootstrap_i in range(n_bootstraps):
             print('ismcalc1')
@@ -695,7 +617,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             #import pdb;pdb.set_trace()
             
             #SPATIAL CONSTRAINT EXPERIMENT#
-            #roi_mask_nparray='empty'
+            roi_mask_nparray='empty'
             #SPATIAL CONSTRAINT EXPERIMENT#
             
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold, cluster_method='ward')[:,np.newaxis])
@@ -709,7 +631,6 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
 
         S=S*100
         S=S.astype("uint8")
-            #print('ISM calculation took', (time.time() - ismtime), ' seconds')
     return S
 
 
@@ -795,7 +716,6 @@ def data_compression(fmri_masked, mask_img, mask_np, output_size):
     ward = FeatureAgglomeration(n_clusters=output_size, connectivity=connectivity,
                             linkage='ward')
     ward.fit(fmri_masked)
-    #print("Ward agglomeration compressing voxels into clusters: %.2fs" % (time.time() - start))
 
 
     labels = ward.labels_
