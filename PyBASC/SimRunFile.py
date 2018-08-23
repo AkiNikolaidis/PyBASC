@@ -45,8 +45,8 @@ roi_mask_file='masks/Full_BG_Sim_3mm.nii.gz'
 roi2_mask_file='masks/Full_BG_Sim_3mm.nii.gz' #'masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
 
 
-dataset_bootstrap_list=[5]#,10,30,100]
-timeseries_bootstrap_list=[5]#,10,30,100]
+dataset_bootstrap_list=[100]#,10,30,100]
+timeseries_bootstrap_list=[100]#,10,30,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
 n_clusters_list=[3]#[2,6,12,20]
@@ -60,8 +60,8 @@ ism_gsm_stability=[]
 #ind_clust_stab_mat=[]
 #ind_clust_stab_summary=[[1, 2, 3, 4, 5]]
 run=True
-analysis_ID='GroupDimReduceTest_Off2b'
-reruns= 15
+analysis_ID='NewPiPtest_100bs'
+reruns= 1
 
 
 run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
