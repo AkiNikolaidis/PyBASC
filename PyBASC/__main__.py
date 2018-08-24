@@ -63,7 +63,9 @@ def run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metr
     for rerun in rerun_list:    
         #roi_mask_file=
         #import pdb; pdb.set_trace()
-    
+        
+        randseed=np.random.randint(0,10000)
+        np.random.seed(randseed)
 
         
         for (dataset_bootstraps, timeseries_bootstraps) in zip(dataset_bootstrap_list,timeseries_bootstrap_list):

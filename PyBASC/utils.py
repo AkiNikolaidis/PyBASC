@@ -574,13 +574,13 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
     S = np.zeros((V1, V1))
     #import pdb;pdb.set_trace()
     if (cross_cluster is True):
-        for bootstrap_i in range(n_bootstraps):
-        
+        for bootstrap_i in range(n_bootstraps+1):
+            #import pdb; pdb.set_trace()
             N2 = Y2.shape[1]
             temp_block_size2 = int(np.sqrt(N2))
             cbb_block_size2 = int(temp_block_size2 * blocklength)
             
-            if (bootstrap_i==1):
+            if (bootstrap_i==0):
                 Y_b1=Y1
                 Y_b2=Y2
             else:
@@ -602,12 +602,13 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
         S=S*100
         S=S.astype("uint8")
     else:
-        for bootstrap_i in range(n_bootstraps):
+        for bootstrap_i in range(n_bootstraps+1):
+            #import pdb; pdb.set_trace()
             print('ismcalc1')
             print('block size', cbb_block_size)
             #import pdb; pdb.set_trace()
             
-            if (bootstrap_i==1):
+            if (bootstrap_i==0):
                 Y_b1=Y1
                 Y_b2=Y2
             else:
