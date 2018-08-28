@@ -16,14 +16,12 @@ import sys
 
 #group_dim_reduce=False
 
+def main(config):
+    
+    #import pdb;pdb.set_trace()
+    #print(config)
+    #import pdb;pdb.set_trace()
 
-#def main(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
-#         blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
-#         cross_cluster, roi2_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID):
-
-def main():
-
-    config=yaml.load(open(sys.argv[1], 'r'))
     print(config)
 
     dataset_bootstrap_list=config['dataset_bootstrap_list']
@@ -43,6 +41,8 @@ def main():
     reruns=config['reruns']
     group_dim_reduce=config['group_dim_reduce']
     analysis_ID=config['analysis_ID']
+    
+    #import pdb;pbd.set_trace()
     
     run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
          blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,

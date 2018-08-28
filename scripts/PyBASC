@@ -10,12 +10,13 @@ import yaml
 from PyBASC.__main__ import main
 import sys
 
-config=yaml.load(sys.argv[0])
+config=yaml.load(open(sys.argv[1],'r'))
 
 #config=yaml.load(open('/Users/aki.nikolaidis/git_repo/PyBASC_Package/PyBASC/scripts/Template.yaml','r'))
 
+main(config)
 
-main(config['dataset_bootstrap_list'],config['timeseries_bootstrap_list'], config['similarity_metric_list'], 
-         config['blocklength_list'], config['n_clusters_list'], config['output_sizes'], config['subject_file_list'], 
-         config['roi_mask_file'], config['proc_mem'], config['cross_cluster'], config['roi2_mask_file'], config['affinity_thresh'], 
-         config['run'], config['home'], config['reruns'], config['group_dim_reduce'], config['analysis_ID'])
+#main(config['dataset_bootstrap_list'],config['timeseries_bootstrap_list'], config['similarity_metric_list'], 
+#         config['blocklength_list'], config['n_clusters_list'], config['output_sizes'], config['subject_file_list'], 
+#         config['roi_mask_file'], config['proc_mem'], config['cross_cluster'], config['roi2_mask_file'], config['affinity_thresh'], 
+#         config['run'], config['home'], config['reruns'], config['group_dim_reduce'], config['analysis_ID'])
