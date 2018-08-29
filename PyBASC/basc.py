@@ -262,7 +262,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     V = indiv_stability_set.shape[2]
 
     G = np.zeros((V,V))
-    if (bootstrap_list==1):
+    if (bootstrap_list==0):
         J=indiv_stability_set.mean(0)
     else:
         J = utils.standard_bootstrap(indiv_stability_set).mean(0)

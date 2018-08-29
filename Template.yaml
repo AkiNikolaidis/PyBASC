@@ -32,7 +32,7 @@ output_sizes:
     - 800 #[10,100,600,1200]
 
 proc_mem:
-    - 2
+    - 1
     - 4
 
 reruns: 1

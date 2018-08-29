@@ -69,9 +69,12 @@ def run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metr
 
         
         for (dataset_bootstraps, timeseries_bootstraps) in zip(dataset_bootstrap_list,timeseries_bootstrap_list):
+            if dataset_bootstraps==0:
+                bootstrap_list=[0]
+            else:
+                bootstrap_list= list(np.ones(dataset_bootstraps, dtype=int)*dataset_bootstraps)
             
-            bootstrap_list= list(np.ones(dataset_bootstraps, dtype=int)*dataset_bootstraps)
-        
+            
             for similarity_metric in similarity_metric_list:
                 for blocklength in blocklength_list:
                         for n_clusters in n_clusters_list:
