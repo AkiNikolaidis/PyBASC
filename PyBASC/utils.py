@@ -189,6 +189,8 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
     import time 
     from sklearn.cluster import FeatureAgglomeration
     from sklearn.feature_extraction import image
+    from sklearn.cluster import KMeans
+
 
     
     print('Beginning Calculating pairwise distances between voxels')
@@ -206,34 +208,41 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
     
     sim_matrix=1-sk.preprocessing.normalize(X_dist, norm='max')
     sim_matrix[sim_matrix<affinity_threshold]=0
-
+    
+    ########TESTING OUT CLUSTER METHOD#################
+    cluster_method='kmeans'
+    ########TESTING OUT CLUSTER METHOD#################
+    
+    
+    
     if cluster_method == 'ward':
-       #    ## BEGIN WARD CLUSTERING CODE 
-        print("ward")
-        print("ward")
-        print("ward")
-        print("ward")
-        print("ward")
-        print("ward")
-        print("ward")
-        print("ward")
-        if roi_mask_nparray!='empty':
-            shape = roi_mask_nparray.shape
-            connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
-                                               n_z=shape[2], mask=roi_mask_nparray)
-        
-            ward = FeatureAgglomeration(n_clusters=n_clusters, connectivity=connectivity,
-                                    linkage='ward')
-            ward.fit(sim_matrix)
-            y_pred = ward.labels_.astype(np.int)
-        else:
-            print("Calculating Hierarchical Clustering")
-            ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
-            ward.fit(sim_matrix)
-            y_pred = ward.labels_.astype(np.int)
-            print("FINISHED CLUSTERING")
-        
-    else:
+    ## BEGIN WARD CLUSTERING CODE 
+            print("ward")
+            print("ward")
+            print("ward")
+            print("ward")
+            print("ward")
+            print("ward")
+            print("ward")
+            print("ward")
+            if roi_mask_nparray!='empty':
+                shape = roi_mask_nparray.shape
+                connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
+                                                   n_z=shape[2], mask=roi_mask_nparray)
+
+                ward = FeatureAgglomeration(n_clusters=n_clusters, connectivity=connectivity,
+                                        linkage='ward')
+
+                ward.fit(sim_matrix)
+
+                y_pred = ward.labels_.astype(np.int)
+            else:
+                print("Calculating Hierarchical Cross-clustering")
+                ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
+                ward.fit(sim_matrix)
+                y_pred = ward.labels_.astype(np.int)
+            
+    if cluster_method == 'spectral':
         
         print("spectral")
         print("spectral")
@@ -247,9 +256,20 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
 
         spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
         spectral.fit(sim_matrix)
-        y_pred = spectral.labels_.astype(np.int)     
-
-
+        y_pred = spectral.labels_.astype(np.int)
+    
+    if cluster_method == 'kmeans':
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        kmeans = KMeans(n_clusters=n_clusters, init='k-means++',n_init=100, random_state=0).fit(sim_matrix)
+        y_pred = kmeans.labels_.astype(np.int)
+    
     return y_pred
 
 def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similarity_metric, affinity_threshold, cluster_method = 'ward'):
@@ -315,6 +335,8 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
     from sklearn import cluster, datasets, preprocessing
     from sklearn.cluster import FeatureAgglomeration
     from sklearn.feature_extraction import image
+    from sklearn.cluster import KMeans
+
 
     
     print("Calculating Cross-clustering")
@@ -340,6 +362,14 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
     sim_matrix[sim_matrix<affinity_threshold]=0
 
 
+
+
+    ########TESTING OUT SPECTRAL#################
+    cluster_method='spectral'
+    ########TESTING OUT SPECTRAL#################
+    
+    
+    
     if cluster_method == 'ward':
     ## BEGIN WARD CLUSTERING CODE 
             print("ward")
@@ -367,7 +397,7 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
                 ward.fit(sim_matrix)
                 y_pred = ward.labels_.astype(np.int)
             
-    else:
+    if cluster_method == 'spectral':
         
         print("spectral")
         print("spectral")
@@ -381,7 +411,19 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
 
         spectral = cluster.SpectralClustering(n_clusters, eigen_solver='arpack', random_state = 5, affinity="precomputed", assign_labels='discretize') 
         spectral.fit(sim_matrix)
-        y_pred = spectral.labels_.astype(np.int)     
+        y_pred = spectral.labels_.astype(np.int)
+    
+    if cluster_method == 'kmeans':
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        print("kmeans")
+        kmeans = KMeans(n_clusters=n_clusters, init='k-means++',n_init=100, random_state=0).fit(sim_matrix)
+        y_pred = kmeans.labels_.astype(np.int)
     
     return y_pred
 
