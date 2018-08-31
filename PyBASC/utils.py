@@ -210,7 +210,7 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
     sim_matrix[sim_matrix<affinity_threshold]=0
     
     ########TESTING OUT CLUSTER METHOD#################
-    cluster_method='kmeans'
+    cluster_method='ward'
     ########TESTING OUT CLUSTER METHOD#################
     
     
@@ -267,7 +267,7 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
         print("kmeans")
         print("kmeans")
         print("kmeans")
-        kmeans = KMeans(n_clusters=n_clusters, init='k-means++',n_init=100, random_state=0).fit(sim_matrix)
+        kmeans = KMeans(n_clusters=n_clusters, init='k-means++',n_init=10, random_state=0).fit(sim_matrix)
         y_pred = kmeans.labels_.astype(np.int)
     
     return y_pred
@@ -365,7 +365,7 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
 
 
     ########TESTING OUT SPECTRAL#################
-    cluster_method='spectral'
+    cluster_method='ward'
     ########TESTING OUT SPECTRAL#################
     
     
@@ -422,7 +422,7 @@ def cross_cluster_timeseries(data1, data2, roi_mask_nparray, n_clusters, similar
         print("kmeans")
         print("kmeans")
         print("kmeans")
-        kmeans = KMeans(n_clusters=n_clusters, init='k-means++',n_init=100, random_state=0).fit(sim_matrix)
+        kmeans = KMeans(n_clusters=n_clusters, init='k-means++',n_init=10, random_state=0).fit(sim_matrix)
         y_pred = kmeans.labels_.astype(np.int)
     
     return y_pred
