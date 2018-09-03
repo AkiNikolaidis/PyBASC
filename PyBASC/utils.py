@@ -638,8 +638,11 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             
 
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold= affinity_threshold, cluster_method='ward'))
-            
-        S /= n_bootstraps
+        
+        if n_bootstraps==0:
+            S=S
+        else:
+            S /= n_bootstraps
         
         S=S*100
         S=S.astype("uint8")
@@ -669,7 +672,10 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             print('S shape1', S.shape[1])
             print('ismcalc3')
 
-        S /= n_bootstraps
+        if n_bootstraps==0:
+            S=S
+        else:
+            S /= n_bootstraps
         print('ismcalc4')
 
         S=S*100
