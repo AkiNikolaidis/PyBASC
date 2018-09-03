@@ -589,7 +589,8 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
     S : array_like
         A matrix of shape (`V1`, `V1`), each element v1_{ij} representing the stability of the adjacency of voxel i with voxel j
     """
-    
+    #import pdb;pdb.set_trace()
+
     import PyBASC.utils as utils
     import time
     import numpy as np
@@ -622,7 +623,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             temp_block_size2 = int(np.sqrt(N2))
             cbb_block_size2 = int(temp_block_size2 * blocklength)
             
-            if (bootstrap_i==0):
+            if (n_bootstraps==1):
                 Y_b1=Y1
                 Y_b2=Y2
             else:
@@ -639,21 +640,22 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
 
             S += utils.adjacency_matrix(utils.cross_cluster_timeseries(Y_b1, Y_b2, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold= affinity_threshold, cluster_method='ward'))
         
-        if n_bootstraps==0:
-            S=S
-        else:
+#        if n_bootstraps==1:
+#            S=S
+#        else:
             S /= n_bootstraps
         
         S=S*100
         S=S.astype("uint8")
     else:
+        #import pdb;pdb.set_trace()
         for bootstrap_i in range(n_bootstraps+1):
             #import pdb; pdb.set_trace()
             print('ismcalc1')
             print('block size', cbb_block_size)
             #import pdb; pdb.set_trace()
             
-            if (bootstrap_i==0):
+            if (n_bootstraps==1):
                 Y_b1=Y1
                 Y_b2=Y2
             else:
@@ -667,14 +669,15 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             #SPATIAL CONSTRAINT EXPERIMENT#
             
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold, cluster_method='ward')[:,np.newaxis])
-            
+            #import pdb;pdb.set_trace()
             print('S shape0', S.shape[0])
             print('S shape1', S.shape[1])
             print('ismcalc3')
-
-        if n_bootstraps==0:
-            S=S
-        else:
+        
+#        if n_bootstraps==1:
+#            #import pdb;pdb.set_trace()
+#            S=S
+#        else:
             S /= n_bootstraps
         print('ismcalc4')
 

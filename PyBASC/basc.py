@@ -123,7 +123,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
     import sklearn as sk
     from sklearn import preprocessing
     
-
+    
     print( 'Calculating individual stability matrix of:', subject_file)
 
 
@@ -180,6 +180,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         else:   
             print('Expanding ism')
             voxel_num=roi1data.shape[0]
+            #import pdb;pdb.set_trace()
             voxel_ism = utils.expand_ism(ism, Y1_labels)
           
             
@@ -262,7 +263,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     V = indiv_stability_set.shape[2]
 
     G = np.zeros((V,V))
-    if (bootstrap_list==0):
+    if (bootstrap_list==1):
         J=indiv_stability_set.mean(0)
     else:
         J = utils.standard_bootstrap(indiv_stability_set).mean(0)
