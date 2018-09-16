@@ -1,22 +1,18 @@
-affinity_thresh: 0.0
+analysis_ID: crosscluster_T_test2
+home: /home/anibalsolon/Documents/hbn_adhd
+run: True
 
-analysis_ID: crosscluster_T_test
+
+affinity_thresh: 0.0
 
 blocklength_list:
     - 1 
     
-cross_cluster: True
-
 dataset_bootstrap_list:
-    - 30
-#    - 10
-#    - 30
-#    - 60
-#    - 100
+    - 100
 
-group_dim_reduce: False
+group_dim_reduce: True
     
-home: /Users/aki.nikolaidis
 
 n_clusters_list:
     - 2
@@ -29,45 +25,40 @@ n_clusters_list:
 #    - 16
     
 output_sizes:
-    - 800 #[10,100,600,1200]
+    - 800
 
 proc_mem:
     - 1
     - 4
 
+timeseries_bootstrap_list:
+    - 100
+
 reruns: 1
+
+similarity_metric_list:
+    - correlation
+    # - euclidean
+    # - cityblock
+    # - cosine
 
 roi_mask_file: masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz
 
-
-roi2_mask_file: masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz #masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
-
-run: True
-
-similarity_metric_list:
-    - correlation #['correlation','euclidean','cityblock', 'cosine']
-
+cross_cluster: True
+cross_cluster_mask_file: masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
 
 
 subject_file_list: 
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_0corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_1corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_2corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_3corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_4corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_5corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_6corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_7corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_8corr_0.05_noise_2_TRs_100.nii.gz
-    - /users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_9corr_0.05_noise_2_TRs_100.nii.gz
-
-
-timeseries_bootstrap_list:
-    - 100
-#    - 10
-#    - 30
-#    - 60
-#    - 100
+    - ./SimData4/sub_0corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_1corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_2corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_3corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_4corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_5corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_6corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_7corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_8corr_0.05_noise_2_TRs_100.nii.gz
+    - ./SimData4/sub_9corr_0.05_noise_2_TRs_100.nii.gz
 
 
 

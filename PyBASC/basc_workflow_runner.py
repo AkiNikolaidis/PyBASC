@@ -1,21 +1,20 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May 25 16:05:19 2017
-
-@author: aki.nikolaidis
-"""
 import os
+import sys
 import numpy as np
 import nibabel as nb
-import sys
-
 
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 
 
-def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size, bootstrap_list, proc_mem, similarity_metric, group_dim_reduce=False, cross_cluster=False, roi2_mask_file=None, blocklength=1, affinity_threshold=0.5, out_dir=None, run=True):
+def run_basc_workflow(
+    subject_file_list, roi_mask_file,
+    dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size,
+    bootstrap_list, proc_mem, similarity_metric, group_dim_reduce=False,
+    cross_cluster=False, cross_cluster_mask_file=None, blocklength=1,
+    affinity_threshold=0.5, out_dir=None, run=True
+):
+    
     """Run the 'template_workflow' function to execute the modular workflow
     with the provided inputs.
     :type input_resource: str
@@ -40,13 +39,11 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
 
     import os
     import glob
-    import PyBASC.utils as utils
 
     import nipype.interfaces.io as nio
     import nipype.pipeline.engine as pe
-    import pandas as pd
     
-    from PyBASC.basc import create_basc
+    from PyBASC.pipeline import create_basc
     from nipype import config
     
     config.enable_debug_mode()
@@ -60,45 +57,30 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
     workflow.base_dir = workflow_dir
 
     resource_pool = {}
-    
-    basc = create_basc(proc_mem, name='basc')
-    basc.inputs.inputspec.subject_file_list=subject_file_list
-    basc.inputs.inputspec.roi_mask_file=roi_mask_file
-    basc.inputs.inputspec.dataset_bootstraps=dataset_bootstraps
-    basc.inputs.inputspec.timeseries_bootstraps=timeseries_bootstraps
-    basc.inputs.inputspec.n_clusters=n_clusters
-    basc.inputs.inputspec.output_size=output_size
-    basc.inputs.inputspec.bootstrap_list=bootstrap_list
-    basc.inputs.inputspec.proc_mem=proc_mem
-    basc.inputs.inputspec.similarity_metric=similarity_metric
-    basc.inputs.inputspec.group_dim_reduce=group_dim_reduce
-    basc.inputs.inputspec.cross_cluster=cross_cluster
-    basc.inputs.inputspec.roi2_mask_file=roi2_mask_file
-    basc.inputs.inputspec.blocklength=blocklength
-    basc.inputs.inputspec.affinity_threshold=affinity_threshold
-    
-    
-    # shitty Steve pseudo-code that is shitty
-#    thing = basc.outputs.outputspec.individual_cluster_voxel_scores_imgs
-#    print(thing)
-#    print(thing)
-#    print(thing)
-#    for filepath in basc.outputs.outputspec.individual_cluster_voxel_scores_imgs:
-#        filename = os.path.basename(filepath)
-#        resource_pool[filename] = filepath
 
+    basc = create_basc(name='basc')
+    basc.inputs.inputspec.subjects_files = subject_file_list
+    basc.inputs.inputspec.roi_mask_file = roi_mask_file
+    basc.inputs.inputspec.dataset_bootstraps = dataset_bootstraps
+    basc.inputs.inputspec.timeseries_bootstraps = timeseries_bootstraps
+    basc.inputs.inputspec.n_clusters = n_clusters
+    basc.inputs.inputspec.compression_dim = output_size
+    basc.inputs.inputspec.bootstrap_list = bootstrap_list
+    basc.inputs.inputspec.similarity_metric = similarity_metric
+    basc.inputs.inputspec.group_dim_reduce = group_dim_reduce
+    basc.inputs.inputspec.cross_cluster = cross_cluster
+    basc.inputs.inputspec.cxc_roi_mask_file = cross_cluster_mask_file
+    basc.inputs.inputspec.blocklength = blocklength
+    basc.inputs.inputspec.affinity_threshold = affinity_threshold
+    
     resource_pool['group_stability_matrix'] = (basc, 'outputspec.group_stability_matrix')
     resource_pool['clusters_G'] = (basc, 'outputspec.clusters_G')
     resource_pool['ism_gsm_corr_file'] = (basc, 'outputspec.ism_gsm_corr_file')
     resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
     resource_pool['cluster_voxel_scores_img'] = (basc, 'outputspec.cluster_voxel_scores_img')
-    # below commented out to try out the shitty Steve pseudo-code above, that is shitty
-    resource_pool['individual_cluster_voxel_scores_imgs'] = (basc, 'outputspec.individual_cluster_voxel_scores_imgs')
     resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
-    resource_pool['k_mask'] = (basc, 'outputspec.k_mask')
     resource_pool['ind_group_cluster_stability'] = (basc, 'outputspec.ind_group_cluster_stability')
     resource_pool['ind_group_cluster_stability_set'] = (basc, 'outputspec.ind_group_cluster_stability_set')
-    #resource_pool['individualized_group_clusters_img_file'] = (basc, 'outputspec.individualized_group_clusters_img_file')
 
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
     ds.inputs.base_directory = workflow_dir
@@ -107,16 +89,21 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
         node, out_file = resource_pool[output]
         workflow.connect(node, out_file, ds, output)
 
-    plugin_args = { 'n_procs' : int(proc_mem[0]),'memory_gb': int(proc_mem[1])}#, 'raise_insufficient': True, 'maxtasksperchild': 1,'chunksize':1}
 
+    plugin = 'MultiProc'
+    if int(proc_mem[0]) == 1:
+        plugin = 'Linear'
 
+    plugin_args = {
+        'n_procs': int(proc_mem[0]),
+        'memory_gb': int(proc_mem[1])
+    }
+
+    # TODO @AKI is there any occasion in which running will be false?
     if run == True:
-        #if int(proc_mem[0])==1:
-        workflow.run(plugin='MultiProc', plugin_args= plugin_args)
-        #else:
-           # workflow.run(plugin='MultiProc', plugin_args= plugin_args) #
-                         # {'n_procs': 1})
+        workflow.run(plugin=plugin, plugin_args=plugin_args)
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
+
         return outpath
     else:
         return workflow, workflow.base_dir
