@@ -29,7 +29,6 @@ def group_dim_reduce(
 
         import PyBASC.utils as utils
 
-
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
 
@@ -199,22 +198,17 @@ def nifti_individual_stability(
             cxc_compression_labels = cxc_compressor.labels_
             cxc_compressed = cxc_compressor.transform(subject_cxc_rois.T)
 
-
-        ism = utils.individual_stability_matrix(
-            compressed, roi_mask_data, n_bootstraps, n_clusters,
-            similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
-            blocklength, affinity_threshold, cluster_method
-        )
-
     else:
 
         cxc_compressed = None
 
-        ism = utils.individual_stability_matrix(
-            compressed, roi_mask_data, n_bootstraps, n_clusters,
-            similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
-            blocklength, affinity_threshold, cluster_method
-        )
+
+    ism = utils.individual_stability_matrix(
+        compressed, roi_mask_data, n_bootstraps, n_clusters,
+        similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
+        blocklength, affinity_threshold, cluster_method
+    )
+    
 
     if compressor:
         ism = ism.astype("uint8")
