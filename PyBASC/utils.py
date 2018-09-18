@@ -110,8 +110,9 @@ def standard_bootstrap(dataset):
 
 
 def cluster_timeseries(
-        X, roi_mask_data, n_clusters, similarity_metric,
-        affinity_threshold, cluster_method='ward'):
+    X, roi_mask_data, n_clusters, similarity_metric,
+    affinity_threshold, cluster_method='ward'
+):
     """
     Cluster a given timeseries
 
@@ -159,9 +160,6 @@ def cluster_timeseries(
 
     sim_matrix = 1 - sk.preprocessing.normalize(X_dist, norm='max')
     sim_matrix[sim_matrix < affinity_threshold] = 0
-
-    # TODO @AKI remove?
-    cluster_method = 'ward'
 
     if cluster_method == 'ward':
 
@@ -294,9 +292,6 @@ def cross_cluster_timeseries(
     dist_matrix = squareform(dist_of_1)
     sim_matrix = 1 - normalize(dist_matrix, norm='max')
     sim_matrix[sim_matrix < affinity_threshold] = 0
-
-    # TODO @AKI remove?
-    cluster_method = 'ward'
 
     if cluster_method == 'ward':
         
@@ -480,7 +475,7 @@ def compare_stability_matrices(ism_a, ism_b):
 def individual_stability_matrix(
     Y1, roi_mask_data, n_bootstraps, n_clusters, similarity_metric,
     Y2=None, cross_cluster=False, cbb_block_size=None, blocklength=1,
-    affinity_threshold=0.0
+    affinity_threshold=0.0, cluster_method='ward'
 ):
     """
     Calculate the individual stability matrix of a single subject by
@@ -550,7 +545,7 @@ def individual_stability_matrix(
                     Y_bootstrap, Y_cxc_bootstrap, roi_mask_data, n_clusters,
                     similarity_metric=similarity_metric,
                     affinity_threshold=affinity_threshold,
-                    cluster_method='ward'
+                    cluster_method=cluster_method
                 )
             )
 
@@ -576,7 +571,7 @@ def individual_stability_matrix(
                     Y_bootstrap, roi_mask_data, n_clusters,
                     similarity_metric=similarity_metric,
                     affinity_threshold=affinity_threshold,
-                    cluster_method='ward'
+                    cluster_method=cluster_method
                 )[:, np.newaxis]
             )
 

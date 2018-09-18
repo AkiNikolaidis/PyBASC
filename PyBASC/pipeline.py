@@ -111,6 +111,7 @@ def create_basc(name='basc'):
         'similarity_metric',
         'blocklength',
         'affinity_threshold',
+        'cluster_method',
         
         'group_dim_reduce',
         
@@ -161,7 +162,8 @@ def create_basc(name='basc'):
                          'cxc_roi_mask_file',
                          'cbb_block_size',
                          'blocklength',
-                         'affinity_threshold'],
+                         'affinity_threshold',
+                         'cluster_method'],
             output_names=['ism_file', 'compression_labels_file'],
             function=nifti_individual_stability
         ),
@@ -178,7 +180,8 @@ def create_basc(name='basc'):
                          'n_clusters',
                          'bootstrap_list',
                          'roi_mask_file',
-                         'group_dim_reduce'],
+                         'group_dim_reduce',
+                         'cluster_method'],
             output_names=['G_file'],
             function=map_group_stability
         ),
@@ -194,7 +197,8 @@ def create_basc(name='basc'):
                          'n_clusters',
                          'roi_mask_file',
                          'group_dim_reduce',
-                         'compression_labels_list'],
+                         'compression_labels_list',
+                         'cluster_method'],
             output_names=['G',
                           'clusters_G',
                           'ism_gsm_corr',
@@ -267,6 +271,7 @@ def create_basc(name='basc'):
                 ('cxc_roi_mask_file', 'cxc_roi_mask_file'),
                 ('blocklength', 'blocklength'),
                 ('affinity_threshold', 'affinity_threshold'),
+                ('cluster_method', 'cluster_method'),
             ]
         ),
         (
@@ -275,6 +280,7 @@ def create_basc(name='basc'):
                 ('n_clusters', 'n_clusters'),
                 ('roi_mask_file', 'roi_mask_file'),
                 ('group_dim_reduce', 'group_dim_reduce'),
+                ('cluster_method', 'cluster_method'),
             ]
         ),
         (
@@ -283,6 +289,7 @@ def create_basc(name='basc'):
                 ('n_clusters', 'n_clusters'),
                 ('roi_mask_file', 'roi_mask_file'),
                 ('group_dim_reduce', 'group_dim_reduce'),
+                ('cluster_method', 'cluster_method'),
             ]
         ),
         (

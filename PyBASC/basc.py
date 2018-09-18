@@ -98,8 +98,9 @@ def group_dim_reduce(
 def nifti_individual_stability(
     subject_file, roi_mask_file,
     n_bootstraps, n_clusters, compression_dim, similarity_metric,
-    compressor=None, cross_cluster=False, cxc_compressor=None, cxc_roi_mask_file=None,
-    blocklength=1, cbb_block_size=None, affinity_threshold=0.0
+    compressor=None, cross_cluster=False, cxc_compressor=None,
+    cxc_roi_mask_file=None, blocklength=1, cbb_block_size=None,
+    affinity_threshold=0.0, cluster_method
 ):
     # TODO @AKI update docs
     """
@@ -202,7 +203,7 @@ def nifti_individual_stability(
         ism = utils.individual_stability_matrix(
             compressed, roi_mask_data, n_bootstraps, n_clusters,
             similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
-            blocklength, affinity_threshold
+            blocklength, affinity_threshold, cluster_method
         )
 
     else:
@@ -212,7 +213,7 @@ def nifti_individual_stability(
         ism = utils.individual_stability_matrix(
             compressed, roi_mask_data, n_bootstraps, n_clusters,
             similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
-            blocklength, affinity_threshold
+            blocklength, affinity_threshold, cluster_method
         )
 
     if compressor:
@@ -228,7 +229,7 @@ def nifti_individual_stability(
 
 def map_group_stability(
     subject_stability_list, n_clusters, bootstrap_list,
-    roi_mask_file, group_dim_reduce
+    roi_mask_file, group_dim_reduce, cluster_method
 ):
     # TODO @AKI review doc
     """
@@ -279,7 +280,7 @@ def map_group_stability(
         utils.cluster_timeseries(J, roi_mask_img, n_clusters,
                                  similarity_metric='correlation',
                                  affinity_threshold=0.0,
-                                 cluster_method='ward')[:, np.newaxis]
+                                 cluster_method=cluster_method)[:, np.newaxis]
     )
     G = G.astype("uint8")
 
@@ -291,7 +292,8 @@ def map_group_stability(
 
 def join_group_stability(
     subject_stability_list, group_stability_list, n_bootstraps, n_clusters,
-    roi_mask_file, group_dim_reduce, compression_labels_list
+    roi_mask_file, group_dim_reduce, compression_labels_list,
+    cluster_method='ward'
 ):
     """
     Merges the group stability maps for all and compares to all individual
@@ -333,7 +335,6 @@ def join_group_stability(
     G = G.astype("uint8")
 
     if group_dim_reduce:
-        # TODO @AKI why is it using just the first one?
         compression_labels = np.asarray([np.load(compression_labels_list[0])])
         G = utils.expand_ism(G, compression_labels.T)
         G = G.astype("uint8")
@@ -342,7 +343,7 @@ def join_group_stability(
     clusters_G = utils.cluster_timeseries(
         G, roi_mask_data, n_clusters,
         similarity_metric='correlation', affinity_threshold=0.0,
-        cluster_method='ward'
+        cluster_method=cluster_method
     )
     clusters_G = clusters_G.astype("uint8")
 
@@ -632,7 +633,7 @@ def create_group_cluster_maps(gsm_file, clusters_G_file, roi_mask_file):
 
 
 # TODO @AKI unused?
-def ism_nifti(roi_mask_file, n_clusters, out_dir):
+def ism_nifti(roi_mask_file, n_clusters, out_dir, cluster_method='ward'):
     """
     Calculate the individual level stability and instability maps for
     each of the group clusters. Create Nifti files for each individual
@@ -673,7 +674,7 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir):
             ism, roi_mask_data, n_clusters,
             similarity_metric='correlation',
             affinity_threshold=0.0,
-            cluster_method='ward'
+            cluster_method=cluster_method
         )
 
         clusters_ism = clusters_ism + 1
@@ -689,7 +690,7 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir):
 
 
 # TODO @AKI unused?
-def gsm_nifti(roi_mask_file, n_clusters, out_dir):
+def gsm_nifti(roi_mask_file, n_clusters, out_dir, cluster_method='ward'):
     """
     Calculate the group level stability and instability maps for each of
     the group clusters.
@@ -722,7 +723,7 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir):
     clusters_gsm = utils.cluster_timeseries(
         gsm, roi_mask_data, n_clusters,
         similarity_metric='correlation', affinity_threshold=0.0,
-        cluster_method='ward'
+        cluster_method=cluster_method
     )
 
     clusters_gsm = clusters_gsm + 1

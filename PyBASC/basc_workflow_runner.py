@@ -12,7 +12,7 @@ def run_basc_workflow(
     dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size,
     bootstrap_list, proc_mem, similarity_metric, group_dim_reduce=False,
     cross_cluster=False, cross_cluster_mask_file=None, blocklength=1,
-    affinity_threshold=0.0, out_dir=None, run=True
+    affinity_threshold=0.0, cluster_method='ward', out_dir=None, run=True
 ):
     
     """Run the 'template_workflow' function to execute the modular workflow
@@ -59,19 +59,22 @@ def run_basc_workflow(
     resource_pool = {}
 
     basc = create_basc(name='basc')
-    basc.inputs.inputspec.subjects_files = subject_file_list
-    basc.inputs.inputspec.roi_mask_file = roi_mask_file
-    basc.inputs.inputspec.dataset_bootstraps = dataset_bootstraps
-    basc.inputs.inputspec.timeseries_bootstraps = timeseries_bootstraps
-    basc.inputs.inputspec.n_clusters = n_clusters
-    basc.inputs.inputspec.compression_dim = output_size
-    basc.inputs.inputspec.bootstrap_list = bootstrap_list
-    basc.inputs.inputspec.similarity_metric = similarity_metric
-    basc.inputs.inputspec.group_dim_reduce = group_dim_reduce
-    basc.inputs.inputspec.cross_cluster = cross_cluster
-    basc.inputs.inputspec.cxc_roi_mask_file = cross_cluster_mask_file
-    basc.inputs.inputspec.blocklength = blocklength
-    basc.inputs.inputspec.affinity_threshold = affinity_threshold
+    basc.inputs.inputspec.set(
+        subjects_files=subject_file_list,
+        roi_mask_file=roi_mask_file,
+        dataset_bootstraps=dataset_bootstraps,
+        timeseries_bootstraps=timeseries_bootstraps,
+        n_clusters=n_clusters,
+        compression_dim=output_size,
+        bootstrap_list=bootstrap_list,
+        similarity_metric=similarity_metric,
+        group_dim_reduce=group_dim_reduce,
+        cross_cluster=cross_cluster,
+        cxc_roi_mask_file=cross_cluster_mask_file,
+        blocklength=blocklength,
+        affinity_threshold=affinity_threshold,
+        cluster_method=cluster_method
+    )
     
     resource_pool['group_stability_matrix'] = (basc, 'outputspec.group_stability_matrix')
     resource_pool['clusters_G'] = (basc, 'outputspec.clusters_G')

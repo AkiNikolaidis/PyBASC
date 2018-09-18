@@ -41,6 +41,9 @@ similarity_metric_list:
     # - cityblock
     # - cosine
 
+cluster_methods:
+    - ward
+
 roi_mask_file: masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz
 
 cross_cluster: True
