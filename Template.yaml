@@ -1,7 +1,13 @@
-analysis_ID: crosscluster_T_test2
-home: /home/anibalsolon/Documents/hbn_adhd
+analysis_ID: simulation_4
+home: /tmp
 run: True
 
+proc_mem:
+    - 1
+    - 4
+
+    
+reruns: 1
 
 affinity_thresh: 0.0
 
@@ -28,12 +34,6 @@ n_clusters_list:
     
 output_sizes:
     - 800
-
-proc_mem:
-    - 1
-    - 4
-
-reruns: 1
 
 similarity_metric_list:
     - correlation
