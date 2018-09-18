@@ -11,8 +11,10 @@ blocklength_list:
 dataset_bootstrap_list:
     - 100
 
+timeseries_bootstrap_list:
+    - 100
+
 group_dim_reduce: True
-    
 
 n_clusters_list:
     - 2
@@ -30,9 +32,6 @@ output_sizes:
 proc_mem:
     - 1
     - 4
-
-timeseries_bootstrap_list:
-    - 100
 
 reruns: 1
 
