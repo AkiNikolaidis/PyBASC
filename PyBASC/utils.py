@@ -481,7 +481,7 @@ def compare_stability_matrices(ism_a, ism_b):
 def individual_stability_matrix(
     Y1, roi_mask_data, n_bootstraps, n_clusters, similarity_metric,
     Y2=None, cross_cluster=False, cbb_block_size=None, blocklength=1,
-    affinity_threshold=0.5
+    affinity_threshold=0.0
 ):
     """
     Calculate the individual stability matrix of a single subject by

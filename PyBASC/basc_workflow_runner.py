@@ -12,7 +12,7 @@ def run_basc_workflow(
     dataset_bootstraps, timeseries_bootstraps, n_clusters, output_size,
     bootstrap_list, proc_mem, similarity_metric, group_dim_reduce=False,
     cross_cluster=False, cross_cluster_mask_file=None, blocklength=1,
-    affinity_threshold=0.5, out_dir=None, run=True
+    affinity_threshold=0.0, out_dir=None, run=True
 ):
     
     """Run the 'template_workflow' function to execute the modular workflow

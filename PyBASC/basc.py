@@ -98,7 +98,7 @@ def group_dim_reduce(
 def nifti_individual_stability(
     subject_file, roi_mask_file,
     n_bootstraps, n_clusters, compression_dim, similarity_metric,
-    compressor=False, cross_cluster=False, cxc_compressor=False, cxc_roi_mask_file=None,
+    compressor=None, cross_cluster=False, cxc_compressor=None, cxc_roi_mask_file=None,
     blocklength=1, cbb_block_size=None, affinity_threshold=0.0
 ):
     # TODO @AKI update docs
