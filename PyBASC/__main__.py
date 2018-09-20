@@ -1,5 +1,6 @@
 #import PyBASC.__init__
 #import PyBASC.utils
+import PyBASC
 from PyBASC import *
 import os
 import gc
@@ -52,6 +53,8 @@ def main(config):
 def run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
          blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
          cross_cluster, roi2_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID):
+
+
 
     ism_gsm_stability=[]
     ind_clust_stab_summary=[[1, 2, 3, 4, 5]]

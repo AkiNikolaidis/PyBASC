@@ -73,7 +73,6 @@ def timeseries_bootstrap(tseries, block_size):
            [ 4, 14, 24, 34, 44]])
 
     """
-    
     import numpy as np
     randseed=np.random.randint(0,10000)
     np.random.seed(randseed)
@@ -237,7 +236,7 @@ def cluster_timeseries(X, roi_mask_nparray, n_clusters, similarity_metric, affin
 
                 y_pred = ward.labels_.astype(np.int)
             else:
-                print("Calculating Hierarchical Cross-clustering")
+                print("Calculating Hierarchical Clustering")
                 ward = FeatureAgglomeration(n_clusters=n_clusters, affinity='euclidean', linkage='ward')    
                 ward.fit(sim_matrix)
                 y_pred = ward.labels_.astype(np.int)
@@ -456,6 +455,8 @@ def adjacency_matrix(cluster_pred):
            [1, 0, 0, 0, 1]])
 
     """
+    from scipy import sparse
+    
     #print('adjacency start')
     x = cluster_pred.copy()
     if(len(x.shape) == 1):
@@ -465,6 +466,10 @@ def adjacency_matrix(cluster_pred):
         x += -x.min() + 1
 
     A = np.dot(x**-1., x.T) == 1
+    #import pdb;pdb.set_trace()
+    A = sparse.csr_matrix(A, dtype=bool)
+    #import pdb;pdb.set_trace()
+
     #print('adjacency end')
     return A
 
@@ -667,7 +672,6 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
             #SPATIAL CONSTRAINT EXPERIMENT#
             roi_mask_nparray='empty'
             #SPATIAL CONSTRAINT EXPERIMENT#
-            
             S += utils.adjacency_matrix(utils.cluster_timeseries(Y_b1, roi_mask_nparray, n_clusters, similarity_metric = similarity_metric, affinity_threshold = affinity_threshold, cluster_method='ward')[:,np.newaxis])
             #import pdb;pdb.set_trace()
             print('S shape0', S.shape[0])
@@ -705,6 +709,7 @@ def expand_ism(ism, Y1_labels):
    import pandas as pd
    import numpy as np
    import time
+   from scipy import sparse
    print('debug expand ism1')
    #import pdb; pdb.set_trace()
    voxel_num=len(Y1_labels)
@@ -729,8 +734,12 @@ def expand_ism(ism, Y1_labels):
    XM_time= time.time() - matrixtime
    #print('Matrix expansion took', (time.time() - matrixtime), ' seconds')
    voxel_ism=target_mat
+   #import pdb;pdb.set_trace()
+   sparse_voxel_ism=sparse.csr_matrix(voxel_ism, dtype=np.int8)
+   #import pdb;pdb.set_trace()
+
             
-   return voxel_ism
+   return sparse_voxel_ism
 
 
 def data_compression(fmri_masked, mask_img, mask_np, output_size):

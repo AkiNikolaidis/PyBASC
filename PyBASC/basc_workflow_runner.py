@@ -61,6 +61,8 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
 
     resource_pool = {}
     
+    #import pdb;pdb.set_trace()
+    
     basc = create_basc(proc_mem, name='basc')
     basc.inputs.inputspec.subject_file_list=subject_file_list
     basc.inputs.inputspec.roi_mask_file=roi_mask_file
@@ -111,10 +113,12 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
 
 
     if run == True:
-        #if int(proc_mem[0])==1:
-        workflow.run(plugin='MultiProc', plugin_args= plugin_args)
-        #else:
-           # workflow.run(plugin='MultiProc', plugin_args= plugin_args) #
+        if int(proc_mem[0]) == 1: 
+            print('Linear', plugin_args)
+            workflow.run(plugin='Linear', plugin_args= plugin_args)
+        else:
+            print('MultiProc', plugin_args)
+            workflow.run(plugin='MultiProc', plugin_args= plugin_args) #
                          # {'n_procs': 1})
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
         return outpath
