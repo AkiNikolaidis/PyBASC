@@ -65,7 +65,6 @@ def timeseries_bootstrap(tseries, block_size):
            [ 4, 14, 24, 34, 44 ]])
 
     """
-
     import numpy as np
     randseed = np.random.randint(0, 10000)
     np.random.seed(randseed)
@@ -161,6 +160,8 @@ def cluster_timeseries(
     sim_matrix = 1 - sk.preprocessing.normalize(X_dist, norm='max')
     sim_matrix[sim_matrix < affinity_threshold] = 0
 
+    print("Calculating Hierarchical Clustering") 
+     
     if cluster_method == 'ward':
 
         if roi_mask_data is not None:
@@ -371,6 +372,8 @@ def adjacency_matrix(cluster_pred):
            [1, 0, 0, 0, 1]])
 
     """
+    from scipy import sparse
+    
     x = cluster_pred.copy()
     if(len(x.shape) == 1):
         x = x[:, np.newaxis]
@@ -380,7 +383,7 @@ def adjacency_matrix(cluster_pred):
         x += -x.min() + 1
 
     A = np.dot(x**-1., x.T) == 1
-
+    A = sparse.csr_matrix(A, dtype=bool)
     return A
 
 
@@ -602,6 +605,7 @@ def expand_ism(ism, Y1_labels):
     """
 
     import numpy as np
+    from scipy import sparse
 
     voxel_num = len(Y1_labels)
     voxel_ism = np.zeros((voxel_num, voxel_num))
@@ -612,8 +616,9 @@ def expand_ism(ism, Y1_labels):
 
     temp = np.dot(ism, transform_mat)
     voxel_ism = np.dot(temp.T, transform_mat)
+    sparse_voxel_ism = sparse.csr_matrix(voxel_ism, dtype=np.int8) 
 
-    return voxel_ism
+    return sparse_voxel_ism
 
 
 def data_compression(fmri_masked, mask_img, mask_np, compression_dim):

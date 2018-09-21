@@ -8,6 +8,7 @@
 #
 #import BASC
 #from BASC import *
+import PyBASC
 from PyBASC.__main__ import main, run_PyBASC
 import __init__
 import utils
@@ -45,12 +46,12 @@ roi_mask_file='masks/Full_BG_Sim_3mm.nii.gz'
 roi2_mask_file='masks/Full_BG_Sim_3mm.nii.gz' #'masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
 
 
-dataset_bootstrap_list=[0]#,10,30,100]
-timeseries_bootstrap_list=[0]#,10,30,100]
+dataset_bootstrap_list=[2]#,10,30,100]
+timeseries_bootstrap_list=[2]#,10,30,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
 n_clusters_list=[3]#[2,6,12,20]
-output_sizes=[1200]#,200,400,800,1600]#[10,100,600,1200]
+output_sizes=[800]#,200,400,800,1600]#[10,100,600,1200]
 
 group_dim_reduce=False
 #reruns= np.linspace(1,16,16)
@@ -62,8 +63,8 @@ ism_gsm_stability=[]
 run=True
 
 
-analysis_ID='GroupDimReduceTest_OnFixed_100BS_1200dim'
-reruns= 2
+analysis_ID='sparsematrix_test3f'
+reruns= 1
 
 
 run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 

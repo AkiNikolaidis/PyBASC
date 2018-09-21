@@ -1,11 +1,10 @@
 import os
-import numpy as np
-import nibabel as nb
 import sys
-import nipype.pipeline.engine as pe
+
+import nibabel as nb
 import nipype.interfaces.utility as util
-import imp
-from os.path import expanduser
+import nipype.pipeline.engine as pe
+import numpy as np
 
 
 def group_dim_reduce(
@@ -28,7 +27,6 @@ def group_dim_reduce(
         from sklearn.preprocessing import normalize
 
         import PyBASC.utils as utils
-
 
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
@@ -134,6 +132,7 @@ def nifti_individual_stability(
     import PyBASC.utils as utils
     import pandas as pd
     from sklearn.preprocessing import normalize 
+    import scipy.sparse
 
     print('Calculating individual stability matrix of:', subject_file)
 
@@ -167,8 +166,6 @@ def nifti_individual_stability(
     compression_labels_file = os.path.join(os.getcwd(), 'compression_labels.npy')
     np.save(compression_labels_file, compression_labels)
 
-    ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
-
     if cross_cluster:
 
         cxc_roi_mask_img = nb.load(cxc_roi_mask_file)
@@ -199,37 +196,34 @@ def nifti_individual_stability(
             cxc_compression_labels = cxc_compressor.labels_
             cxc_compressed = cxc_compressor.transform(subject_cxc_rois.T)
 
-
-        ism = utils.individual_stability_matrix(
-            compressed, roi_mask_data, n_bootstraps, n_clusters,
-            similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
-            blocklength, affinity_threshold, cluster_method
-        )
-
     else:
 
         cxc_compressed = None
 
-        ism = utils.individual_stability_matrix(
-            compressed, roi_mask_data, n_bootstraps, n_clusters,
-            similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
-            blocklength, affinity_threshold, cluster_method
-        )
+
+    ism = utils.individual_stability_matrix(
+        compressed, roi_mask_data, n_bootstraps, n_clusters,
+        similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
+        blocklength, affinity_threshold, cluster_method
+    )
+
+    ism = scipy.sparse.csr_matrix(ism, dtype=np.int8)
+
+    ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
 
     if compressor:
-        ism = ism.astype("uint8")
-        np.save(ism_file, ism)
+        scipy.sparse.save_npz(ism_file, ism)
     else:
         voxel_ism = utils.expand_ism(ism, compression_labels)
         voxel_ism = voxel_ism.astype("uint8")
-        np.save(ism_file, voxel_ism)
+        scipy.sparse.save_npz(ism_file, voxel_ism)
 
     return ism_file, compression_labels_file
 
 
 def map_group_stability(
     subject_stability_list, n_clusters, bootstrap_list,
-    roi_mask_file, group_dim_reduce, cluster_method
+    roi_mask_file, group_dim_reduce, cluster_method='ward'
 ):
     # TODO @AKI review doc
     """
@@ -254,6 +248,7 @@ def map_group_stability(
     import numpy as np
     import nibabel as nb
     import PyBASC.utils as utils
+    import scipy.sparse
     
     print(
         'Calculating group stability matrix for %d subjects' % 
@@ -261,7 +256,8 @@ def map_group_stability(
     )
 
     indiv_stability_set = np.asarray([
-        np.load(ism_file) for ism_file in subject_stability_list
+        scipy.sparse.load_npz(ism_file).toarray()
+        for ism_file in subject_stability_list
     ])
 
     if bootstrap_list == 1:
@@ -282,10 +278,11 @@ def map_group_stability(
                                  affinity_threshold=0.0,
                                  cluster_method=cluster_method)[:, np.newaxis]
     )
-    G = G.astype("uint8")
+    G = G
+    G = scipy.sparse.csr_matrix(G, dtype=np.int8)
 
-    G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
-    np.save(G_file, G)
+    G_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
+    scipy.sparse.save_npz(G_file, G)
 
     return G_file
 
@@ -323,9 +320,10 @@ def join_group_stability(
     import numpy as np
     import nibabel as nb
     import PyBASC.utils as utils
+    import scipy.sparse
 
     group_stability_set = np.asarray([
-        np.load(G_file) for G_file in group_stability_list
+        scipy.sparse.load_npz(G_file) for G_file in group_stability_list
     ])
 
     gsm = group_stability_set.sum(axis=0)
@@ -337,7 +335,7 @@ def join_group_stability(
     if group_dim_reduce:
         compression_labels = np.asarray([np.load(compression_labels_list[0])])
         G = utils.expand_ism(G, compression_labels.T)
-        G = G.astype("uint8")
+        G = csr_matrix(G, dtype=np.int8)
 
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')
     clusters_G = utils.cluster_timeseries(
@@ -356,11 +354,12 @@ def join_group_stability(
     clusters_G += 1
 
     indiv_stability_set = np.asarray([
-        np.load(ism_file) for ism_file in subject_stability_list
+        scipy.sparse.load_npz(ism_file) for ism_file in subject_stability_list
     ])
 
     compression_labels_set = np.asarray([
-        np.load(compression_labels_file) for compression_labels_file in compression_labels_list
+        np.load(compression_labels_file)
+        for compression_labels_file in compression_labels_list
     ])
 
     ism_gsm_corr = np.zeros(len(subject_stability_list))
@@ -369,8 +368,8 @@ def join_group_stability(
         ism = utils.expand_ism(indiv_stability_set[i], compression_labels)
         ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
 
-    gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
-    np.save(gsm_file, G)
+    gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npz')
+    scipy.sparse.save_npz(gsm_file, G)
 
     clusters_G_file = os.path.join(os.getcwd(), 'clusters_G.npy')
     np.save(clusters_G_file, clusters_G)
@@ -729,7 +728,7 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir, cluster_method='ward'):
     clusters_gsm = clusters_gsm + 1
     cluster_ids = np.unique(clusters_gsm)
 
-    gsm_cluster_voxel_scores, k_mask = \
+    gsm_cluster_voxel_scores, _ = \
         utils.cluster_matrix_average(gsm, clusters_gsm)
     gsm_cluster_voxel_scores = gsm_cluster_voxel_scores.astype("uint8")
 
