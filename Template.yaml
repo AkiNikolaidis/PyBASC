@@ -1,5 +1,5 @@
 analysis_ID: simulation_4
-home: /tmp
+home: ~/
 run: True
 
 proc_mem:
@@ -44,7 +44,7 @@ similarity_metric_list:
 cluster_methods:
     - ward
 
-roi_mask_file: masks/Yeo7_3mmMasks/BilateralStriatumThalamus_3mm.nii.gz
+roi_mask_file: masks/Yeo7_3mmMasks/BG_3mm.nii.gz
 
 cross_cluster: True
 cross_cluster_mask_file: masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
