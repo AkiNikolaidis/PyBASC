@@ -20,7 +20,7 @@ PyBASC is a free and open source Nipype-based, parcellation pipeline for preproc
 ------------
 - Install from command line using pip
 ```
-pip install basc
+pip install PyBASC
 ```
 - Setup PyBASC from command line
 ```
