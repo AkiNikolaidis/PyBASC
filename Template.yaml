@@ -1,9 +1,9 @@
-analysis_ID: simulation_4
-home: ~/
+analysis_ID: simulation_5
+home: /Users/aki.nikolaidis
 run: True
 
 proc_mem:
-    - 1
+    - 2
     - 4
 
     
@@ -20,7 +20,7 @@ dataset_bootstrap_list:
 timeseries_bootstrap_list:
     - 100
 
-group_dim_reduce: True
+group_dim_reduce: False
 
 n_clusters_list:
     - 2
@@ -44,7 +44,7 @@ similarity_metric_list:
 cluster_methods:
     - ward
 
-roi_mask_file: masks/Yeo7_3mmMasks/BG_3mm.nii.gz
+roi_mask_file: masks/BG_3mm.nii.gz
 
 cross_cluster: True
 cross_cluster_mask_file: masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
