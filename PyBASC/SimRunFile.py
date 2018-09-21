@@ -22,7 +22,7 @@ from os.path import expanduser
 from basc_workflow_runner import run_basc_workflow
 from basc import save_igcm_nifti, create_group_cluster_maps, ism_nifti, gsm_nifti
 home = expanduser("~")
-proc_mem= [1,8]
+proc_mem= [1,4]
 
 
 subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_0corr_0.05_noise_2_TRs_100.nii.gz',
@@ -55,6 +55,7 @@ output_sizes=[800]#,200,400,800,1600]#[10,100,600,1200]
 
 group_dim_reduce=False
 #reruns= np.linspace(1,16,16)
+cluster_methods=['ward']
 cross_cluster=False
 affinity_thresh= 0.0
 ism_gsm_stability=[]
@@ -67,7 +68,7 @@ analysis_ID='sparsematrix_test3f'
 reruns= 1
 
 
-run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, 
+run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, cluster_methods, 
          blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
          cross_cluster, roi2_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID)
 

@@ -94,7 +94,7 @@ def create_basc(proc_mem, name='basc'):
     >>> from CPAC import basc
 
     """
-
+    import pdb;pdb.set_trace()
     basc = pe.Workflow(name=name)
 
     inputspec = pe.Node(util.IdentityInterface(fields=[
@@ -148,6 +148,7 @@ def create_basc(proc_mem, name='basc'):
         name='group_dim_reduce', 
 	mem_gb=proc_mem[1]/proc_mem[0]
     )
+    gdr.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
 
     nis = pe.MapNode(
         util.Function(
@@ -173,7 +174,7 @@ def create_basc(proc_mem, name='basc'):
         iterfield=['subject_file',
                    'affinity_threshold']
     )
-
+    nis.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
     nis.inputs.cbb_block_size = None
 
     mgsm = pe.MapNode(
@@ -191,7 +192,8 @@ def create_basc(proc_mem, name='basc'):
 	mem_gb=proc_mem[1]/proc_mem[0],
         iterfield='bootstrap_list'
     )
-
+    mgsm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    
     jgsm = pe.Node(
         util.Function(
             input_names=['subject_stability_list',
@@ -213,7 +215,8 @@ def create_basc(proc_mem, name='basc'):
         name='join_group_stability',
 	mem_gb=proc_mem[1]/proc_mem[0]
     )
-
+    jgsm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    
     igcm = pe.MapNode(
         util.Function(
             input_names=['subject_stability_list',
@@ -229,6 +232,7 @@ def create_basc(proc_mem, name='basc'):
 	mem_gb=proc_mem[1]/proc_mem[0],
         iterfield=['subject_stability_list', 'compression_labels_file']
     )
+    igcm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
 
     post = pe.Node(
         util.Function(
@@ -239,6 +243,7 @@ def create_basc(proc_mem, name='basc'):
         name='post_analysis',
 	mem_gb=proc_mem[1]/proc_mem[0]
     )
+    post.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
 
     gs_cluster_vol = pe.Node(
         util.Function(
@@ -252,6 +257,7 @@ def create_basc(proc_mem, name='basc'):
         name='group_stability_cluster_vol',
 	mem_gb=proc_mem[1]/proc_mem[0]
     )
+    gs_cluster_vol.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
 
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
 
