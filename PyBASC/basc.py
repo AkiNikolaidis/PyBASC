@@ -100,7 +100,7 @@ def nifti_individual_stability(
     n_bootstraps, n_clusters, compression_dim, similarity_metric,
     compressor=None, cross_cluster=False, cxc_compressor=None,
     cxc_roi_mask_file=None, blocklength=1, cbb_block_size=None,
-    affinity_threshold=0.0, cluster_method
+    affinity_threshold=0.0, cluster_method='ward'
 ):
     # TODO @AKI update docs
     """
