@@ -610,7 +610,7 @@ def expand_ism(ism, Y1_labels):
     voxel_num = len(Y1_labels)
     voxel_ism = np.zeros((voxel_num, voxel_num))
 
-    transform_mat = np.zeros((len(ism), voxel_num))
+    transform_mat = np.zeros((ism.shape[0], voxel_num))
     for i in range(voxel_num):
         transform_mat[Y1_labels[i], i] = 1
 
