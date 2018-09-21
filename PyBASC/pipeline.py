@@ -145,7 +145,8 @@ def create_basc(name='basc'):
                           'compression_labels_file'],
             function=group_dim_reduce
         ),
-        name='group_dim_reduce'
+        name='group_dim_reduce', 
+	mem_gb=proc_mem[1]/proc_mem[0]
     )
 
     nis = pe.MapNode(
@@ -168,6 +169,7 @@ def create_basc(name='basc'):
             function=nifti_individual_stability
         ),
         name='individual_stability_matrices',
+	mem_gb=proc_mem[1]/proc_mem[0],
         iterfield=['subject_file',
                    'affinity_threshold']
     )
@@ -186,6 +188,7 @@ def create_basc(name='basc'):
             function=map_group_stability
         ),
         name='map_group_stability',
+	mem_gb=proc_mem[1]/proc_mem[0],
         iterfield='bootstrap_list'
     )
 
@@ -207,7 +210,8 @@ def create_basc(name='basc'):
                           'ism_gsm_corr_file'],
             function=join_group_stability
         ),
-        name='join_group_stability'
+        name='join_group_stability',
+	mem_gb=proc_mem[1]/proc_mem[0]
     )
 
     igcm = pe.MapNode(
@@ -222,6 +226,7 @@ def create_basc(name='basc'):
             function=individual_group_clustered_maps
         ),
         name='individual_group_clustered_maps',
+	mem_gb=proc_mem[1]/proc_mem[0],
         iterfield=['subject_stability_list', 'compression_labels_file']
     )
 
@@ -231,7 +236,8 @@ def create_basc(name='basc'):
             output_names=['ind_group_cluster_stability_set_file'],
             function=post_analysis
         ),
-        name='post_analysis'
+        name='post_analysis',
+	mem_gb=proc_mem[1]/proc_mem[0]
     )
 
     gs_cluster_vol = pe.Node(
@@ -243,7 +249,8 @@ def create_basc(name='basc'):
             output_names=['img_file', 'img'],
             function=ndarray_to_vol
         ),
-        name='group_stability_cluster_vol'
+        name='group_stability_cluster_vol',
+	mem_gb=proc_mem[1]/proc_mem[0]
     )
 
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'

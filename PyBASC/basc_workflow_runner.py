@@ -58,7 +58,7 @@ def run_basc_workflow(
 
     resource_pool = {}
 
-    basc = create_basc(name='basc')
+    basc = create_basc(proc_mem, name='basc')
     basc.inputs.inputspec.set(
         subjects_files=subject_file_list,
         roi_mask_file=roi_mask_file,
