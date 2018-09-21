@@ -12,7 +12,7 @@ from PyBASC.basc import (
 )
 
 
-def create_basc(name='basc'):
+def create_basc(proc_mem, name='basc'):
     """
     Bootstrap Analysis of Stable Clusters (BASC)
 
