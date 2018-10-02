@@ -191,12 +191,12 @@ def nifti_individual_stability(
             cxc_compression_labels = np.array(cxc_compression_labels)
 
         else:
-
             cxc_compressor.fit(subject_cxc_rois.T)
             cxc_compression_labels = cxc_compressor.labels_
             cxc_compressed = cxc_compressor.transform(subject_cxc_rois.T)
 
     else:
+
 
         cxc_compressed = None
 
@@ -260,6 +260,7 @@ def map_group_stability(
         for ism_file in subject_stability_list
     ])
 
+
     if bootstrap_list == 1:
         J = indiv_stability_set.mean(axis=0)
     else:
@@ -322,6 +323,7 @@ def join_group_stability(
     import PyBASC.utils as utils
     import scipy.sparse
 
+
     group_stability_set = np.asarray([
         scipy.sparse.load_npz(G_file) for G_file in group_stability_list
     ])
@@ -335,7 +337,8 @@ def join_group_stability(
     if group_dim_reduce:
         compression_labels = np.asarray([np.load(compression_labels_list[0])])
         G = utils.expand_ism(G, compression_labels.T)
-        G = csr_matrix(G, dtype=np.int8)
+        #TODO: Check to see if there's another array type that can be used?
+        G = csr_matrix(G, dtype=np.int8).toarray()
 
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')
     clusters_G = utils.cluster_timeseries(
@@ -365,7 +368,7 @@ def join_group_stability(
     ism_gsm_corr = np.zeros(len(subject_stability_list))
     for i in range(len(subject_stability_list)):
         compression_labels = compression_labels_set[i]
-        ism = utils.expand_ism(indiv_stability_set[i], compression_labels)
+        ism = utils.expand_ism(indiv_stability_set[i], compression_labels).toarray()
         ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
 
     gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npz')
@@ -478,20 +481,26 @@ def individual_group_clustered_maps(
     import numpy as np
     import PyBASC.utils as utils
     import PyBASC.basc as basc
+    import scipy.sparse
     
-    supervox_ism = np.load(subject_stability_list)
+    supervox_ism = scipy.sparse.load_npz(subject_stability_list).toarray()
 
     compression_labels = np.load(compression_labels_file)
-    indiv_stability_set = utils.expand_ism(supervox_ism, compression_labels)
+    
+    if group_dim_reduce==True: 
+        indiv_stability_set = utils.expand_ism(supervox_ism, compression_labels).toarray()
+    else:
+        indiv_stability_set=supervox_ism
 
     cluster_ids = np.unique(clusters_G)
     cluster_voxel_scores, k_mask = \
         utils.cluster_matrix_average(indiv_stability_set, clusters_G)
 
-    ind_group_cluster_stability = np.array([
-        cluster_voxel_scores[(i-1), clusters_G == i].mean()
-        for i in cluster_ids
-    ])
+    if group_dim_reduce: 
+        ind_group_cluster_stability = np.array([
+            cluster_voxel_scores[(i-1), clusters_G == i].mean()
+            for i in cluster_ids
+        ])
     
     cluster_voxel_scores = cluster_voxel_scores.astype("uint8")
 

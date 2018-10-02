@@ -103,8 +103,9 @@ def run_basc_workflow(
     }
 
     # TODO @AKI is there any occasion in which running will be false?
-    if run == True:
+    if run:
         workflow.run(plugin=plugin, plugin_args=plugin_args)
+
         outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
 
         return outpath

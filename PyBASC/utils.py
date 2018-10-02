@@ -530,10 +530,11 @@ def individual_stability_matrix(
     if cross_cluster:
 
         # TODO @ASH review n_bootstraps start (0 or 1?)
-        for _ in range(n_bootstraps + 1):
+        for _ in range(n_bootstraps):
             if n_bootstraps == 1:
                 Y_bootstrap = Y1
                 Y_cxc_bootstrap = Y2
+
             else:
                 Y_bootstrap, block_mask = utils.timeseries_bootstrap(
                     Y1, cbb_block_size
@@ -558,11 +559,11 @@ def individual_stability_matrix(
         S = S.astype("uint8")
 
     else:
-
-        for _ in range(n_bootstraps + 1):
+        for _ in range(n_bootstraps):
 
             if n_bootstraps == 1:
                 Y_bootstrap = Y1
+
             else:
                 Y_bootstrap, _ = utils.timeseries_bootstrap(Y1, cbb_block_size)
 
