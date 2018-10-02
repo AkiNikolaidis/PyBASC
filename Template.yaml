@@ -1,4 +1,4 @@
-analysis_ID: simulation_5
+analysis_ID: multiprocTest
 home: /Users/aki.nikolaidis
 run: True
 
@@ -15,10 +15,10 @@ blocklength_list:
     - 1 
     
 dataset_bootstrap_list:
-    - 100
+    - 1
 
 timeseries_bootstrap_list:
-    - 100
+    - 1
 
 group_dim_reduce: False
 

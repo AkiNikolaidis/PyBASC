@@ -162,7 +162,6 @@ def nifti_individual_stability(
         compressed = compressor.transform(subject_rois.T)
         roi_mask_data = None
 
-
     compression_labels_file = os.path.join(os.getcwd(), 'compression_labels.npy')
     np.save(compression_labels_file, compression_labels)
 
@@ -200,15 +199,12 @@ def nifti_individual_stability(
 
         cxc_compressed = None
 
-
     ism = utils.individual_stability_matrix(
         compressed, roi_mask_data, n_bootstraps, n_clusters,
         similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
         blocklength, affinity_threshold, cluster_method
     )
-
     ism = scipy.sparse.csr_matrix(ism, dtype=np.int8)
-
     ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
 
     if compressor:
@@ -217,7 +213,7 @@ def nifti_individual_stability(
         voxel_ism = utils.expand_ism(ism, compression_labels)
         voxel_ism = voxel_ism.astype("uint8")
         scipy.sparse.save_npz(ism_file, voxel_ism)
-
+    
     return ism_file, compression_labels_file
 
 
@@ -324,23 +320,30 @@ def join_group_stability(
     import scipy.sparse
 
 
+
     group_stability_set = np.asarray([
-        scipy.sparse.load_npz(G_file) for G_file in group_stability_list
+        scipy.sparse.load_npz(G_file).toarray() for G_file in group_stability_list
     ])
 
     gsm = group_stability_set.sum(axis=0)
     G = gsm / n_bootstraps
+    
 
     G = G * 100
     G = G.astype("uint8")
 
     if group_dim_reduce:
         compression_labels = np.asarray([np.load(compression_labels_list[0])])
+        G = scipy.sparse.csr_matrix(G, dtype=np.int8)
         G = utils.expand_ism(G, compression_labels.T)
+
         #TODO: Check to see if there's another array type that can be used?
-        G = csr_matrix(G, dtype=np.int8).toarray()
+        G = G.toarray()
 
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')
+    
+    
+    
     clusters_G = utils.cluster_timeseries(
         G, roi_mask_data, n_clusters,
         similarity_metric='correlation', affinity_threshold=0.0,
@@ -356,9 +359,9 @@ def join_group_stability(
     # so start from 1 to provide contrast when viewing between 0 voxels
     clusters_G += 1
 
-    indiv_stability_set = np.asarray([
+    indiv_stability_set = [
         scipy.sparse.load_npz(ism_file) for ism_file in subject_stability_list
-    ])
+    ]
 
     compression_labels_set = np.asarray([
         np.load(compression_labels_file)
@@ -372,6 +375,8 @@ def join_group_stability(
         ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
 
     gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npz')
+    G = scipy.sparse.csr_matrix(G, dtype=np.int8)
+
     scipy.sparse.save_npz(gsm_file, G)
 
     clusters_G_file = os.path.join(os.getcwd(), 'clusters_G.npy')
@@ -483,25 +488,25 @@ def individual_group_clustered_maps(
     import PyBASC.basc as basc
     import scipy.sparse
     
-    supervox_ism = scipy.sparse.load_npz(subject_stability_list).toarray()
+    supervox_ism = scipy.sparse.load_npz(subject_stability_list)
 
     compression_labels = np.load(compression_labels_file)
     
-    if group_dim_reduce==True: 
+    if group_dim_reduce: 
         indiv_stability_set = utils.expand_ism(supervox_ism, compression_labels).toarray()
     else:
-        indiv_stability_set=supervox_ism
+        indiv_stability_set=supervox_ism.toarray()
 
     cluster_ids = np.unique(clusters_G)
     cluster_voxel_scores, k_mask = \
         utils.cluster_matrix_average(indiv_stability_set, clusters_G)
 
-    if group_dim_reduce: 
-        ind_group_cluster_stability = np.array([
-            cluster_voxel_scores[(i-1), clusters_G == i].mean()
-            for i in cluster_ids
-        ])
     
+    ind_group_cluster_stability = np.array([
+        cluster_voxel_scores[(i-1), clusters_G == i].mean()
+        for i in cluster_ids
+    ])
+
     cluster_voxel_scores = cluster_voxel_scores.astype("uint8")
 
     k_mask = k_mask.astype(bool)
@@ -544,7 +549,6 @@ def post_analysis(ind_group_cluster_stability_file_list):
     
     import os
     import numpy as np
-
     ind_group_cluster_stability_set = np.asarray([
         np.load(ind_group_cluster)
         for ind_group_cluster in ind_group_cluster_stability_file_list
@@ -587,7 +591,6 @@ def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
     icvs_idx = 0
     A=[]
     B=[]
-    ##import pdb; pdb.set_trace()
 
     for k in cluster_ids:
         print('k equals \n\n', k, '\n\n') #Loops through every row of cluster_voxel_scores and creates nifti files
@@ -623,8 +626,9 @@ def create_group_cluster_maps(gsm_file, clusters_G_file, roi_mask_file):
     import numpy as np
     import PyBASC.basc as basc
     import PyBASC.utils as utils
+    import scipy.sparse
 
-    group_stability_set = np.load(gsm_file)
+    group_stability_set = scipy.sparse.load_npz(gsm_file).toarray()
     clusters_G = np.load(clusters_G_file)
     cluster_ids = np.unique(clusters_G)
 

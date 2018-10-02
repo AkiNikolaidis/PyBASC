@@ -5,9 +5,11 @@ import numpy as np
 import pkg_resources
 import scipy.stats
 import yaml
-
+import scipy.sparse
+import warnings
 from PyBASC import create_group_cluster_maps, run_basc_workflow
 
+warnings.filterwarnings("ignore")
 
 def main(config):
 
@@ -144,7 +146,7 @@ def run_PyBASC(
                                 )
 
                                 # Run Group ClusterMaps
-                                gsm_file = experiment_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/group_stability_matrix.npy'
+                                gsm_file = experiment_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/group_stability_matrix.npz'
                                 clusters_G_file = experiment_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/clusters_G.npy'
                                 os.chdir(experiment_dir +'/workflow_output/basc_workflow_runner/basc/join_group_stability/')
                                 create_group_cluster_maps(gsm_file, clusters_G_file, roi_mask_file)

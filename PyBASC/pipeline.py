@@ -192,7 +192,7 @@ def create_basc(proc_mem, name='basc'):
         iterfield='bootstrap_list'
     )
     mgsm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
-    
+
     jgsm = pe.Node(
         util.Function(
             input_names=['subject_stability_list',

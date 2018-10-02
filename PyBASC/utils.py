@@ -604,18 +604,17 @@ def expand_ism(ism, Y1_labels):
     A voxel-wise representation of the stabilty matrix.
 
     """
-
     import numpy as np
     from scipy import sparse
-
     voxel_num = len(Y1_labels)
     voxel_ism = np.zeros((voxel_num, voxel_num))
 
     transform_mat = np.zeros((ism.shape[0], voxel_num))
     for i in range(voxel_num):
         transform_mat[Y1_labels[i], i] = 1
-
-    temp = np.dot(ism, transform_mat)
+    
+    # TODO-  Analyze behavior of sparse matrix ism in the np.dot function
+    temp = np.dot(ism.toarray(), transform_mat)
     voxel_ism = np.dot(temp.T, transform_mat)
     sparse_voxel_ism = sparse.csr_matrix(voxel_ism, dtype=np.int8) 
 
