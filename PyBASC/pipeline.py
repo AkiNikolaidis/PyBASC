@@ -94,7 +94,6 @@ def create_basc(proc_mem, name='basc'):
     >>> from CPAC import basc
 
     """
-    import pdb;pdb.set_trace()
     basc = pe.Workflow(name=name)
 
     inputspec = pe.Node(util.IdentityInterface(fields=[
