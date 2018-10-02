@@ -622,7 +622,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
     S = np.zeros((V1, V1))
     #import pdb;pdb.set_trace()
     if (cross_cluster is True):
-        for bootstrap_i in range(n_bootstraps+1):
+        for bootstrap_i in range(n_bootstraps):
             #import pdb; pdb.set_trace()
             N2 = Y2.shape[1]
             temp_block_size2 = int(np.sqrt(N2))
@@ -654,7 +654,7 @@ def individual_stability_matrix(Y1, roi_mask_nparray, n_bootstraps, n_clusters, 
         S=S.astype("uint8")
     else:
         #import pdb;pdb.set_trace()
-        for bootstrap_i in range(n_bootstraps+1):
+        for bootstrap_i in range(n_bootstraps):
             #import pdb; pdb.set_trace()
             print('ismcalc1')
             print('block size', cbb_block_size)
@@ -711,10 +711,9 @@ def expand_ism(ism, Y1_labels):
    import time
    from scipy import sparse
    print('debug expand ism1')
-   #import pdb; pdb.set_trace()
    voxel_num=len(Y1_labels)
    voxel_ism = np.zeros((voxel_num,voxel_num))
-   transform_mat=np.zeros((len(ism),voxel_num))
+   transform_mat=np.zeros((ism.shape[0],voxel_num))
  
    matrixtime = time.time()
    print('debug expand ism2') 

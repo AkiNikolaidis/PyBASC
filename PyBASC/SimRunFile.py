@@ -43,19 +43,19 @@ subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_0corr_0
 roi_mask_file='masks/Full_BG_Sim_3mm.nii.gz'
 
 
-roi2_mask_file='masks/Full_BG_Sim_3mm.nii.gz' #'masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
+roi2_mask_file='masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
 
 
-dataset_bootstrap_list=[2]#,10,30,100]
-timeseries_bootstrap_list=[2]#,10,30,100]
+dataset_bootstrap_list=[1]#,10,30,100]
+timeseries_bootstrap_list=[1]#,10,30,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
-n_clusters_list=[3]#[2,6,12,20]
-output_sizes=[800]#,200,400,800,1600]#[10,100,600,1200]
+n_clusters_list=[2]#[2,6,12,20]
+output_sizes=[1600]#,200,400,800,1600]#[10,100,600,1200]
 
-group_dim_reduce=False
+group_dim_reduce=True
 #reruns= np.linspace(1,16,16)
-cross_cluster=False
+cross_cluster=True
 affinity_thresh= 0.0
 ism_gsm_stability=[]
 #ind_clust_stab_mat=[]
@@ -63,7 +63,7 @@ ism_gsm_stability=[]
 run=True
 
 
-analysis_ID='sparsematrix_test3f'
+analysis_ID='final_sparsematrix25abcdef'
 reruns= 1
 
 

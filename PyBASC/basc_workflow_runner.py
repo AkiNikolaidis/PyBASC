@@ -111,8 +111,7 @@ def run_basc_workflow(subject_file_list, roi_mask_file, dataset_bootstraps, time
 
     plugin_args = { 'n_procs' : int(proc_mem[0]),'memory_gb': int(proc_mem[1])}#, 'raise_insufficient': True, 'maxtasksperchild': 1,'chunksize':1}
 
-
-    if run == True:
+    if run:
         if int(proc_mem[0]) == 1: 
             print('Linear', plugin_args)
             workflow.run(plugin='Linear', plugin_args= plugin_args)

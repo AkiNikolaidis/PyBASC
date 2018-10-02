@@ -169,7 +169,6 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         
         print('Going into ism')
         ism = utils.individual_stability_matrix(Y1_compressed, roi_mask_nparray, n_bootstraps, n_clusters, similarity_metric, Y2_compressed, cross_cluster, cbb_block_size, blocklength, affinity_threshold)
-
         
         if ward1!=False:
             ism=csr_matrix(ism, dtype=np.int8)
@@ -184,9 +183,7 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
         else:   
             print('Expanding ism')
             voxel_num=roi1data.shape[0]
-            #import pdb;pdb.set_trace()
             voxel_ism = utils.expand_ism(ism, Y1_labels)
-          
             
             voxel_ism=csr_matrix(voxel_ism, dtype=np.int8)
             ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
@@ -202,8 +199,8 @@ def nifti_individual_stability(subject_file, roi_mask_file, n_bootstraps, n_clus
 
         if ward1!=False:
             ism=ism.astype("uint8")
-            ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npy')
-            np.save(ism_file, ism)
+            ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
+            sp.sparse.save_npz(ism_file, ism)
             
             Y1_labels_file = os.path.join(os.getcwd(), 'Y1_labels.npy')
             np.save(Y1_labels_file, Y1_labels)
@@ -264,11 +261,7 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     #import pdb;pdb.set_trace()
     print( 'Calculating group stability matrix for', len(indiv_stability_list), 'subjects.' )
 
-    import pdb; pdb.set_trace()
-    #indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
     indiv_stability_set = np.asarray([scipy.sparse.load_npz(ism_file).toarray() for ism_file in indiv_stability_list])
-    #print( 'Group stability list dimensions:', indiv_stability_set.shape )
-    import pdb; pdb.set_trace()
 
     V = indiv_stability_set[0].shape[1]
 
@@ -301,8 +294,10 @@ def map_group_stability(indiv_stability_list, n_clusters, bootstrap_list, roi_ma
     #import pdb;pdb.set_trace()
 
     
-    G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npy')
-    np.save(G_file, G)
+    G_file = os.path.join(os.getcwd(), 'group_stability_matrix.npz')
+    
+    scipy.sparse.save_npz(G_file, G)
+
     print ('Saving group stability matrix %s' % (G_file))
     
     return G_file
@@ -335,14 +330,22 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     import numpy as np
     import nibabel as nb
     import PyBASC.utils as utils
+    import scipy
+    from scipy.sparse import csr_matrix
     
+    allow_pickle=True
     print("starting join group stability")
-    group_stability_set = np.asarray([np.load(G_file) for G_file in group_stability_list])
+    group_stability_set = np.asarray([scipy.sparse.load_npz(G_file).toarray() for G_file in group_stability_list])
+
+
+    #group_stability_set = np.asarray([np.load(G_file) for G_file in group_stability_list])
     gsm=group_stability_set.sum(axis=0)
     G=gsm/int(n_bootstraps)
     
+
+    G=csr_matrix(G,dtype=np.int8)
     G=G*100
-    G=G.toarray().astype("uint8")
+    G=G.toarray()
 
     #SPATIAL CONSTRAINT EXPERIMENT#
     roi_mask_nparray='empty'
@@ -353,17 +356,16 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
    
     if group_dim_reduce==True:
         #roi_mask_nparray='empty'
-        #import pdb;pdb.set_trace()
         Y1_labels=np.asarray([np.load(Y1_labels_list[0])])
         #Y1_labels=Y1_labels[0]
-
-        G = utils.expand_ism(G, Y1_labels.T)
-        G=G.toarray().astype("uint8")
         
+        G = utils.expand_ism(G, Y1_labels.T)
+        G=G.toarray()
+    
     roi_mask_nparray = nb.load(roi_mask_file).get_data().astype('float32').astype('bool')
     clusters_G = utils.cluster_timeseries(G, roi_mask_nparray, n_clusters, similarity_metric = 'correlation', affinity_threshold=0.0, cluster_method='ward')
     #APPLY THIS METHOD TO THE INDIVIDUAL LEVEL CLUSTER
- 
+
     print( 'calculating cluster_voxel scores' )
     
     #INSERT SECTION HERE TO RETURN ALL OUTPUTS OF JGSM TO VOXEL RESOLUTION.
@@ -373,8 +375,8 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     # Cluster labels normally start from 0, start from 1 to provide contrast when viewing between 0 voxels
     clusters_G += 1
     clusters_G=clusters_G.astype("uint8") 
-    
-    indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
+
+    indiv_stability_set = np.asarray([scipy.sparse.load_npz(ism_file) for ism_file in indiv_stability_list])
     #import pdb;pdb.set_trace()
     Y1_labels_set=np.asarray([np.load(Y1_labels_file) for Y1_labels_file in Y1_labels_list])#[0]
 
@@ -383,11 +385,14 @@ def join_group_stability(indiv_stability_list, group_stability_list, n_bootstrap
     #import pdb;pdb.set_trace()
 
     for i in range(0,len(indiv_stability_list)):
-        #import pdb;pdb.set_trace()
         Y1_labels=Y1_labels_set[i]
-        ism = utils.expand_ism(indiv_stability_set[i], Y1_labels)
+        if group_dim_reduce==True:
+            ism = utils.expand_ism(indiv_stability_set[i].toarray(), Y1_labels).toarray()
+        else:
+            ism=indiv_stability_set[i].toarray()
+
         ism_gsm_corr[i]=utils.compare_stability_matrices(ism, G)
-    #import pdb; pdb.set_trace()
+        
     #print( '3')
     print( 'saving files: G')
     print(G)
@@ -478,23 +483,27 @@ def individual_group_clustered_maps(indiv_stability_list, clusters_G, roi_mask_f
     import numpy as np
     import PyBASC.utils as utils
     import PyBASC.basc as basc
+    import scipy.sparse
     print('starting igcm')
-    ##import pdb; pdb.set_trace()
     print("igcm debug 1")
     
     #import pdb; pdb.set_trace()
     
     # *REMOVE LINE* indiv_stability_set = np.asarray([np.load(ism_file) for ism_file in indiv_stability_list])
-    indiv_stability_mat = np.asarray([np.load(indiv_stability_list)])
-    supervox_ism = indiv_stability_mat[0]
+    
+    indiv_stability_mat = scipy.sparse.load_npz(indiv_stability_list).toarray()
+    
+    #supervox_ism = indiv_stability_mat[0]
     
     
     Y1_labels_data=np.asarray([np.load(Y1_labels_list)])
     Y1_labels=Y1_labels_data[0]
 
-    
-    
-    indiv_stability_set= utils.expand_ism(supervox_ism, Y1_labels)
+
+    if group_dim_reduce==True:
+        indiv_stability_set= utils.expand_ism(indiv_stability_mat, Y1_labels).toarray()
+    else:
+        indiv_stability_set=indiv_stability_mat
 
     #*REMOVE LINE*nSubjects = indiv_stability_set.shape[0]
     nVoxels = indiv_stability_set.shape[1]
