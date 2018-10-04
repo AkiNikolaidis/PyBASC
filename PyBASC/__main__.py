@@ -77,9 +77,11 @@ def run_PyBASC(
         ])
     )
 
-    np.random.seed(seed=random_seed)
+    
 
     for rerun in rerun_list:
+        randseed=np.random.randint(0,10000)
+        np.random.seed(seed=random_seed)
 
         for (dataset_bootstraps, timeseries_bootstraps) in zip(dataset_bootstrap_list, timeseries_bootstrap_list):
 

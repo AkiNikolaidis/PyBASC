@@ -66,8 +66,8 @@ ism_gsm_stability=[]
 run=True
 
 
-analysis_ID='testing_ism_gsms4'
-reruns= 1
+analysis_ID='testing_randomization'
+reruns= 3
 
 
 run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, cluster_methods, 
