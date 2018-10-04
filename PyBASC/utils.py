@@ -5,8 +5,8 @@ import nibabel as nb
 import numpy as np
 import scipy as sp
 
-import matplotlib
-from matplotlib import pyplot as plt
+#import matplotlib
+#from matplotlib import pyplot as plt
 
 import nipype.interfaces.utility as util
 import nipype.pipeline.engine as pe
@@ -552,11 +552,11 @@ def individual_stability_matrix(
                     cluster_method=cluster_method
                 )
             )
-
-            S /= n_bootstraps
-
+        
+        S /= n_bootstraps
         S *= 100
         S = S.astype("uint8")
+
 
     else:
         for _ in range(n_bootstraps):
@@ -579,8 +579,7 @@ def individual_stability_matrix(
                 )[:, np.newaxis]
             )
 
-            S /= n_bootstraps
-
+        S /= n_bootstraps
         S *= 100
         S = S.astype("uint8")
 
