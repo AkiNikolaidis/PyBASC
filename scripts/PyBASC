@@ -7,16 +7,15 @@ Created on Thu Jul 19 12:44:06 2018
 """
 
 import yaml
-from PyBASC.__main__ import main
 import sys
+import argparse
 
-config=yaml.load(open(sys.argv[1],'r'))
+from PyBASC import main
 
-#config=yaml.load(open('/Users/aki.nikolaidis/git_repo/PyBASC_Package/PyBASC/scripts/Template.yaml','r'))
+parser = argparse.ArgumentParser()
+parser.add_argument('config', help='YAML config file', type=argparse.FileType('r'))
+args = parser.parse_args()
+
+config = yaml.load(args.config)
 
 main(config)
-
-#main(config['dataset_bootstrap_list'],config['timeseries_bootstrap_list'], config['similarity_metric_list'], 
-#         config['blocklength_list'], config['n_clusters_list'], config['output_sizes'], config['subject_file_list'], 
-#         config['roi_mask_file'], config['proc_mem'], config['cross_cluster'], config['roi2_mask_file'], config['affinity_thresh'], 
-#         config['run'], config['home'], config['reruns'], config['group_dim_reduce'], config['analysis_ID'])
