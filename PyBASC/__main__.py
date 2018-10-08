@@ -7,20 +7,47 @@ import scipy.stats
 import yaml
 import scipy.sparse
 import warnings
+import PyBASC
 from PyBASC import create_group_cluster_maps, run_basc_workflow
 
 warnings.filterwarnings("ignore")
 
+def main_args():
+
+    import yaml
+    import sys
+    import argparse
+
+    from PyBASC import main
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config', help='YAML config file', type=argparse.FileType('r'))
+    args = parser.parse_args()
+
+    config = yaml.load(args.config)
+
+    main(config)
+
+
+
 def main(config):
 
+    if 'home' in config:
+        home = os.path.abspath(config['home'])
+        os.chdir(home)
+    else:
+        home = os.getcwd()
+    
     analysis_ID = config['analysis_ID']
     run = config['run']
     proc_mem = config['proc_mem']
-
+    path = os.path.dirname(PyBASC.__file__)
+    
     subject_file_list = [
-        os.path.abspath(s)
+        os.path.abspath(s.replace('$PYBASC',path))
         for s in config['subject_file_list']
     ]
+
 
     reruns = config['reruns']
     dataset_bootstrap_list = config['dataset_bootstrap_list']
@@ -36,10 +63,7 @@ def main(config):
     affinity_thresh = config['affinity_thresh']
     group_dim_reduce = config['group_dim_reduce']
 
-    if 'home' in config:
-        home = os.path.abspath(config['home'])
-    else:
-        home = os.getcwd()
+
 
 
     run_PyBASC(dataset_bootstrap_list, timeseries_bootstrap_list, similarity_metric_list, cluster_methods,

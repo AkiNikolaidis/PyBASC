@@ -23,10 +23,10 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.4.0',
+    version='0.4.5',
 
-    description='A bootstrapping clustering algorithm for Python',
-    long_description=long_description,
+    description='Bootstrap Aggregation for Stable Clustering in Python',
+    long_description='volumetric functional parcellation of fMRI data that uses bootstrap aggregation to improve stability of clusters',
 
     # The project's main homepage.
     url='https://github.com/akinikolaidis/pybasc',
@@ -92,7 +92,7 @@ setup(
     # have to be included in MANIFEST.in as well.
     
     package_data={
-        'PyBASC': ['masks/*', 'masks/Yeo7_3mmMasks/*'],
+        'PyBASC': ['masks/*', 'masks/Yeo7_3mmMasks/*', 'data/*'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
@@ -107,7 +107,7 @@ setup(
     scripts=glob.glob('scripts/*'),
     entry_points={
         'console_scripts': [
-            'PyBASC=PyBASC.__main__:main',
+            'PyBASC=PyBASC.__main__:main_args',
         ],
     },
 )

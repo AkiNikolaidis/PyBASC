@@ -1,0 +1,69 @@
+analysis_ID: PipPathTest1
+home: /Users/aki.nikolaidis
+run: True
+
+proc_mem:
+    - 1
+    - 4
+
+    
+reruns: 1
+
+affinity_thresh: 0.0
+
+blocklength_list:
+    - 1 
+    
+dataset_bootstrap_list:
+    - 100
+
+timeseries_bootstrap_list:
+    - 100
+
+group_dim_reduce: False
+
+n_clusters_list:
+    - 2
+#    - 4
+#    - 6
+#    - 8
+#    - 10
+#    - 12
+#    - 14
+#    - 16
+    
+output_sizes:
+    - 800
+
+similarity_metric_list:
+    - correlation
+    # - euclidean
+    # - cityblock
+    # - cosine
+
+cluster_methods:
+    - ward
+
+roi_mask_file: masks/Full_BG_Sim_3mm.nii.gz
+
+cross_cluster: True
+cross_cluster_mask_file: masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
+
+
+subject_file_list: 
+    - $PYBASC/data/sub_0corr_0.05_noise_2_TRs_100.nii.gz
+    - $PYBASC/data/sub_1corr_0.05_noise_2_TRs_100.nii.gz
+    - $PYBASC/data/sub_2corr_0.05_noise_2_TRs_100.nii.gz
+    - $PYBASC/data/sub_3corr_0.05_noise_2_TRs_100.nii.gz
+
+
+
+
+    
+
+
+
+
+
+
+
