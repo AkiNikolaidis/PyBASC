@@ -213,7 +213,6 @@ def nifti_individual_stability(
         voxel_ism = utils.expand_ism(ism, compression_labels)
         voxel_ism = voxel_ism.astype("uint8")
         scipy.sparse.save_npz(ism_file, voxel_ism)
-    
     return ism_file, compression_labels_file
 
 
@@ -458,8 +457,7 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
 
 def individual_group_clustered_maps(
     subject_stability_list, clusters_G, roi_mask_file,
-    group_dim_reduce, compression_labels_file
-):
+    group_dim_reduce, compression_labels_file):
     # TODO @AKI update doc
     """
     Calculate the individual stability maps of each subject based on the group
@@ -508,25 +506,34 @@ def individual_group_clustered_maps(
     ])
 
     cluster_voxel_scores = cluster_voxel_scores.astype("uint8")
-
+    
     k_mask = k_mask.astype(bool)
 
     ind_group_cluster_stability_file = os.path.join(
         os.getcwd(), 'ind_group_cluster_stability.npy'
     )
     np.save(ind_group_cluster_stability_file, ind_group_cluster_stability)
+    
+    
+    individualized_group_cluster_npy = np.argmax(cluster_voxel_scores, axis=0) + 1
 
-    individualized_group_cluster = np.argmax(cluster_voxel_scores, axis=0) + 1
+    ind_group_cluster_labels_file = os.path.join(
+        os.getcwd(), 'ind_group_cluster_labels.npy'
+    )
+    np.save(ind_group_cluster_labels_file, individualized_group_cluster_npy)
+
+    #import pdb;pdb.set_trace()
     individualized_group_clusters_file, img = basc.ndarray_to_vol(
-        individualized_group_cluster,
+        individualized_group_cluster_npy,
         roi_mask_file,
         roi_mask_file,
         os.path.join(os.getcwd(), 'individualized_group_cluster.nii.gz')
     )
 
-    img.to_filename(individualized_group_clusters_file)
-
-    return ind_group_cluster_stability_file, individualized_group_clusters_file
+    #import pdb;pdb.set_trace()
+    np.save(ind_group_cluster_labels_file, individualized_group_cluster_npy)
+    #import pdb;pdb.set_trace()
+    return ind_group_cluster_stability_file, individualized_group_clusters_file, ind_group_cluster_labels_file#, individualized_group_cluster_npy
 
 
 def post_analysis(ind_group_cluster_stability_file_list):
@@ -546,22 +553,22 @@ def post_analysis(ind_group_cluster_stability_file_list):
     ind_group_cluster_stability_set_file : a composite matrix of all the
                                            ind_group_cluster_stability metrics
     """
-    
     import os
     import numpy as np
     ind_group_cluster_stability_set = np.asarray([
         np.load(ind_group_cluster)
         for ind_group_cluster in ind_group_cluster_stability_file_list
     ])
-    
+
     ind_group_cluster_stability_set_file = os.path.join(
         os.getcwd(), 'ind_group_cluster_stability_set.npy'
     )
+
     np.save(
         ind_group_cluster_stability_set_file,
         ind_group_cluster_stability_set
     )
-    
+
     return ind_group_cluster_stability_set_file
 
 
