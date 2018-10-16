@@ -78,20 +78,28 @@ def run_basc_workflow(
     
     resource_pool['group_stability_matrix'] = (basc, 'outputspec.group_stability_matrix')
     resource_pool['clusters_G'] = (basc, 'outputspec.clusters_G')
-    resource_pool['ism_gsm_corr_file'] = (basc, 'outputspec.ism_gsm_corr_file')
+    resource_pool['ism_gsm_corr'] = (basc, 'outputspec.ism_gsm_corr')
     resource_pool['gsclusters_img'] = (basc, 'outputspec.gsclusters_img')
-    resource_pool['cluster_voxel_scores_img'] = (basc, 'outputspec.cluster_voxel_scores_img')
-    resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
+    #resource_pool['cluster_voxel_scores_img'] = (basc, 'outputspec.cluster_voxel_scores_img')
+    #resource_pool['cluster_voxel_scores'] = (basc, 'outputspec.cluster_voxel_scores')
     resource_pool['ind_group_cluster_stability'] = (basc, 'outputspec.ind_group_cluster_stability')
+    resource_pool['individualized_group_clusters'] = (basc, 'outputspec.individualized_group_clusters')
+    resource_pool['ind_group_cluster_labels'] = (basc, 'outputspec.ind_group_cluster_labels')
     resource_pool['ind_group_cluster_stability_set'] = (basc, 'outputspec.ind_group_cluster_stability_set')
+
+
+
 
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
     ds.inputs.base_directory = workflow_dir
+    
+    #import pdb;pdb.set_trace()
     
     for output in resource_pool.keys():
         node, out_file = resource_pool[output]
         workflow.connect(node, out_file, ds, output)
 
+    #import pdb;pdb.set_trace()
 
     plugin = 'MultiProc'
     if int(proc_mem[0]) == 1:

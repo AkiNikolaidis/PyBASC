@@ -149,9 +149,9 @@ def run_PyBASC(
                                     out_dir=experiment_dir,
                                     run=run
                                 )
-
+                                
                                 ism_gsm_stability.append(
-                                    np.load(experiment_dir + '/workflow_output/ism_gsm_corr_file/ism_gsm_corr.npy')
+                                    np.load(experiment_dir + '/workflow_output/ism_gsm_corr/ism_gsm_corr.npy')
                                 )
 
                                 ind_clust_stab_mat = np.load(

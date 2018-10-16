@@ -119,17 +119,20 @@ def create_basc(proc_mem, name='basc'):
 
     ]), name='inputspec')
 
+
     outputspec = pe.Node(util.IdentityInterface(fields=[
         'group_stability_matrix',
         'clusters_G',
-        'ism_gsm_corr_file',
+        'ism_gsm_corr',
         'gsclusters_img',
         'cluster_voxel_scores_img',
         'cluster_voxel_scores',
         'ind_group_cluster_stability',
+        'individualized_group_clusters',
+        'ind_group_cluster_labels',
         'ind_group_cluster_stability_set',
-        'individualized_group_clusters_img_file'
     ]), name='outputspec')
+
 
     gdr = pe.Node(
         util.Function(
@@ -216,6 +219,8 @@ def create_basc(proc_mem, name='basc'):
     )
     #jgsm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
     
+
+    
     igcm = pe.MapNode(
         util.Function(
             input_names=['subject_stability_list',
@@ -224,13 +229,15 @@ def create_basc(proc_mem, name='basc'):
                          'group_dim_reduce',
                          'compression_labels_file'],
             output_names=['ind_group_cluster_stability_file',
-                          'individualized_group_clusters_img_file'],
+                          'individualized_group_clusters_file',
+                          'ind_group_cluster_labels_file'],
             function=individual_group_clustered_maps
         ),
         name='individual_group_clustered_maps',
 	mem_gb=proc_mem[1]/proc_mem[0],
         iterfield=['subject_stability_list', 'compression_labels_file']
     )
+        
     #igcm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
 
     post = pe.Node(
@@ -371,12 +378,13 @@ def create_basc(proc_mem, name='basc'):
         ),
 
 
+
         # Workflow output
         (
             jgsm, outputspec, [
                 ('gsm_file', 'group_stability_matrix'),
                 ('clusters_G_file', 'clusters_G'),
-                ('ism_gsm_corr_file', 'ism_gsm_corr_file'),
+                ('ism_gsm_corr_file', 'ism_gsm_corr'),
             ]
         ),
         (
@@ -386,11 +394,16 @@ def create_basc(proc_mem, name='basc'):
         ),
         (
             igcm, outputspec, [
-                ('ind_group_cluster_stability_file', 'ind_group_cluster_stability'),
-                ('individualized_group_clusters_img_file',
-                 'individualized_group_clusters_img_file'),
+                ('ind_group_cluster_stability_file', 
+                 'ind_group_cluster_stability'),
+                ('individualized_group_clusters_file',
+                 'individualized_group_clusters'),
+                 ('ind_group_cluster_labels_file', 
+                  'ind_group_cluster_labels'),
             ]
         ),
+
+            
         (
             post, outputspec, [
                 ('ind_group_cluster_stability_set_file',
@@ -400,3 +413,5 @@ def create_basc(proc_mem, name='basc'):
     ])
 
     return basc
+
+
