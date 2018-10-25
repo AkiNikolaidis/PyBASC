@@ -94,6 +94,9 @@ def create_basc(proc_mem, name='basc'):
     >>> from CPAC import basc
 
     """
+
+    mem_per_proc = float(proc_mem[1]) / float(proc_mem[0])
+
     basc = pe.Workflow(name=name)
 
     inputspec = pe.Node(util.IdentityInterface(fields=[
@@ -148,9 +151,9 @@ def create_basc(proc_mem, name='basc'):
             function=group_dim_reduce
         ),
         name='group_dim_reduce', 
-	mem_gb=proc_mem[1]/proc_mem[0]
+        mem_gb=mem_per_proc
     )
-    #gdr.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    #gdr.interface.estimated_memory_gb=mem_per_proc
 
     nis = pe.MapNode(
         util.Function(
@@ -172,11 +175,11 @@ def create_basc(proc_mem, name='basc'):
             function=nifti_individual_stability
         ),
         name='individual_stability_matrices',
-	mem_gb=proc_mem[1]/proc_mem[0],
+        mem_gb=mem_per_proc,
         iterfield=['subject_file',
                    'affinity_threshold']
     )
-    #nis.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    #nis.interface.estimated_memory_gb=mem_per_proc
     nis.inputs.cbb_block_size = None
 
     mgsm = pe.MapNode(
@@ -191,10 +194,10 @@ def create_basc(proc_mem, name='basc'):
             function=map_group_stability
         ),
         name='map_group_stability',
-	mem_gb=proc_mem[1]/proc_mem[0],
+        mem_gb=mem_per_proc,
         iterfield='bootstrap_list'
     )
-    #mgsm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    #mgsm.interface.estimated_memory_gb=mem_per_proc
 
     jgsm = pe.Node(
         util.Function(
@@ -215,9 +218,9 @@ def create_basc(proc_mem, name='basc'):
             function=join_group_stability
         ),
         name='join_group_stability',
-	mem_gb=proc_mem[1]/proc_mem[0]
+        mem_gb=mem_per_proc
     )
-    #jgsm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    #jgsm.interface.estimated_memory_gb=mem_per_proc
     
 
     
@@ -234,11 +237,11 @@ def create_basc(proc_mem, name='basc'):
             function=individual_group_clustered_maps
         ),
         name='individual_group_clustered_maps',
-	mem_gb=proc_mem[1]/proc_mem[0],
+        mem_gb=mem_per_proc,
         iterfield=['subject_stability_list', 'compression_labels_file']
     )
         
-    #igcm.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    #igcm.interface.estimated_memory_gb=mem_per_proc
 
     post = pe.Node(
         util.Function(
@@ -247,9 +250,9 @@ def create_basc(proc_mem, name='basc'):
             function=post_analysis
         ),
         name='post_analysis',
-	mem_gb=proc_mem[1]/proc_mem[0]
+        mem_gb=mem_per_proc
     )
-    #post.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    #post.interface.estimated_memory_gb=mem_per_proc
 
     gs_cluster_vol = pe.Node(
         util.Function(
@@ -261,9 +264,9 @@ def create_basc(proc_mem, name='basc'):
             function=ndarray_to_vol
         ),
         name='group_stability_cluster_vol',
-	mem_gb=proc_mem[1]/proc_mem[0]
+        mem_gb=mem_per_proc
     )
-    #gs_cluster_vol.interface.estimated_memory_gb=proc_mem[1]/proc_mem[0]
+    #gs_cluster_vol.interface.estimated_memory_gb=mem_per_proc
 
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
 

@@ -553,10 +553,9 @@ def individual_stability_matrix(
                 )
             )
         
-        S /= n_bootstraps
+        S /= float(n_bootstraps)
         S *= 100
         S = S.astype("uint8")
-
 
     else:
         for _ in range(n_bootstraps):
@@ -579,7 +578,7 @@ def individual_stability_matrix(
                 )[:, np.newaxis]
             )
 
-        S /= n_bootstraps
+        S /= float(n_bootstraps)
         S *= 100
         S = S.astype("uint8")
 
