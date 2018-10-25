@@ -322,8 +322,9 @@ def join_group_stability(
         scipy.sparse.load_npz(G_file).toarray() for G_file in group_stability_list
     ])
 
-    gsm = group_stability_set.sum(axis=0)
-    G = gsm / float(n_bootstraps) * 100
+    G = group_stability_set.sum(axis=0)
+    G *= 100
+    G //= n_bootstraps
     G = G.astype("uint8")
 
     if group_dim_reduce:
