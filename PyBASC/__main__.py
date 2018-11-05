@@ -5,8 +5,8 @@ import numpy as np
 import pkg_resources
 import scipy.stats
 import yaml
-import scipy.sparse
 import warnings
+
 import PyBASC
 from PyBASC import create_group_cluster_maps, run_basc_workflow
 
@@ -14,10 +14,7 @@ warnings.filterwarnings("ignore")
 
 def main_args():
 
-    import yaml
-    import sys
     import argparse
-
     from PyBASC import main
 
     parser = argparse.ArgumentParser()
@@ -48,7 +45,6 @@ def main(config):
         for s in config['subject_file_list']
     ]
 
-
     reruns = config['reruns']
     dataset_bootstrap_list = config['dataset_bootstrap_list']
     timeseries_bootstrap_list = config['timeseries_bootstrap_list']
@@ -63,8 +59,8 @@ def main(config):
     affinity_thresh = config['affinity_thresh']
     group_dim_reduce = config['group_dim_reduce']
 
-
-
+    roi_mask_file = os.path.abspath(roi_mask_file.replace('$PYBASC', path))
+    cross_cluster_mask_file = os.path.abspath(cross_cluster_mask_file.replace('$PYBASC', path))
 
     run_PyBASC(dataset_bootstrap_list, timeseries_bootstrap_list, similarity_metric_list, cluster_methods,
                blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
@@ -82,9 +78,6 @@ def run_PyBASC(
     ind_clust_stab_summary = [[1, 2, 3, 4, 5]]
     rerun_list = np.arange(reruns)
     affinity_threshold = [affinity_thresh] * len(subject_file_list)
-
-    roi_mask_file = pkg_resources.resource_filename('PyBASC', roi_mask_file)
-    cross_cluster_mask_file = pkg_resources.resource_filename('PyBASC', cross_cluster_mask_file)
 
     out_dir = os.path.join(
         home,
