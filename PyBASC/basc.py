@@ -318,17 +318,13 @@ def join_group_stability(
     import PyBASC.utils as utils
     import scipy.sparse
 
-
-
     group_stability_set = np.asarray([
         scipy.sparse.load_npz(G_file).toarray() for G_file in group_stability_list
     ])
 
-    gsm = group_stability_set.sum(axis=0)
-    G = gsm / n_bootstraps
-    
-
-    G = G * 100
+    G = group_stability_set.sum(axis=0)
+    G *= 100
+    G //= n_bootstraps
     G = G.astype("uint8")
 
     if group_dim_reduce:
@@ -340,8 +336,6 @@ def join_group_stability(
         G = G.toarray()
 
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')
-    
-    
     
     clusters_G = utils.cluster_timeseries(
         G, roi_mask_data, n_clusters,
