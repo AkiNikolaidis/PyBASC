@@ -1,12 +1,10 @@
-analysis_ID: PipPathTest1
-home: /Users/aki.nikolaidis
+analysis_ID: SimulationPipeline
 run: True
 
 proc_mem:
     - 1
     - 4
 
-    
 reruns: 1
 
 affinity_thresh: 0.0
@@ -44,10 +42,10 @@ similarity_metric_list:
 cluster_methods:
     - ward
 
-roi_mask_file: masks/Full_BG_Sim_3mm.nii.gz
+roi_mask_file: $PYBASC/masks/Full_BG_Sim_3mm.nii.gz
 
 cross_cluster: True
-cross_cluster_mask_file: masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
+cross_cluster_mask_file: $PYBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
 
 
 subject_file_list: 
@@ -55,15 +53,3 @@ subject_file_list:
     - $PYBASC/data/sub_1corr_0.05_noise_2_TRs_100.nii.gz
     - $PYBASC/data/sub_2corr_0.05_noise_2_TRs_100.nii.gz
     - $PYBASC/data/sub_3corr_0.05_noise_2_TRs_100.nii.gz
-
-
-
-
-    
-
-
-
-
-
-
-
