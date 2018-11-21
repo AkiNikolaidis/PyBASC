@@ -46,8 +46,8 @@ roi_mask_file='masks/Full_BG_Sim_3mm.nii.gz'
 roi2_mask_file='masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
 
 
-dataset_bootstrap_list=[1]#,10,30,100]
-timeseries_bootstrap_list=[1]#,10,30,100]
+dataset_bootstrap_list=[10]#,10,30,100]
+timeseries_bootstrap_list=[10]#,10,30,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
 n_clusters_list=[2]#[2,6,12,20]
@@ -66,8 +66,8 @@ ism_gsm_stability=[]
 run=True
 
 
-analysis_ID='igcm_npy_test11'
-reruns= 1
+analysis_ID='updated_master4'
+reruns= 2
 
 
 run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, cluster_methods, 
