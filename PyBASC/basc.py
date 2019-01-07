@@ -412,14 +412,21 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
     import nibabel as nb
 
     roi_mask_file = nb.load(roi_mask_file).get_data().astype('bool')
+   # import pdb;pdb.set_trace()
 
     if data_array.ndim == 1:
         out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
         out_vol[roi_mask_file] = data_array
-
+    
+    
     elif data_array.ndim == 2:
+        #print("HELLOOOO")
+        #import pdb;pdb.set_trace()
+        list_roi_shape=list(roi_mask_file.shape[0:3])
+        #import pdb;pdb.set_trace()
+
         out_vol = np.zeros(
-            roi_mask_file.shape[0:3] + [data_array.shape[1]],
+            list_roi_shape + [data_array.shape[1]],
             dtype=data_array.dtype
         )
         out_vol[roi_mask_file] = data_array
