@@ -22,7 +22,7 @@ from os.path import expanduser
 from basc_workflow_runner import run_basc_workflow
 from basc import save_igcm_nifti, create_group_cluster_maps, ism_nifti, gsm_nifti
 home = expanduser("~")
-proc_mem= [1,4]
+proc_mem= [2,4]
 
 
 subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/data/sub_0corr_0.05_noise_2_TRs_100.nii.gz',
@@ -40,14 +40,14 @@ subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/data/sub_0cor
 #roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
 #roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
 
-roi_mask_file='masks/Full_BG_Sim_3mm.nii.gz'
+roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
 
 
-roi2_mask_file='masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
+roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
 
 
-dataset_bootstrap_list=[10]#,10,30,100]
-timeseries_bootstrap_list=[10]#,10,30,100]
+dataset_bootstrap_list=[1,10,100]#,10,30,100]
+timeseries_bootstrap_list=[1,10,100]#,10,30,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
 n_clusters_list=[2]#[2,6,12,20]
@@ -66,8 +66,8 @@ ism_gsm_stability=[]
 run=True
 
 
-analysis_ID='updated_master4'
-reruns= 2
+analysis_ID='Interview_Analysis'
+reruns= 20
 
 
 run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, cluster_methods, 
