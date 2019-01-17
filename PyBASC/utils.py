@@ -110,7 +110,7 @@ def standard_bootstrap(dataset):
 
 def cluster_timeseries(
     X, roi_mask_data, n_clusters, similarity_metric,
-    affinity_threshold, cluster_method='ward'
+    affinity_threshold, cluster_method='ward', random_state=0
 ):
     """
     Cluster a given timeseries
@@ -195,7 +195,7 @@ def cluster_timeseries(
         # TODO @ASH review random_state & seed
         spectral = SpectralClustering(
             n_clusters,
-            eigen_solver='arpack', random_state=5,
+            eigen_solver='arpack', random_state=random_state,
             affinity="precomputed", assign_labels='discretize'
         )
         spectral.fit(sim_matrix)
@@ -206,7 +206,7 @@ def cluster_timeseries(
         # TODO @ASH review random_state & seed
         kmeans = KMeans(
             n_clusters=n_clusters,
-            init='k-means++', n_init=10, random_state=0
+            init='k-means++', n_init=10, random_state=random_state
         )
         kmeans.fit(sim_matrix)
         y_pred = kmeans.labels_.astype(np.int)
