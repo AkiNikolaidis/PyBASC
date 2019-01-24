@@ -20,6 +20,14 @@ def group_dim_reduce(
 
         return compressor, cxc_compressor, compression_labels_file
 
+    elif compression_dim==0:
+        
+        compressor = None
+        cxc_compressor = None
+        compression_labels_file = None
+        
+        return compressor, cxc_compressor, compression_labels_file
+    
     else:
         import numpy as np
         import nibabel as nb
@@ -30,7 +38,8 @@ def group_dim_reduce(
 
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
-
+        
+            
         x, y, z = nb.load(subjects_files[0]).shape[0:3]
 
         # TODO @AKI why starting with zeros and appending the data to it?
@@ -142,9 +151,28 @@ def nifti_individual_stability(
 
     subject_rois = subject_data[roi_mask_data]
     subject_rois = normalize(subject_rois, norm='l2')
+    
+    if compression_dim==0 and cross_cluster==False:
+        print("INCORRECTLY ENTERING VOXEL LEVEL1")
+        import pdb;pdb.set_trace()
 
-    if not compressor:
+        cxc_compressed = None
+        
+        ism = utils.individual_stability_matrix(
+        subject_rois.T, roi_mask_data, n_bootstraps, n_clusters,
+        similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
+        blocklength, affinity_threshold, cluster_method
+        )
+        ism = scipy.sparse.csr_matrix(ism, dtype=np.int8)
+        ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
+        compression_labels_file = None 
+        
+        voxel_ism = ism.astype("uint8")
+        scipy.sparse.save_npz(ism_file, voxel_ism)
+        
+        return ism_file, compression_labels_file
 
+    if not compressor and compression_dim!=0:
         compression = utils.data_compression(
             subject_rois.T,
             roi_mask_image,
@@ -155,17 +183,21 @@ def nifti_individual_stability(
         compressed = compression['compressed']
         compression_labels = pd.DataFrame(compression['labels'])
         compression_labels = np.array(compression_labels)
+        compression_labels_file = os.path.join(os.getcwd(), 'compression_labels.npy')
+        np.save(compression_labels_file, compression_labels)
 
-    else:
-
+    elif compression_dim!=0:
+        print("INCORRECTLY ENTERING VOXEL LEVEL2")
+        import pdb;pdb.set_trace()
         compression_labels = compressor.labels_
         compressed = compressor.transform(subject_rois.T)
         roi_mask_data = None
-
-    compression_labels_file = os.path.join(os.getcwd(), 'compression_labels.npy')
-    np.save(compression_labels_file, compression_labels)
+        compression_labels_file = os.path.join(os.getcwd(), 'compression_labels.npy')
+        np.save(compression_labels_file, compression_labels)
 
     if cross_cluster:
+        print("ENTERING CROSS CLUSTERING")
+        #import pdb;pdb.set_trace()
 
         cxc_roi_mask_img = nb.load(cxc_roi_mask_file)
         cxc_roi_mask_data = cxc_roi_mask_img.get_data().astype('bool')
@@ -173,21 +205,44 @@ def nifti_individual_stability(
         subject_cxc_rois = subject_data[cxc_roi_mask_data]
         subject_cxc_rois = normalize(subject_cxc_rois, norm='l2')
 
+            
+
+
         # TODO @AKI why + 5?
-        cxc_compression_dim = compression_dim + 5
+        #cxc_compression_dim = compression_dim + 5
+        cxc_compression_dim = 500
+
 
         if not cxc_compressor:
-
+            print("HEYYYY")
             cxc_compression = utils.data_compression(
                 subject_cxc_rois.T,
                 cxc_roi_mask_img,
                 cxc_roi_mask_data,
                 cxc_compression_dim
             )
-
+            #import pdb;pdb.set_trace()
             cxc_compressed = cxc_compression['compressed']
             cxc_compression_labels = pd.DataFrame(cxc_compression['labels'])
             cxc_compression_labels = np.array(cxc_compression_labels)
+            
+            if compression_dim==0:
+                print("WE MADE IT")                
+                #import pdb; pdb.set_trace()
+                ism = utils.individual_stability_matrix(
+                subject_rois.T, roi_mask_data, n_bootstraps, n_clusters,
+                similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
+                blocklength, affinity_threshold, cluster_method
+                )
+                #import pdb; pdb.set_trace()
+                ism = scipy.sparse.csr_matrix(ism, dtype=np.int8)
+                ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
+                compression_labels_file = None 
+                
+                voxel_ism = ism.astype("uint8")
+                scipy.sparse.save_npz(ism_file, voxel_ism)
+                return ism_file, compression_labels_file
+
 
         else:
             cxc_compressor.fit(subject_cxc_rois.T)
@@ -195,8 +250,6 @@ def nifti_individual_stability(
             cxc_compressed = cxc_compressor.transform(subject_cxc_rois.T)
 
     else:
-
-
         cxc_compressed = None
 
     ism = utils.individual_stability_matrix(
@@ -318,6 +371,9 @@ def join_group_stability(
     import PyBASC.utils as utils
     import scipy.sparse
 
+    
+   
+
     group_stability_set = np.asarray([
         scipy.sparse.load_npz(G_file).toarray() for G_file in group_stability_list
     ])
@@ -356,16 +412,30 @@ def join_group_stability(
         scipy.sparse.load_npz(ism_file) for ism_file in subject_stability_list
     ]
 
-    compression_labels_set = np.asarray([
-        np.load(compression_labels_file)
-        for compression_labels_file in compression_labels_list
-    ])
+    if compression_labels_list[0]==None:
+            print("here we are!")
+            ism_gsm_corr = np.zeros(len(subject_stability_list))
+        
+            for i in range(len(subject_stability_list)):
+                #import pdb;pdb.set_trace()
+                ism = indiv_stability_set[i].toarray()
+                ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
 
-    ism_gsm_corr = np.zeros(len(subject_stability_list))
-    for i in range(len(subject_stability_list)):
-        compression_labels = compression_labels_set[i]
-        ism = utils.expand_ism(indiv_stability_set[i], compression_labels).toarray()
-        ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
+            
+    else:
+        
+        compression_labels_set = np.asarray([
+            np.load(compression_labels_file)
+            for compression_labels_file in compression_labels_list
+        ])
+        
+        ism_gsm_corr = np.zeros(len(subject_stability_list))
+        
+        for i in range(len(subject_stability_list)):
+            compression_labels = compression_labels_set[i]
+            ism = utils.expand_ism(indiv_stability_set[i], compression_labels).toarray()
+            #import pdb;pdb.set_trace()
+            ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
 
     gsm_file = os.path.join(os.getcwd(), 'group_stability_matrix.npz')
     G = scipy.sparse.csr_matrix(G, dtype=np.int8)
@@ -489,7 +559,11 @@ def individual_group_clustered_maps(
     
     supervox_ism = scipy.sparse.load_npz(subject_stability_list)
 
-    compression_labels = np.load(compression_labels_file)
+    
+    if compression_labels_file==None:
+       compression_labels = None
+    else:
+        compression_labels = np.load(compression_labels_file)
     
     if group_dim_reduce: 
         indiv_stability_set = utils.expand_ism(supervox_ism, compression_labels).toarray()

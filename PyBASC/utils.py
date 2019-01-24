@@ -543,7 +543,8 @@ def individual_stability_matrix(
 
             # TODO @AKI review SPATIAL CONSTRAINT EXPERIMENT
             roi_mask_data = None
-
+            #import pdb;pdb.set_trace()
+            print("Starting one round")
             S += utils.adjacency_matrix(
                 utils.cross_cluster_timeseries(
                     Y_bootstrap, Y_cxc_bootstrap, roi_mask_data, n_clusters,
@@ -551,7 +552,9 @@ def individual_stability_matrix(
                     affinity_threshold=affinity_threshold,
                     cluster_method=cluster_method
                 )
+            
             )
+            print("Finished one round- check on S!")
         
         S *= 100
         S //= n_bootstraps
