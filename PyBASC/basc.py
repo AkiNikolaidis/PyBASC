@@ -154,7 +154,7 @@ def nifti_individual_stability(
     
     if compression_dim==0 and cross_cluster==False:
         print("INCORRECTLY ENTERING VOXEL LEVEL1")
-        import pdb;pdb.set_trace()
+        
 
         cxc_compressed = None
         
@@ -188,7 +188,6 @@ def nifti_individual_stability(
 
     elif compression_dim!=0:
         print("INCORRECTLY ENTERING VOXEL LEVEL2")
-        import pdb;pdb.set_trace()
         compression_labels = compressor.labels_
         compressed = compressor.transform(subject_rois.T)
         roi_mask_data = None
