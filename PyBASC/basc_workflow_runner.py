@@ -120,15 +120,14 @@ def run_basc_workflow_optimized(
     affinity_threshold=0.0,
 
     cross_cluster=False, cross_cluster_mask_file=None, 
-    out_dir=None, runs=1, proc_mem=None,
+    out_dir=None, runs=1, proc_mem=None, analysis_id='basc'
 ):
     import os
-    import glob
 
     import nipype.interfaces.io as nio
     import nipype.pipeline.engine as pe
     
-    from PyBASC.pipeline import create_multi_basc
+    from PyBASC.pipeline import create_basc_optimized
     from nipype import config
     
     #config.enable_debug_mode()
@@ -137,14 +136,14 @@ def run_basc_workflow_optimized(
     if not out_dir:
         out_dir = os.getcwd()
 
-    workflow_dir = os.path.join(out_dir, "outputs")
+    analysis_dir = os.path.join(out_dir, analysis_id)
 
-    for run_id in range(runs):
+    for run_id in range(1, runs + 1):
 
-        workflow = pe.Workflow(name='basc_workflow_runner')
-        workflow.base_dir = workflow_dir
+        workflow = pe.Workflow(name='pipeline')
+        workflow.base_dir = os.path.join(analysis_dir, 'run_%d' % run_id, 'working')
 
-        basc_workflow = create_multi_basc(proc_mem, name='basc')
+        basc_workflow = create_basc_optimized(proc_mem, name='basc')
 
         basc_workflow.inputs.inputspec.set(
             subjects_files=subject_file_list,
@@ -156,6 +155,7 @@ def run_basc_workflow_optimized(
         )
 
         basc_workflow.get_node('inputspec_compression_dim').iterables = [("compression_dim", output_size_list)]
+
         basc_workflow.get_node('inputspec_boostraps').iterables = [
             ('dataset_bootstraps', dataset_bootstraps_list),
             ('timeseries_bootstraps', timeseries_bootstraps_list),
@@ -180,7 +180,7 @@ def run_basc_workflow_optimized(
         resource_pool['ind_group_cluster_stability_set'] = (basc_workflow, 'outputspec.ind_group_cluster_stability_set')
 
         ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
-        ds.inputs.base_directory = workflow_dir
+        ds.inputs.base_directory = os.path.join(analysis_dir, 'run_%d' % run_id)
         
         for output in resource_pool.keys():
             node, out_file = resource_pool[output]
@@ -196,9 +196,7 @@ def run_basc_workflow_optimized(
             'memory_gb': int(proc_mem[1])
         }
 
-        workflow.write_graph()
-
+        workflow.write_graph(dotfilename='graph.dot', graph2use='exec')
         workflow.run(plugin=plugin, plugin_args=plugin_args)
 
-    outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
-    return outpath
+    return analysis_dir

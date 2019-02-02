@@ -196,7 +196,6 @@ def nifti_individual_stability(
 
     else:
 
-
         cxc_compressed = None
 
     ism = utils.individual_stability_matrix(

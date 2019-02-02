@@ -38,7 +38,7 @@ def main(config, optimized=False, random_seed=None):
     else:
         home = os.getcwd()
     
-    analysis_ID = config['analysis_ID']
+    analysis_id = config['analysis_ID']
     run = config['run']
     proc_mem = config['proc_mem']
     path = os.path.dirname(PyBASC.__file__)
@@ -49,8 +49,8 @@ def main(config, optimized=False, random_seed=None):
     ]
 
     reruns = config['reruns']
-    dataset_bootstrap_list = config['dataset_bootstrap_list']
-    timeseries_bootstrap_list = config['timeseries_bootstrap_list']
+    dataset_bootstraps_list = config['dataset_bootstrap_list']
+    timeseries_bootstraps_list = config['timeseries_bootstrap_list']
     similarity_metric_list = config['similarity_metric_list']
     cluster_method_list = config['cluster_methods']
     blocklength_list = config['blocklength_list']
@@ -67,10 +67,10 @@ def main(config, optimized=False, random_seed=None):
 
     if optimized:
 
-        run_PyBASC_optimized(
+        run_basc_workflow_optimized(
             subject_file_list, roi_mask_file,
             
-            dataset_bootstrap_list, timeseries_bootstrap_list, n_clusters_list, 
+            dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
             similarity_metric_list, blocklength_list,
             cluster_method_list,
 
@@ -79,19 +79,34 @@ def main(config, optimized=False, random_seed=None):
             affinity_threshold,
 
             cross_cluster, cross_cluster_mask_file, 
-            home, proc_mem,
-
-            random_seed=random_seed
+            runs=reruns, 
+            
+            out_dir=home + '/PyBASC_Outputs', proc_mem=proc_mem,
+            analysis_id=analysis_id,
         )
 
     else:
 
         run_PyBASC(
-            dataset_bootstrap_list, timeseries_bootstrap_list,
-            similarity_metric_list, cluster_method_list, blocklength_list,
-            n_clusters_list, output_size_list, subject_file_list, roi_mask_file,
-            proc_mem, cross_cluster, cross_cluster_mask_file, affinity_threshold,
-            run, home, reruns, group_dim_reduce, analysis_ID
+            dataset_bootstrap_list=dataset_bootstraps_list,
+            timeseries_bootstrap_list=timeseries_bootstraps_list,
+            similarity_metric_list=similarity_metric_list,
+            cluster_methods=cluster_method_list,
+            blocklength_list=blocklength_list,
+            n_clusters_list=n_clusters_list,
+            output_sizes=output_size_list,
+            subject_file_list=subject_file_list,
+            roi_mask_file=roi_mask_file,
+            proc_mem=proc_mem,
+            cross_cluster=cross_cluster,
+            cross_cluster_mask_file=cross_cluster_mask_file,
+            affinity_thresh=affinity_threshold,
+            run=run,
+            home=home,
+            reruns=reruns,
+            group_dim_reduce=group_dim_reduce,
+            analysis_ID=analysis_id,
+            random_seed=random_seed
         )
 
 
@@ -207,37 +222,3 @@ def run_PyBASC(
                     
                         ind_clust_stab_summary_file = os.path.join(experiment_dir, 'ind_clust_stab_summary.npy')
                         np.save(ind_clust_stab_summary_file, ind_clust_stab_summary)
-
-
-def run_PyBASC_optimized(
-    subject_file_list, roi_mask_file,
-    dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
-    similarity_metric_list, blocklength_list=[1],
-    cluster_method_list=['ward'],
-
-    group_dim_reduce=False, output_size_list=[None],
-
-    affinity_threshold=0.0,
-
-    cross_cluster=False, cross_cluster_mask_file=None, 
-    out_dir=None, runs=1, proc_mem=None,
-
-    random_seed=None
-):
-        
-    run_basc_workflow_optimized(
-        subject_file_list, roi_mask_file,
-        
-        dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
-        similarity_metric_list, blocklength_list,
-        cluster_method_list,
-
-        group_dim_reduce, output_size_list,
-
-        affinity_threshold,
-
-        cross_cluster, cross_cluster_mask_file, 
-        out_dir=out_dir + '/PyBASC_Outputs', runs=runs, proc_mem=proc_mem,
-    )
-
-        

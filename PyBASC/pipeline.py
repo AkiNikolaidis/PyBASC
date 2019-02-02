@@ -162,7 +162,6 @@ def create_basc(proc_mem, name='basc'):
         name='group_dim_reduce', 
         mem_gb=mem_per_proc
     )
-    #gdr.interface.estimated_memory_gb=mem_per_proc
 
     nis = pe.MapNode(
         Function(
@@ -189,7 +188,6 @@ def create_basc(proc_mem, name='basc'):
         iterfield=['subject_file',
                    'affinity_threshold']
     )
-    #nis.interface.estimated_memory_gb=mem_per_proc
     nis.inputs.cbb_block_size = None
 
     mgsm = pe.MapNode(
@@ -208,7 +206,6 @@ def create_basc(proc_mem, name='basc'):
         mem_gb=mem_per_proc,
         iterfield='bootstrap_list'
     )
-    #mgsm.interface.estimated_memory_gb=mem_per_proc
 
     jgsm = pe.Node(
         Function(
@@ -232,9 +229,6 @@ def create_basc(proc_mem, name='basc'):
         name='join_group_stability',
         mem_gb=mem_per_proc
     )
-    #jgsm.interface.estimated_memory_gb=mem_per_proc
-    
-
     
     igcm = pe.MapNode(
         Function(
@@ -253,8 +247,6 @@ def create_basc(proc_mem, name='basc'):
         mem_gb=mem_per_proc,
         iterfield=['subject_stability_list', 'compression_labels_file']
     )
-        
-    #igcm.interface.estimated_memory_gb=mem_per_proc
 
     post = pe.Node(
         Function(
@@ -266,7 +258,6 @@ def create_basc(proc_mem, name='basc'):
         name='post_analysis',
         mem_gb=mem_per_proc
     )
-    #post.interface.estimated_memory_gb=mem_per_proc
 
     gs_cluster_vol = pe.Node(
         Function(
@@ -278,10 +269,9 @@ def create_basc(proc_mem, name='basc'):
             function=ndarray_to_vol,
             as_module=True
         ),
-        name='group_stability_cluster_vol',
+        name='group_stability_clusters',
         mem_gb=mem_per_proc
     )
-    #gs_cluster_vol.interface.estimated_memory_gb=mem_per_proc
 
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
 
@@ -433,7 +423,7 @@ def create_basc(proc_mem, name='basc'):
     return basc
 
 
-def create_multi_basc(proc_mem, name='basc', random_seed=None):
+def create_basc_optimized(proc_mem, name='basc', random_seed=None):
     """
     Bootstrap Analysis of Stable Clusters (BASC)
 
@@ -720,7 +710,7 @@ def create_multi_basc(proc_mem, name='basc', random_seed=None):
             function=ndarray_to_vol,
             as_module=True
         ),
-        name='group_stability_cluster_vol',
+        name='group_stability_clusters',
         mem_gb=mem_per_proc
     )
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
