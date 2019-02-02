@@ -28,8 +28,42 @@ standard_library.install_aliases()
 
 iflogger = logging.getLogger('nipype.interface')
 
+max_int = 2 ** 32 - 1
 
-def timeseries_bootstrap(tseries, block_size):
+
+def merge_random_states(*rngs):
+    seed = 0.0
+    rngs = list(filter(None, rngs))
+    for rng in rngs:
+        # divide it first to avoid overflow
+        seed += generate_random_seed(rng) / len(rngs)
+    return np.random.RandomState(int(seed))
+
+
+def generate_random_seed(rng=None):
+    if rng:
+        return rng.randint(max_int)
+    else:
+        return np.random.randint(max_int)
+
+
+def generate_random_state(rng=None, seed=None):
+    if seed:
+        seed_rng = np.random.RandomState(seed)
+        return merge_random_states(seed_rng, rng)
+
+    seed = generate_random_seed(rng)
+    return np.random.RandomState(seed)
+
+
+def get_random_state(tuple_state=None):
+    random_state = np.random.RandomState()
+    if tuple_state:
+        random_state.set_state(tuple_state)
+    return random_state
+
+
+def timeseries_bootstrap(tseries, block_size, random_state=None):
     """
     Generates a bootstrap sample derived from the input time-series.
     Utilizes Circular-block-bootstrap method described in [1]_.
@@ -72,14 +106,15 @@ def timeseries_bootstrap(tseries, block_size):
 
     """
     import numpy as np
-    randseed = np.random.randint(0, 10000)
-    np.random.seed(randseed)
+
+    if not random_state:
+        random_state = np.random.RandomState()
 
     # calculate number of blocks
     k = int(np.ceil(float(tseries.shape[0]) / block_size))
 
     # generate random indices of blocks
-    r_ind = np.floor(np.random.rand(1, k) * tseries.shape[0])
+    r_ind = np.floor(random_state.rand(1, k) * tseries.shape[0])
     blocks = np.dot(np.arange(0, block_size)[:, np.newaxis], np.ones([1, k]))
 
     block_offsets = np.dot(np.ones([block_size, 1]), r_ind)
@@ -89,7 +124,7 @@ def timeseries_bootstrap(tseries, block_size):
     return tseries[block_mask.astype('int'), :], block_mask.astype('int')
 
 
-def standard_bootstrap(dataset):
+def standard_bootstrap(dataset, random_state=None):
     """
     Generates a bootstrap sample from the input dataset
 
@@ -106,17 +141,18 @@ def standard_bootstrap(dataset):
     Examples
     --------
     """
-    randseed = np.random.randint(0, 10000)
-    np.random.seed(randseed)
+
+    if not random_state:
+        random_state = np.random.RandomState()
 
     n = dataset.shape[0]
-    b = np.random.randint(0, high=n - 1, size=n)
+    b = random_state.randint(0, high=n - 1, size=n)
     return dataset[b]
 
 
 def cluster_timeseries(
     X, roi_mask_data, n_clusters, similarity_metric,
-    affinity_threshold, cluster_method='ward', random_state=0
+    affinity_threshold, cluster_method='ward', random_state=None
 ):
     """
     Cluster a given timeseries
@@ -150,11 +186,14 @@ def cluster_timeseries(
     .. [1] http://scikit-learn.org/dev/modules/generated/sklearn.neighbors.kneighbors_graph.html
 
     """
-
+    import numpy as np
     import scipy as sp
     import sklearn as sk
     from sklearn.feature_extraction import image
     from sklearn.cluster import FeatureAgglomeration, SpectralClustering, KMeans
+
+    if not random_state:
+        random_state = np.random.RandomState()
 
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X.T, metric=similarity_metric)
@@ -201,8 +240,9 @@ def cluster_timeseries(
         # TODO @ASH review random_state & seed
         spectral = SpectralClustering(
             n_clusters,
-            eigen_solver='arpack', random_state=random_state,
-            affinity="precomputed", assign_labels='discretize'
+            eigen_solver='arpack',
+            affinity="precomputed", assign_labels='discretize',
+            random_state=random_state
         )
         spectral.fit(sim_matrix)
         y_pred = spectral.labels_.astype(np.int)
@@ -222,7 +262,7 @@ def cluster_timeseries(
 
 def cross_cluster_timeseries(
     data1, data2, roi_mask_data, n_clusters, similarity_metric,
-    affinity_threshold, cluster_method='ward'
+    affinity_threshold, cluster_method='ward', random_state=None
 ):
     """
     Cluster a timeseries dataset based on its relationship
@@ -331,9 +371,9 @@ def cross_cluster_timeseries(
     elif cluster_method == 'spectral':
         # TODO @ASH review seed
         spectral = SpectralClustering(
-            n_clusters,
-            eigen_solver='arpack', random_state=5,
-            affinity="precomputed", assign_labels='discretize'
+            n_clusters, eigen_solver='arpack',
+            affinity="precomputed", assign_labels='discretize',
+            random_state=random_state
         )
         spectral.fit(sim_matrix)
         y_pred = spectral.labels_.astype(np.int)
@@ -342,7 +382,7 @@ def cross_cluster_timeseries(
         # TODO @ASH review seed
         kmeans = KMeans(
             n_clusters=n_clusters, init='k-means++',
-            n_init=10, random_state=0
+            n_init=10, random_state=random_state
         )
 
         kmeans.fit(sim_matrix)
@@ -484,7 +524,7 @@ def compare_stability_matrices(ism_a, ism_b):
 def individual_stability_matrix(
     Y1, roi_mask_data, n_bootstraps, n_clusters, similarity_metric,
     Y2=None, cross_cluster=False, cbb_block_size=None, blocklength=1,
-    affinity_threshold=0.0, cluster_method='ward'
+    affinity_threshold=0.0, cluster_method='ward', random_state=None
 ):
     """
     Calculate the individual stability matrix of a single subject by
@@ -543,7 +583,7 @@ def individual_stability_matrix(
 
             else:
                 Y_bootstrap, block_mask = utils.timeseries_bootstrap(
-                    Y1, cbb_block_size
+                    Y1, cbb_block_size, random_state=random_state
                 )
                 Y_cxc_bootstrap = Y2[block_mask.astype('int'), :]
 
@@ -555,7 +595,8 @@ def individual_stability_matrix(
                     Y_bootstrap, Y_cxc_bootstrap, roi_mask_data, n_clusters,
                     similarity_metric=similarity_metric,
                     affinity_threshold=affinity_threshold,
-                    cluster_method=cluster_method
+                    cluster_method=cluster_method,
+                    random_state=random_state
                 )
             )
         
@@ -580,7 +621,8 @@ def individual_stability_matrix(
                     Y_bootstrap, roi_mask_data, n_clusters,
                     similarity_metric=similarity_metric,
                     affinity_threshold=affinity_threshold,
-                    cluster_method=cluster_method
+                    cluster_method=cluster_method,
+                    random_state=random_state
                 )[:, np.newaxis]
             )
 

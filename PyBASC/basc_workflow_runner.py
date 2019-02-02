@@ -46,7 +46,7 @@ def run_basc_workflow(
     from PyBASC.pipeline import create_basc
     from nipype import config
     
-    #config.enable_debug_mode()
+    # config.enable_debug_mode()
     config.set('execution', 'keep_inputs', 'true')
     workflow = pe.Workflow(name='basc_workflow_runner')
 
@@ -120,25 +120,32 @@ def run_basc_workflow_optimized(
     affinity_threshold=0.0,
 
     cross_cluster=False, cross_cluster_mask_file=None, 
-    out_dir=None, runs=1, proc_mem=None, analysis_id='basc'
+    out_dir=None, runs=1, proc_mem=None, random_seed=None,
+    analysis_id='basc'
 ):
     import os
+    import numpy as no
 
     import nipype.interfaces.io as nio
     import nipype.pipeline.engine as pe
-    
-    from PyBASC.pipeline import create_basc_optimized
     from nipype import config
     
-    #config.enable_debug_mode()
+    config.enable_debug_mode()
     config.set('execution', 'keep_inputs', 'true')
+    
+    from PyBASC.pipeline import create_basc_optimized
+    from PyBASC.utils import generate_random_state
 
     if not out_dir:
         out_dir = os.getcwd()
 
     analysis_dir = os.path.join(out_dir, analysis_id)
 
+    rng = np.random.RandomState(random_seed)
+
     for run_id in range(1, runs + 1):
+
+        rng_run = generate_random_state(rng)
 
         workflow = pe.Workflow(name='pipeline')
         workflow.base_dir = os.path.join(analysis_dir, 'run_%d' % run_id, 'working')
@@ -151,19 +158,29 @@ def run_basc_workflow_optimized(
             affinity_threshold=affinity_threshold,
             group_dim_reduce=group_dim_reduce,
             cross_cluster=cross_cluster,
-            cxc_roi_mask_file=cross_cluster_mask_file
+            cxc_roi_mask_file=cross_cluster_mask_file,
+            random_state_tuple=rng_run.get_state()
         )
 
-        basc_workflow.get_node('inputspec_compression_dim').iterables = [("compression_dim", output_size_list)]
-
+        basc_workflow.get_node('inputspec_compression_dim').iterables = [
+            ("compression_dim", output_size_list)
+        ]
         basc_workflow.get_node('inputspec_boostraps').iterables = [
             ('dataset_bootstraps', dataset_bootstraps_list),
             ('timeseries_bootstraps', timeseries_bootstraps_list),
         ]
-        basc_workflow.get_node('inputspec_similarity_metric').iterables = [('similarity_metric', similarity_metric_list)]
-        basc_workflow.get_node('inputspec_cluster_method').iterables = [('cluster_method', cluster_method_list)]
-        basc_workflow.get_node('inputspec_blocklength').iterables = [('blocklength', blocklength_list)]
-        basc_workflow.get_node('inputspec_n_clusters').iterables = [('n_clusters', n_clusters_list)]
+        basc_workflow.get_node('inputspec_similarity_metric').iterables = [
+            ('similarity_metric', similarity_metric_list)
+        ]
+        basc_workflow.get_node('inputspec_cluster_method').iterables = [
+            ('cluster_method', cluster_method_list)
+        ]
+        basc_workflow.get_node('inputspec_blocklength').iterables = [
+            ('blocklength', blocklength_list)
+        ]
+        basc_workflow.get_node('inputspec_n_clusters').iterables = [
+            ('n_clusters', n_clusters_list)
+        ]
         
 
         resource_pool = {}

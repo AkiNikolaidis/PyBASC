@@ -1,14 +1,15 @@
 import os
 import sys
-
-import numpy as np
-import pkg_resources
-import scipy.stats
-import yaml
 import warnings
 
+import numpy as np
+import scipy.stats
+import yaml
+
 import PyBASC
-from PyBASC import create_group_cluster_maps, run_basc_workflow, run_basc_workflow_optimized
+from PyBASC import (create_group_cluster_maps,
+                    run_basc_workflow,
+                    run_basc_workflow_optimized)
 
 
 def main_args():
@@ -83,6 +84,7 @@ def main(config, optimized=False, random_seed=None):
             
             out_dir=home + '/PyBASC_Outputs', proc_mem=proc_mem,
             analysis_id=analysis_id,
+            random_seed=random_seed
         )
 
     else:

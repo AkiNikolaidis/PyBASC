@@ -18,7 +18,7 @@ from PyBASC.utils import Function
 def _generate_list(n):
     if n <= 1:
         return [False]
-    return [True] * n
+    return list(range(n))
 
 
 def create_basc(proc_mem, name='basc'):
@@ -423,7 +423,7 @@ def create_basc(proc_mem, name='basc'):
     return basc
 
 
-def create_basc_optimized(proc_mem, name='basc', random_seed=None):
+def create_basc_optimized(proc_mem, name='basc', random_state=None):
     """
     Bootstrap Analysis of Stable Clusters (BASC)
 
@@ -506,9 +506,6 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
 
     """
 
-    if random_seed:
-        np.random.seed(seed=random_seed)
-
     mem_per_proc = float(proc_mem[1]) / float(proc_mem[0])
 
     basc_wf = pe.Workflow(name=name)
@@ -520,13 +517,7 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
         'cxc_roi_mask_file',
         'affinity_threshold',
         'group_dim_reduce',
-        # 'compression_dim_list',
-        # 'dataset_bootstrap_list',
-        # 'timeseries_bootstrap_list',
-        # 'similarity_metric_list',
-        # 'cluster_method_list',
-        # 'blocklength_list',
-        # 'n_clusters_list',
+        'random_state_tuple',
     ]), name='inputspec')
 
     inputspec_compression_dim = pe.Node(
@@ -593,7 +584,8 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                          'compression_dim',
                          'group_dim_reduce',
                          'cross_cluster',
-                         'cxc_roi_mask_file'],
+                         'cxc_roi_mask_file',
+                         'random_state_tuple'],
             output_names=['compressor',
                           'cxc_compressor',
                           'compression_labels_file'],
@@ -619,17 +611,17 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                          'cbb_block_size',
                          'blocklength',
                          'affinity_threshold',
-                         'cluster_method'],
+                         'cluster_method',
+                         'random_state_tuple'],
             output_names=['ism_file', 'compression_labels_file'],
             function=nifti_individual_stability,
             as_module=True
         ),
         name='individual_stability_matrices',
-        mem_gb=mem_per_proc,
-        iterfield=['subject_file']
+        iterfield=['subject_file'],
+        mem_gb=mem_per_proc
     )
     nis.inputs.cbb_block_size = None
-
 
     mgsm = pe.MapNode(
         Function(
@@ -638,14 +630,15 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                          'is_bootstraping',
                          'roi_mask_file',
                          'group_dim_reduce',
-                         'cluster_method'],
+                         'cluster_method',
+                         'random_state_tuple'],
             output_names=['G_file'],
             function=map_group_stability,
             as_module=True
         ),
         name='map_group_stability',
-        mem_gb=mem_per_proc,
-        iterfield='is_bootstraping'
+        iterfield='is_bootstraping',
+        mem_gb=mem_per_proc
     )
 
     jgsm = pe.Node(
@@ -657,7 +650,8 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                          'roi_mask_file',
                          'group_dim_reduce',
                          'compression_labels_list',
-                         'cluster_method'],
+                         'cluster_method',
+                         'random_state_tuple'],
             output_names=['G',
                           'clusters_G',
                           'ism_gsm_corr',
@@ -677,7 +671,8 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                          'clusters_G',
                          'roi_mask_file',
                          'group_dim_reduce',
-                         'compression_labels_file'],
+                         'compression_labels_file',
+                         'random_state_tuple'],
             output_names=['ind_group_cluster_stability_file',
                           'individualized_group_clusters_file',
                           'ind_group_cluster_labels_file'],
@@ -685,8 +680,11 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
             as_module=True
         ),
         name='individual_group_clustered_maps',
-        mem_gb=mem_per_proc,
-        iterfield=['subject_stability_list', 'compression_labels_file']
+        iterfield=[
+            'subject_stability_list',
+            'compression_labels_file'
+        ],
+        mem_gb=mem_per_proc
     )
 
     post = pe.Node(
@@ -724,6 +722,7 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                 ('cxc_roi_mask_file', 'cxc_roi_mask_file'),
                 ('cross_cluster', 'cross_cluster'),
                 ('group_dim_reduce', 'group_dim_reduce'),
+                ('random_state_tuple', 'random_state_tuple'),
             ]
         ),
         (
@@ -741,6 +740,7 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                 ('cross_cluster', 'cross_cluster'),
                 ('cxc_roi_mask_file', 'cxc_roi_mask_file'),
                 ('affinity_threshold', 'affinity_threshold'),
+                ('random_state_tuple', 'random_state_tuple'),
             ]
         ),
         (
@@ -786,6 +786,7 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
             inputspec, mgsm, [
                 ('roi_mask_file', 'roi_mask_file'),
                 ('group_dim_reduce', 'group_dim_reduce'),
+                ('random_state_tuple', 'random_state_tuple'),
             ]
         ),
         (
@@ -815,6 +816,7 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
             inputspec, jgsm, [
                 ('roi_mask_file', 'roi_mask_file'),
                 ('group_dim_reduce', 'group_dim_reduce'),
+                ('random_state_tuple', 'random_state_tuple'),
             ]
         ),
         (
@@ -877,7 +879,6 @@ def create_basc_optimized(proc_mem, name='basc', random_seed=None):
                 ('clusters_G', 'data_array'),
             ]
         ),
-
 
 
 

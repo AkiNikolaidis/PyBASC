@@ -10,7 +10,8 @@ import numpy as np
 def group_dim_reduce(
     subjects_files,
     roi_mask_file, compression_dim, group_dim_reduce=False,
-    cross_cluster=False, cxc_roi_mask_file=None
+    cross_cluster=False, cxc_roi_mask_file=None, cxc_compression_dim=None,
+    random_state_tuple=None
 ):
     if not group_dim_reduce:
 
@@ -18,7 +19,9 @@ def group_dim_reduce(
         cxc_compressor = None
         compression_labels_file = None
 
-        return compressor, cxc_compressor, compression_labels_file
+        return (compressor,
+                cxc_compressor,
+                compression_labels_file)
 
     else:
         import numpy as np
@@ -27,6 +30,8 @@ def group_dim_reduce(
         from sklearn.preprocessing import normalize
 
         import PyBASC.utils as utils
+
+        random_state = utils.get_random_state(random_state_tuple)
 
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
@@ -48,7 +53,8 @@ def group_dim_reduce(
 
         compression = utils.data_compression(group_data.T, roi_mask_img,
                                              roi_mask_data, compression_dim)
-
+        
+        # TODO review pandas usage
         compression_labels = pd.DataFrame(compression['labels'])
         compression_labels = np.array(compression_labels)
 
@@ -75,7 +81,8 @@ def group_dim_reduce(
             cxc_group_data = cxc_group_data[:, 1:]
             cxc_group_data = normalize(cxc_group_data, norm='l2')
 
-            cxc_compression_dim = compression_dim + 5
+            if not cxc_compression_dim:
+                cxc_compression_dim = compression_dim
 
             cxc_compression = utils.data_compression(
                 cxc_group_data.T,
@@ -90,15 +97,17 @@ def group_dim_reduce(
 
             cxc_compressor = None
 
-        return compressor, cxc_compressor, compression_labels_file
+        return (compressor,
+                cxc_compressor, 
+                compression_labels_file)
 
 
 def nifti_individual_stability(
     subject_file, roi_mask_file,
     n_bootstraps, n_clusters, compression_dim, similarity_metric,
+    blocklength=1, cbb_block_size=None, affinity_threshold=0.0, cluster_method='ward',
     compressor=None, cross_cluster=False, cxc_compressor=None,
-    cxc_roi_mask_file=None, blocklength=1, cbb_block_size=None,
-    affinity_threshold=0.0, cluster_method='ward'
+    cxc_roi_mask_file=None, cxc_compression_dim=None, random_state_tuple=None
 ):
     # TODO @AKI update docs
     """
@@ -135,6 +144,8 @@ def nifti_individual_stability(
     import scipy.sparse
 
     print('Calculating individual stability matrix of:', subject_file)
+
+    random_state = utils.get_random_state(random_state_tuple)
 
     subject_data = nb.load(subject_file).get_data().astype('float32')
     roi_mask_image = nb.load(roi_mask_file)
@@ -173,11 +184,10 @@ def nifti_individual_stability(
         subject_cxc_rois = subject_data[cxc_roi_mask_data]
         subject_cxc_rois = normalize(subject_cxc_rois, norm='l2')
 
-        # TODO @AKI why + 5?
-        cxc_compression_dim = compression_dim + 5
+        if not cxc_compression_dim:
+            cxc_compression_dim = compression_dim
 
         if not cxc_compressor:
-
             cxc_compression = utils.data_compression(
                 subject_cxc_rois.T,
                 cxc_roi_mask_img,
@@ -186,6 +196,8 @@ def nifti_individual_stability(
             )
 
             cxc_compressed = cxc_compression['compressed']
+
+            # TODO review pandas usage
             cxc_compression_labels = pd.DataFrame(cxc_compression['labels'])
             cxc_compression_labels = np.array(cxc_compression_labels)
 
@@ -199,10 +211,19 @@ def nifti_individual_stability(
         cxc_compressed = None
 
     ism = utils.individual_stability_matrix(
-        compressed, roi_mask_data, n_bootstraps, n_clusters,
-        similarity_metric, cxc_compressed, cross_cluster, cbb_block_size,
-        blocklength, affinity_threshold, cluster_method
+        compressed, roi_mask_data,
+        n_bootstraps=n_bootstraps,
+        n_clusters=n_clusters,
+        similarity_metric=similarity_metric,
+        Y2=cxc_compressed,
+        cross_cluster=cross_cluster,
+        cbb_block_size=cbb_block_size,
+        blocklength=blocklength,
+        affinity_threshold=affinity_threshold,
+        cluster_method=cluster_method,
+        random_state=random_state
     )
+
     ism = scipy.sparse.csr_matrix(ism, dtype=np.int8)
     ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
 
@@ -212,12 +233,14 @@ def nifti_individual_stability(
         voxel_ism = utils.expand_ism(ism, compression_labels)
         voxel_ism = voxel_ism.astype("uint8")
         scipy.sparse.save_npz(ism_file, voxel_ism)
+
     return ism_file, compression_labels_file
 
 
 def map_group_stability(
     subject_stability_list, n_clusters, is_bootstraping,
-    roi_mask_file, group_dim_reduce, cluster_method='ward'
+    roi_mask_file, group_dim_reduce, cluster_method='ward',
+    random_state_tuple=None
 ):
     # TODO @AKI review doc
     """
@@ -249,13 +272,22 @@ def map_group_stability(
         len(subject_stability_list)
     )
 
+    random_state = utils.get_random_state(random_state_tuple)
+
     indiv_stability_set = np.asarray([
         scipy.sparse.load_npz(ism_file).toarray()
         for ism_file in subject_stability_list
     ])
 
-    if is_bootstraping:
-        J = utils.standard_bootstrap(indiv_stability_set).mean(axis=0)
+    if type(is_bootstraping) is int:
+
+        # hack to generate random seed based on bootstrap index
+        random_state = utils.generate_random_state(random_state, is_bootstraping)
+
+        J = utils.standard_bootstrap(
+            indiv_stability_set,
+            random_state=random_state
+        ).mean(axis=0)
     else:
         J = indiv_stability_set.mean(axis=0)
 
@@ -270,9 +302,9 @@ def map_group_stability(
         utils.cluster_timeseries(J, roi_mask_img, n_clusters,
                                  similarity_metric='correlation',
                                  affinity_threshold=0.0,
-                                 cluster_method=cluster_method)[:, np.newaxis]
+                                 cluster_method=cluster_method,
+                                 random_state=random_state)[:, np.newaxis]
     )
-    G = G
     G = scipy.sparse.csr_matrix(G, dtype=np.int8)
 
     G_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
@@ -284,7 +316,7 @@ def map_group_stability(
 def join_group_stability(
     subject_stability_list, group_stability_list, n_bootstraps, n_clusters,
     roi_mask_file, group_dim_reduce, compression_labels_list,
-    cluster_method='ward'
+    cluster_method='ward', random_state_tuple=None
 ):
     """
     Merges the group stability maps for all and compares to all individual
@@ -316,6 +348,8 @@ def join_group_stability(
     import PyBASC.utils as utils
     import scipy.sparse
 
+    random_state = utils.get_random_state(random_state_tuple)
+
     group_stability_set = np.asarray([
         scipy.sparse.load_npz(G_file).toarray() for G_file in group_stability_list
     ])
@@ -338,7 +372,7 @@ def join_group_stability(
     clusters_G = utils.cluster_timeseries(
         G, roi_mask_data, n_clusters,
         similarity_metric='correlation', affinity_threshold=0.0,
-        cluster_method=cluster_method
+        cluster_method=cluster_method, random_state=random_state
     )
     clusters_G = clusters_G.astype("uint8")
 
@@ -410,7 +444,6 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
     import nibabel as nb
 
     roi_mask_file = nb.load(roi_mask_file).get_data().astype('bool')
-   # import pdb;pdb.set_trace()
 
     if data_array.ndim == 1:
         out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
@@ -418,10 +451,7 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
     
     
     elif data_array.ndim == 2:
-        #print("HELLOOOO")
-        #import pdb;pdb.set_trace()
         list_roi_shape=list(roi_mask_file.shape[0:3])
-        #import pdb;pdb.set_trace()
 
         out_vol = np.zeros(
             list_roi_shape + [data_array.shape[1]],
@@ -492,12 +522,11 @@ def individual_group_clustered_maps(
     if group_dim_reduce: 
         indiv_stability_set = utils.expand_ism(supervox_ism, compression_labels).toarray()
     else:
-        indiv_stability_set=supervox_ism.toarray()
+        indiv_stability_set = supervox_ism.toarray()
 
     cluster_ids = np.unique(clusters_G)
     cluster_voxel_scores, k_mask = \
         utils.cluster_matrix_average(indiv_stability_set, clusters_G)
-
     
     ind_group_cluster_stability = np.array([
         cluster_voxel_scores[(i-1), clusters_G == i].mean()
@@ -521,18 +550,19 @@ def individual_group_clustered_maps(
     )
     np.save(ind_group_cluster_labels_file, individualized_group_cluster_npy)
 
-    #import pdb;pdb.set_trace()
-    individualized_group_clusters_file, img = basc.ndarray_to_vol(
+
+    individualized_group_clusters_file, _ = basc.ndarray_to_vol(
         individualized_group_cluster_npy,
         roi_mask_file,
         roi_mask_file,
         os.path.join(os.getcwd(), 'individualized_group_cluster.nii.gz')
     )
 
-    #import pdb;pdb.set_trace()
     np.save(ind_group_cluster_labels_file, individualized_group_cluster_npy)
-    #import pdb;pdb.set_trace()
-    return ind_group_cluster_stability_file, individualized_group_clusters_file, ind_group_cluster_labels_file#, individualized_group_cluster_npy
+
+    return (ind_group_cluster_stability_file,
+            individualized_group_clusters_file,
+            ind_group_cluster_labels_file)
 
 
 def post_analysis(ind_group_cluster_stability_file_list):
