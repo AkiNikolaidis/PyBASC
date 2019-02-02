@@ -8,7 +8,7 @@ from PyBASC.utils import (
     individual_stability_matrix,
     expand_ism,
     compare_stability_matrices,
-    data_compression
+    data_compression,
 )
 
 from PyBASC.basc import (
@@ -21,13 +21,14 @@ from PyBASC.basc import (
     save_igcm_nifti,
     create_group_cluster_maps,
     ism_nifti,
-    gsm_nifti
+    gsm_nifti,
 )
 
 from PyBASC.pipeline import create_basc
 
 from PyBASC.basc_workflow_runner import(
-    run_basc_workflow
+    run_basc_workflow,
+    run_multi_basc_workflow,
 )
 
 from PyBASC.__main__ import main

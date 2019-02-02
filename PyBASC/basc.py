@@ -217,7 +217,7 @@ def nifti_individual_stability(
 
 
 def map_group_stability(
-    subject_stability_list, n_clusters, bootstrap_list,
+    subject_stability_list, n_clusters, is_bootstraping,
     roi_mask_file, group_dim_reduce, cluster_method='ward'
 ):
     # TODO @AKI review doc
@@ -255,11 +255,10 @@ def map_group_stability(
         for ism_file in subject_stability_list
     ])
 
-
-    if bootstrap_list == 1:
-        J = indiv_stability_set.mean(axis=0)
-    else:
+    if is_bootstraping:
         J = utils.standard_bootstrap(indiv_stability_set).mean(axis=0)
+    else:
+        J = indiv_stability_set.mean(axis=0)
 
     J = J.astype("uint8")
 

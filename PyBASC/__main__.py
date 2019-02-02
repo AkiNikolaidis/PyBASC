@@ -8,9 +8,8 @@ import yaml
 import warnings
 
 import PyBASC
-from PyBASC import create_group_cluster_maps, run_basc_workflow
+from PyBASC import create_group_cluster_maps, run_basc_workflow, run_basc_workflow_optimized
 
-warnings.filterwarnings("ignore")
 
 def main_args():
 
@@ -19,15 +18,19 @@ def main_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='YAML config file', type=argparse.FileType('r'))
+    parser.add_argument('--optimized', action='store_true')
+    parser.add_argument('--seed', type=int)
     args = parser.parse_args()
 
     config = yaml.load(args.config)
 
-    main(config)
+    main(config, optimized=args.optimized, random_seed=args.seed)
 
 
+def main(config, optimized=False, random_seed=None):
 
-def main(config):
+    if type(config) is not dict:
+        raise ValueError("Expecting dictionary of configuration")
 
     if 'home' in config:
         home = os.path.abspath(config['home'])
@@ -49,22 +52,49 @@ def main(config):
     dataset_bootstrap_list = config['dataset_bootstrap_list']
     timeseries_bootstrap_list = config['timeseries_bootstrap_list']
     similarity_metric_list = config['similarity_metric_list']
-    cluster_methods = config['cluster_methods']
+    cluster_method_list = config['cluster_methods']
     blocklength_list = config['blocklength_list']
     n_clusters_list = config['n_clusters_list']
-    output_sizes = config['output_sizes']
+    output_size_list = config['output_sizes']
     roi_mask_file = config['roi_mask_file']
     cross_cluster = config['cross_cluster']
     cross_cluster_mask_file = config['cross_cluster_mask_file']
-    affinity_thresh = config['affinity_thresh']
+    affinity_threshold = config['affinity_thresh']
     group_dim_reduce = config['group_dim_reduce']
 
     roi_mask_file = os.path.abspath(roi_mask_file.replace('$PYBASC', path))
     cross_cluster_mask_file = os.path.abspath(cross_cluster_mask_file.replace('$PYBASC', path))
 
-    run_PyBASC(dataset_bootstrap_list, timeseries_bootstrap_list, similarity_metric_list, cluster_methods,
-               blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
-               cross_cluster, cross_cluster_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID)
+    if optimized:
+
+        run_PyBASC_optimized(
+            subject_file_list, roi_mask_file,
+            
+            dataset_bootstrap_list, timeseries_bootstrap_list, n_clusters_list, 
+            similarity_metric_list, blocklength_list,
+            cluster_method_list,
+
+            group_dim_reduce, output_size_list,
+
+            affinity_threshold,
+
+            cross_cluster, cross_cluster_mask_file, 
+            home, proc_mem,
+
+            random_seed=random_seed
+        )
+
+    else:
+
+        run_PyBASC(
+            dataset_bootstrap_list, timeseries_bootstrap_list,
+            similarity_metric_list, cluster_method_list, blocklength_list,
+            n_clusters_list, output_size_list, subject_file_list, roi_mask_file,
+            proc_mem, cross_cluster, cross_cluster_mask_file, affinity_threshold,
+            run, home, reruns, group_dim_reduce, analysis_ID
+        )
+
+
 
 
 def run_PyBASC(
@@ -93,8 +123,6 @@ def run_PyBASC(
             'block-{blocklength}'
         ])
     )
-
-    
 
     for rerun in rerun_list:
         randseed=np.random.randint(0,10000)
@@ -179,3 +207,37 @@ def run_PyBASC(
                     
                         ind_clust_stab_summary_file = os.path.join(experiment_dir, 'ind_clust_stab_summary.npy')
                         np.save(ind_clust_stab_summary_file, ind_clust_stab_summary)
+
+
+def run_PyBASC_optimized(
+    subject_file_list, roi_mask_file,
+    dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
+    similarity_metric_list, blocklength_list=[1],
+    cluster_method_list=['ward'],
+
+    group_dim_reduce=False, output_size_list=[None],
+
+    affinity_threshold=0.0,
+
+    cross_cluster=False, cross_cluster_mask_file=None, 
+    out_dir=None, runs=1, proc_mem=None,
+
+    random_seed=None
+):
+        
+    run_basc_workflow_optimized(
+        subject_file_list, roi_mask_file,
+        
+        dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
+        similarity_metric_list, blocklength_list,
+        cluster_method_list,
+
+        group_dim_reduce, output_size_list,
+
+        affinity_threshold,
+
+        cross_cluster, cross_cluster_mask_file, 
+        out_dir=out_dir + '/PyBASC_Outputs', runs=runs, proc_mem=proc_mem,
+    )
+
+        
