@@ -37,7 +37,6 @@ def group_dim_reduce(
 
         x, y, z = nb.load(subjects_files[0]).shape[0:3]
 
-        # TODO @AKI why starting with zeros and appending the data to it?
         group_data = []
         for subject_file in subjects_files:
             subject_data = nb.load(subject_file) \
@@ -353,8 +352,6 @@ def join_group_stability(
         compression_labels = np.asarray([np.load(compression_labels_list[0])])
         G = scipy.sparse.csr_matrix(G, dtype=np.int8)
         G = utils.expand_ism(G, compression_labels.T)
-
-        #TODO: Check to see if there's another array type that can be used?
         G = G.toarray()
 
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')

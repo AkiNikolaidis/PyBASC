@@ -130,7 +130,7 @@ def run_PyBASC(
 
     out_dir = os.path.join(
         home,
-        'PyBASC_outputs',
+        'PyBASC_Outputs',
         '{analysis}',
         '_'.join([
             'Run_{rerun}',

@@ -234,7 +234,6 @@ def cluster_timeseries(
 
     elif cluster_method == 'spectral':
 
-        # TODO @ASH review random_state & seed
         spectral = SpectralClustering(
             n_clusters,
             eigen_solver='arpack',
@@ -246,7 +245,6 @@ def cluster_timeseries(
 
     elif cluster_method == 'kmeans':
 
-        # TODO @ASH review random_state & seed
         kmeans = KMeans(
             n_clusters=n_clusters,
             init='k-means++', n_init=10, random_state=random_state
@@ -340,7 +338,6 @@ def cross_cluster_timeseries(
     if cluster_method == 'ward':
         
         if roi_mask_data is not None:
-        
             shape = roi_mask_data.shape
             connectivity = image.grid_to_graph(
                 n_x=shape[0], n_y=shape[1],
@@ -356,7 +353,6 @@ def cross_cluster_timeseries(
             y_pred = ward.labels_.astype(np.int)
 
         else:
-
             ward = FeatureAgglomeration(
                 n_clusters=n_clusters,
                 affinity='euclidean',
@@ -366,7 +362,6 @@ def cross_cluster_timeseries(
             y_pred = ward.labels_.astype(np.int)
 
     elif cluster_method == 'spectral':
-        # TODO @ASH review seed
         spectral = SpectralClustering(
             n_clusters, eigen_solver='arpack',
             affinity="precomputed", assign_labels='discretize',
@@ -376,7 +371,6 @@ def cross_cluster_timeseries(
         y_pred = spectral.labels_.astype(np.int)
 
     elif cluster_method == 'kmeans':
-        # TODO @ASH review seed
         kmeans = KMeans(
             n_clusters=n_clusters, init='k-means++',
             n_init=10, random_state=random_state
