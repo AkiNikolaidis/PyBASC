@@ -43,6 +43,8 @@ def main(config, optimized=False, random_seed=None):
     run = config['run']
     proc_mem = config['proc_mem']
     path = os.path.dirname(PyBASC.__file__)
+
+    random_seed = config.get('random_seed', random_seed)
     
     subject_file_list = [
         os.path.abspath(s.replace('$PYBASC',path))
