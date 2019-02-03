@@ -584,8 +584,7 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
                          'compression_dim',
                          'group_dim_reduce',
                          'cross_cluster',
-                         'cxc_roi_mask_file',
-                         'random_state_tuple'],
+                         'cxc_roi_mask_file'],
             output_names=['compressor',
                           'cxc_compressor',
                           'compression_labels_file'],
@@ -722,7 +721,6 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
                 ('cxc_roi_mask_file', 'cxc_roi_mask_file'),
                 ('cross_cluster', 'cross_cluster'),
                 ('group_dim_reduce', 'group_dim_reduce'),
-                ('random_state_tuple', 'random_state_tuple'),
             ]
         ),
         (

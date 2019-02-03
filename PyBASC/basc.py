@@ -10,8 +10,7 @@ import numpy as np
 def group_dim_reduce(
     subjects_files,
     roi_mask_file, compression_dim, group_dim_reduce=False,
-    cross_cluster=False, cxc_roi_mask_file=None, cxc_compression_dim=None,
-    random_state_tuple=None
+    cross_cluster=False, cxc_roi_mask_file=None, cxc_compression_dim=None
 ):
     if not group_dim_reduce:
 
@@ -29,8 +28,6 @@ def group_dim_reduce(
         from sklearn.preprocessing import normalize
 
         import PyBASC.utils as utils
-
-        random_state = utils.get_random_state(random_state_tuple)
 
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
