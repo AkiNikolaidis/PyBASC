@@ -562,11 +562,12 @@ def individual_stability_matrix(
     if cbb_block_size is None:
         cbb_block_size = int(temp_block_size * blocklength)
 
+    # TODO @AKI review SPATIAL CONSTRAINT EXPERIMENT
+    roi_mask_data = None
+
     S = np.zeros((V1, V1))
 
     if cross_cluster:
-
-        # TODO @ASH review n_bootstraps start (0 or 1?)
         for _ in range(n_bootstraps):
             if n_bootstraps == 1:
                 Y_bootstrap = Y1
@@ -578,9 +579,6 @@ def individual_stability_matrix(
                 )
                 Y_cxc_bootstrap = Y2[block_mask.astype('int'), :]
 
-            # TODO @AKI review SPATIAL CONSTRAINT EXPERIMENT
-            roi_mask_data = None
-
             S += utils.adjacency_matrix(
                 utils.cross_cluster_timeseries(
                     Y_bootstrap, Y_cxc_bootstrap, roi_mask_data, n_clusters,
@@ -591,21 +589,15 @@ def individual_stability_matrix(
                 )
             )
         
-        S *= 100
-        S //= n_bootstraps
-        S = S.astype("uint8")
-
     else:
         for _ in range(n_bootstraps):
-
             if n_bootstraps == 1:
                 Y_bootstrap = Y1
 
             else:
-                Y_bootstrap, _ = utils.timeseries_bootstrap(Y1, cbb_block_size)
-
-            # TODO @AKI review SPATIAL CONSTRAINT EXPERIMENT
-            roi_mask_data = None
+                Y_bootstrap, _ = utils.timeseries_bootstrap(
+                    Y1, cbb_block_size, random_state=random_state
+                )
 
             S += utils.adjacency_matrix(
                 utils.cluster_timeseries(
@@ -617,9 +609,9 @@ def individual_stability_matrix(
                 )[:, np.newaxis]
             )
 
-        S *= 100
-        S //= n_bootstraps
-        S = S.astype("uint8")
+    S *= 100
+    S //= n_bootstraps
+    S = S.astype("uint8")
 
     return S
 
