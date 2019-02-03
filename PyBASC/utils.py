@@ -192,9 +192,6 @@ def cluster_timeseries(
     from sklearn.feature_extraction import image
     from sklearn.cluster import FeatureAgglomeration, SpectralClustering, KMeans
 
-    if not random_state:
-        random_state = np.random.RandomState()
-
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X.T, metric=similarity_metric)
     max_dist = np.nanmax(X_dist)
