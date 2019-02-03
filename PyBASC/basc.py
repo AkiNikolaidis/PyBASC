@@ -26,7 +26,6 @@ def group_dim_reduce(
     else:
         import numpy as np
         import nibabel as nb
-        import pandas as pd
         from sklearn.preprocessing import normalize
 
         import PyBASC.utils as utils
@@ -39,24 +38,20 @@ def group_dim_reduce(
         x, y, z = nb.load(subjects_files[0]).shape[0:3]
 
         # TODO @AKI why starting with zeros and appending the data to it?
-        group_data = np.zeros((x, y, z, 1))[roi_mask_data]
-
+        group_data = []
         for subject_file in subjects_files:
             subject_data = nb.load(subject_file) \
                              .get_data() \
                              .astype('float16')[roi_mask_data]
-            group_data = np.append(group_data, subject_data, axis=1)
+            group_data.append(subject_data)
 
-        # TODO @AKI why selecting 1: ?
-        group_data = group_data[:, 1:]
+        group_data = np.concatenate(group_data, axis=1)
         group_data = normalize(group_data, norm='l2')
 
         compression = utils.data_compression(group_data.T, roi_mask_img,
                                              roi_mask_data, compression_dim)
         
-        # TODO review pandas usage
-        compression_labels = pd.DataFrame(compression['labels'])
-        compression_labels = np.array(compression_labels)
+        compression_labels = compression['labels'][:, np.newaxis]
 
         compression_labels_file = './compression_labels.npy'
         np.save(compression_labels_file, compression_labels)
@@ -139,7 +134,6 @@ def nifti_individual_stability(
     import numpy as np
     import nibabel as nb
     import PyBASC.utils as utils
-    import pandas as pd
     from sklearn.preprocessing import normalize 
     import scipy.sparse
 
@@ -164,8 +158,7 @@ def nifti_individual_stability(
         )
 
         compressed = compression['compressed']
-        compression_labels = pd.DataFrame(compression['labels'])
-        compression_labels = np.array(compression_labels)
+        compression_labels = compression['labels'][:, np.newaxis]
 
     else:
 
@@ -196,10 +189,7 @@ def nifti_individual_stability(
             )
 
             cxc_compressed = cxc_compression['compressed']
-
-            # TODO review pandas usage
-            cxc_compression_labels = pd.DataFrame(cxc_compression['labels'])
-            cxc_compression_labels = np.array(cxc_compression_labels)
+            cxc_compression_labels = compression['labels'][:, np.newaxis]
 
         else:
             cxc_compressor.fit(subject_cxc_rois.T)

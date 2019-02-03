@@ -132,6 +132,7 @@ def run_basc_workflow_optimized(
     
     config.enable_debug_mode()
     config.set('execution', 'keep_inputs', 'true')
+    config.set('execution', 'hash_method', 'content')
     
     from PyBASC.pipeline import create_basc_optimized
     from PyBASC.utils import generate_random_state
