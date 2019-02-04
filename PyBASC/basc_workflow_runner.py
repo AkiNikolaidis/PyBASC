@@ -214,7 +214,7 @@ def run_basc_workflow_optimized(
             'memory_gb': int(proc_mem[1])
         }
 
-        workflow.write_graph(dotfilename='graph.dot', graph2use='exec')
+        # workflow.write_graph(dotfilename='graph.dot', graph2use='exec')
         workflow.run(plugin=plugin, plugin_args=plugin_args)
 
     return analysis_dir
