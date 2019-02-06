@@ -10,7 +10,7 @@ import numpy as np
 def group_dim_reduce(
     subjects_files,
     roi_mask_file, compression_dim, group_dim_reduce=False,
-    cross_cluster=False, cxc_roi_mask_file=None, cxc_compression_dim=None
+    cross_cluster=False, cxc_roi_mask_file=None
 ):
     if not group_dim_reduce:
 
@@ -29,6 +29,12 @@ def group_dim_reduce(
 
         import PyBASC.utils as utils
 
+        if type(compression_dim) == list:
+            cxc_compression_dim = compression_dim[1]
+            compression_dim = compression_dim[0]
+        else:
+            cxc_compression_dim = compression_dim
+
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
 
@@ -46,7 +52,7 @@ def group_dim_reduce(
 
         compression = utils.data_compression(group_data.T, roi_mask_img,
                                              roi_mask_data, compression_dim)
-        
+
         compression_labels = compression['labels'][:, np.newaxis]
 
         compression_labels_file = './compression_labels.npy'
@@ -89,7 +95,7 @@ def group_dim_reduce(
             cxc_compressor = None
 
         return (compressor,
-                cxc_compressor, 
+                cxc_compressor,
                 compression_labels_file)
 
 
@@ -130,7 +136,7 @@ def nifti_individual_stability(
     import numpy as np
     import nibabel as nb
     import PyBASC.utils as utils
-    from sklearn.preprocessing import normalize 
+    from sklearn.preprocessing import normalize
     import scipy.sparse
 
     print('Calculating individual stability matrix of:', subject_file)
@@ -246,15 +252,15 @@ def map_group_stability(
         The group stability matrix for a single bootstrap repitition
 
     """
-    
+
     import os
     import numpy as np
     import nibabel as nb
     import PyBASC.utils as utils
     import scipy.sparse
-    
+
     print(
-        'Calculating group stability matrix for %d subjects' % 
+        'Calculating group stability matrix for %d subjects' %
         len(subject_stability_list)
     )
 
@@ -352,7 +358,7 @@ def join_group_stability(
         G = G.toarray()
 
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')
-    
+
     clusters_G = utils.cluster_timeseries(
         G, roi_mask_data, n_clusters,
         similarity_metric='correlation', affinity_threshold=0.0,
@@ -432,8 +438,8 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
     if data_array.ndim == 1:
         out_vol = np.zeros_like(roi_mask_file, dtype=data_array.dtype)
         out_vol[roi_mask_file] = data_array
-    
-    
+
+
     elif data_array.ndim == 2:
         list_roi_shape=list(roi_mask_file.shape[0:3])
 
@@ -492,18 +498,18 @@ def individual_group_clustered_maps(
         corresponds to each subject.
 
     """
-    
+
     import os
     import numpy as np
     import PyBASC.utils as utils
     import PyBASC.basc as basc
     import scipy.sparse
-    
+
     supervox_ism = scipy.sparse.load_npz(subject_stability_list)
 
     compression_labels = np.load(compression_labels_file)
-    
-    if group_dim_reduce: 
+
+    if group_dim_reduce:
         indiv_stability_set = utils.expand_ism(supervox_ism, compression_labels).toarray()
     else:
         indiv_stability_set = supervox_ism.toarray()
@@ -511,22 +517,22 @@ def individual_group_clustered_maps(
     cluster_ids = np.unique(clusters_G)
     cluster_voxel_scores, k_mask = \
         utils.cluster_matrix_average(indiv_stability_set, clusters_G)
-    
+
     ind_group_cluster_stability = np.array([
         cluster_voxel_scores[(i-1), clusters_G == i].mean()
         for i in cluster_ids
     ])
 
     cluster_voxel_scores = cluster_voxel_scores.astype("uint8")
-    
+
     k_mask = k_mask.astype(bool)
 
     ind_group_cluster_stability_file = os.path.join(
         os.getcwd(), 'ind_group_cluster_stability.npy'
     )
     np.save(ind_group_cluster_stability_file, ind_group_cluster_stability)
-    
-    
+
+
     individualized_group_cluster_npy = np.argmax(cluster_voxel_scores, axis=0) + 1
 
     ind_group_cluster_labels_file = os.path.join(
@@ -554,13 +560,13 @@ def post_analysis(ind_group_cluster_stability_file_list):
     Creates a composite matrix of all the ind_group_cluster_stability files.
     This allows for choosing the combination of parameters that produces the
     most stable clustering.
-    
+
     Parameters
     ----------
-    
+
     ind_group_cluster_stability_file_list : A list of all
-                                            ind_group_cluster_stability files 
-     
+                                            ind_group_cluster_stability files
+
     Returns
     -------
     ind_group_cluster_stability_set_file : a composite matrix of all the
@@ -589,7 +595,7 @@ def post_analysis(ind_group_cluster_stability_file_list):
 def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
     """
     Loops through every row of cluster_voxel_scores and creates nifti files
-    
+
     Parameters
     ----------
         cluster_voxel_scores_file- a cluster number by voxel measure of the stability
@@ -599,10 +605,10 @@ def save_igcm_nifti(cluster_voxel_scores_file,clusters_G_file,roi_mask_file):
 
     Returns
     -------
-    Creates NIFTI files for all the igcm files for each participant across all clusters 
+    Creates NIFTI files for all the igcm files for each participant across all clusters
     """
-    
-    
+
+
     import numpy as np
     import PyBASC.basc as basc
     cluster_voxel_scores=np.load(cluster_voxel_scores_file)
@@ -629,7 +635,7 @@ def create_group_cluster_maps(gsm_file, clusters_G_file, roi_mask_file):
     # TODO @AKI update doc
     """
     Loops through every row of cluster_voxel_scores and creates nifti files
-    
+
     Parameters
     ----------
         gsm_file- a cluster number by voxel measure of the stability
@@ -639,10 +645,10 @@ def create_group_cluster_maps(gsm_file, clusters_G_file, roi_mask_file):
 
     Returns
     -------
-    Creates NIFTI files for all the gsm file for the group across all clusters 
-    
+    Creates NIFTI files for all the gsm file for the group across all clusters
+
     """
-    
+
     import numpy as np
     import PyBASC.basc as basc
     import PyBASC.utils as utils
@@ -670,7 +676,7 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir, cluster_method='ward'):
     Calculate the individual level stability and instability maps for
     each of the group clusters. Create Nifti files for each individual
     cluster's stability map
-    
+
     Parameters
     ----------
         roi_mask_file: the mask of the region to calculate stability for.
@@ -680,14 +686,14 @@ def ism_nifti(roi_mask_file, n_clusters, out_dir, cluster_method='ward'):
     Returns
     -------
     Creates NIFTI files for all the ism cluster stability maps
-    
+
     """
     from os import walk
     from os.path import join as pjoin
     import numpy as np
-    
+
     import PyBASC.utils as utils
-    
+
     # TODO FIGURE OUT IF CAN BE ADDED TO BASC WORKFLOW, OR DIFFERENT WORKFLOW?
 
     ismdir = out_dir + '/workflow_output/basc_workflow_runner/' \
@@ -727,7 +733,7 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir, cluster_method='ward'):
     Calculate the group level stability and instability maps for each of
     the group clusters.
     Create Nifti files for each individual cluster's stability map
-    
+
     Parameters
     ----------
         roi_mask_file: the mask of the region to calculate stability for.
@@ -742,7 +748,7 @@ def gsm_nifti(roi_mask_file, n_clusters, out_dir, cluster_method='ward'):
     import PyBASC.basc as basc
 
     # TODO FIGURE OUT IF CAN BE ADDED TO BASC WORKFLOW, OR DIFFERENT WORKFLOW?
-    
+
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')
 
     gsmdir = out_dir + \
