@@ -31,7 +31,7 @@ n_clusters_list:
 #    - 16
     
 output_sizes:
-    - 800
+    - [800, 800]
 
 similarity_metric_list:
     - correlation

@@ -59,10 +59,10 @@ def main(config, optimized=False, random_seed=None):
     blocklength_list = config['blocklength_list']
     n_clusters_list = config['n_clusters_list']
     output_size_list = config['output_sizes']
+    affinity_threshold_list = config['affinity_threshold_list']
     roi_mask_file = config['roi_mask_file']
     cross_cluster = config['cross_cluster']
     cross_cluster_mask_file = config['cross_cluster_mask_file']
-    affinity_threshold = config['affinity_thresh']
     group_dim_reduce = config['group_dim_reduce']
 
     roi_mask_file = os.path.abspath(roi_mask_file.replace('$PYBASC', path))
@@ -79,7 +79,7 @@ def main(config, optimized=False, random_seed=None):
 
             group_dim_reduce, output_size_list,
 
-            affinity_threshold,
+            affinity_threshold_list,
 
             cross_cluster, cross_cluster_mask_file, 
             runs=reruns, 
