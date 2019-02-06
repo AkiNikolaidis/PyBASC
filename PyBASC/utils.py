@@ -568,6 +568,7 @@ def individual_stability_matrix(
     S = np.zeros((V1, V1))
 
     if cross_cluster:
+        
         for _ in range(n_bootstraps):
             if n_bootstraps == 1:
                 Y_bootstrap = Y1
@@ -587,6 +588,7 @@ def individual_stability_matrix(
                     cluster_method=cluster_method,
                     random_state=random_state
                 )
+            
             )
         
     else:

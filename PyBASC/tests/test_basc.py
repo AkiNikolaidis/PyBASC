@@ -7,7 +7,6 @@ import nilearn.image as image
 import nipype.interfaces.utility as util
 import nipype.pipeline.engine as pe
 import numpy as np
-import pandas as pd
 import scipy as sp
 from nilearn import datasets
 from nilearn.image import resample_img
