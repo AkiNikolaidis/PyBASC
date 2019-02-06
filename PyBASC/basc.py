@@ -169,7 +169,7 @@ def nifti_individual_stability(
     if compression_dim == 0:
 
         # Use uncompressed data
-        compressed = subject_rois
+        compressed = subject_rois.T
         compression_labels_file = None
 
     else:
