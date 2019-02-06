@@ -237,7 +237,7 @@ def nifti_individual_stability(
             compression_labels_file = os.path.join(
                 os.getcwd(), 'cxc_compression_labels.npy'
             )
-            np.save(compression_labels_file, compression_labels)
+            np.save(compression_labels_file, cxc_compression_labels)
 
     else:
         cxc_compressed = None
