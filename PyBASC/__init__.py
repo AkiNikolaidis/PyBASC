@@ -31,4 +31,4 @@ from PyBASC.basc_workflow_runner import(
     run_basc_workflow_optimized,
 )
 
-from PyBASC.__main__ import main
+from PyBASC.__main__ import main, main_args
