@@ -515,7 +515,6 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
         'roi_mask_file',
         'cross_cluster',
         'cxc_roi_mask_file',
-        'affinity_threshold',
         'group_dim_reduce',
         'random_state_tuple',
     ]), name='inputspec')
@@ -562,6 +561,13 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
             'n_clusters',
         ]),
         name='inputspec_n_clusters'
+    )
+
+    inputspec_affinity_threshold = pe.Node(
+        util.IdentityInterface(fields=[
+            'affinity_threshold',
+        ]),
+        name='inputspec_affinity_threshold'
     )
 
     outputspec = pe.Node(util.IdentityInterface(fields=[
@@ -737,7 +743,6 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
                 ('roi_mask_file', 'roi_mask_file'),
                 ('cross_cluster', 'cross_cluster'),
                 ('cxc_roi_mask_file', 'cxc_roi_mask_file'),
-                ('affinity_threshold', 'affinity_threshold'),
                 ('random_state_tuple', 'random_state_tuple'),
             ]
         ),
@@ -769,6 +774,11 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
         (
             inputspec_n_clusters, nis, [
                 ('n_clusters', 'n_clusters'),
+            ]
+        ),
+        (
+            inputspec_affinity_threshold, nis, [
+                ('affinity_threshold', 'affinity_threshold'),
             ]
         ),
         (

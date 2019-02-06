@@ -117,7 +117,7 @@ def run_basc_workflow_optimized(
 
     group_dim_reduce=False, output_size_list=[None],
 
-    affinity_threshold=0.0,
+    affinity_threshold_list=[0.0],
 
     cross_cluster=False, cross_cluster_mask_file=None, 
     out_dir=None, runs=1, proc_mem=None, random_seed=None,
@@ -156,7 +156,6 @@ def run_basc_workflow_optimized(
         basc_workflow.inputs.inputspec.set(
             subjects_files=subject_file_list,
             roi_mask_file=roi_mask_file,
-            affinity_threshold=affinity_threshold,
             group_dim_reduce=group_dim_reduce,
             cross_cluster=cross_cluster,
             cxc_roi_mask_file=cross_cluster_mask_file,
@@ -182,7 +181,9 @@ def run_basc_workflow_optimized(
         basc_workflow.get_node('inputspec_n_clusters').iterables = [
             ('n_clusters', n_clusters_list)
         ]
-        
+        basc_workflow.get_node('inputspec_affinity_threshold').iterables = [
+            ('affinity_threshold', affinity_threshold_list)
+        ]        
 
         resource_pool = {}
 
