@@ -24,6 +24,7 @@ def main_args():
     args = parser.parse_args()
 
     config = yaml.load(args.config)
+    args.config.close()
 
     main(config, optimized=args.optimized, random_seed=args.seed)
 
