@@ -71,7 +71,7 @@ def group_dim_reduce(
             cxc_compression_dim = compression_dim
 
         print("Compressing %d subjects with dimension "
-              "%d" % compression_dim)
+              "%d" % (subjects_files, compression_dim))
 
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
