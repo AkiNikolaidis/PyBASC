@@ -121,18 +121,19 @@ def run_basc_workflow_optimized(
 
     cross_cluster=False, cross_cluster_mask_file=None, 
     out_dir=None, runs=1, proc_mem=None, random_seed=None,
-    analysis_id='basc'
+    analysis_id='basc', cache_method='content'
 ):
     import os
-    import numpy as no
-
     import nipype.interfaces.io as nio
     import nipype.pipeline.engine as pe
     from nipype import config
     
     config.enable_debug_mode()
     config.set('execution', 'keep_inputs', 'true')
-    config.set('execution', 'hash_method', 'content')
+    if cache_method == 'content':
+        config.set('execution', 'hash_method', 'content')
+    else:
+        config.set('execution', 'hash_method', 'timestamp')
     
     from PyBASC.pipeline import create_basc_optimized
     from PyBASC.utils import generate_random_state

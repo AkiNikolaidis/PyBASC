@@ -20,16 +20,20 @@ def main_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='YAML config file', type=argparse.FileType('r'))
     parser.add_argument('--optimized', action='store_true')
+    parser.add_argument('--cache_method', type=str)
     parser.add_argument('--seed', type=int)
     args = parser.parse_args()
 
     config = yaml.load(args.config)
     args.config.close()
 
-    main(config, optimized=args.optimized, random_seed=args.seed)
+    main(config,
+         optimized=args.optimized,
+         random_seed=args.seed,
+         cache_method=args.cache_method)
 
 
-def main(config, optimized=False, random_seed=None):
+def main(config, optimized=False, random_seed=None, cache_method='timestamp'):
 
     if type(config) is not dict:
         raise ValueError("Expecting dictionary of configuration")
@@ -87,7 +91,8 @@ def main(config, optimized=False, random_seed=None):
             
             out_dir=home + '/PyBASC_Outputs', proc_mem=proc_mem,
             analysis_id=analysis_id,
-            random_seed=random_seed
+            random_seed=random_seed,
+            cache_method=cache_method
         )
 
     else:
