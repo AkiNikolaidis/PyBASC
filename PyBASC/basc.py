@@ -12,6 +12,33 @@ def group_dim_reduce(
     roi_mask_file, compression_dim, group_dim_reduce=False,
     cross_cluster=False, cxc_roi_mask_file=None
 ):
+    """
+    Perform group dimensionality reduction, if group_dim is enabled and
+    compress_dim > 0.
+
+    Parameters
+    ----------
+    subjects_files : string
+        Nifti files of all subjects
+    roi_mask_file : string
+        Region of interest. This method is too computationally intensive to
+        perform on a whole-brain volume.
+    compression_dim : integer
+        
+    group_dim_reduce : boolean
+
+    cross_cluster : boolean
+
+    cxc_roi_mask_file : string
+    
+
+    Returns
+    -------
+    ism : array_like
+        Individual stability matrix of shape (`V`, `V`), `V` voxels
+    """
+
+
     if not group_dim_reduce:
 
         compressor = None
@@ -42,6 +69,9 @@ def group_dim_reduce(
             compression_dim = compression_dim[0]
         else:
             cxc_compression_dim = compression_dim
+
+        print("Compressing %d subjects with dimension "
+              "%d" % compression_dim)
 
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
