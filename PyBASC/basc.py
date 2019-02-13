@@ -84,7 +84,7 @@ def group_dim_reduce(
 
         group_data = []
         cxc_group_data = []
-        for subject_file in subjects_files:
+        for subject_i, subject_file in enumerate(subjects_files):
             subject_data = nb.load(subject_file) \
                              .get_data() \
                              .astype('float16')
@@ -92,6 +92,12 @@ def group_dim_reduce(
             group_data.append(subject_data[roi_mask_data])
             if cross_cluster:
                 cxc_group_data.append(subject_data[cxc_roi_mask_data])
+
+            print(
+                "Subject %d of %d loaded" % (
+                    subject_i + 1, len(subjects_files)
+                )
+            )
 
         group_data = np.concatenate(group_data, axis=1)
         group_data = normalize(group_data, norm='l2')
