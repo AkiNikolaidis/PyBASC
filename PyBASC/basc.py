@@ -71,19 +71,27 @@ def group_dim_reduce(
             cxc_compression_dim = compression_dim
 
         print("Compressing %d subjects with dimension "
-              "%d" % (subjects_files, compression_dim))
+              "%d" % (len(subjects_files), compression_dim))
 
         roi_mask_img = nb.load(roi_mask_file)
         roi_mask_data = roi_mask_img.get_data().astype('bool')
 
+        if cross_cluster:
+            cxc_roi_mask_image = nb.load(cxc_roi_mask_file)
+            cxc_roi_mask_data = cxc_roi_mask_image.get_data().astype('bool')
+
         x, y, z = nb.load(subjects_files[0]).shape[0:3]
 
         group_data = []
+        cxc_group_data = []
         for subject_file in subjects_files:
             subject_data = nb.load(subject_file) \
                              .get_data() \
-                             .astype('float16')[roi_mask_data]
-            group_data.append(subject_data)
+                             .astype('float16')
+
+            group_data.append(subject_data[roi_mask_data])
+            if cross_cluster:
+                cxc_group_data.append(subject_data[cxc_roi_mask_data])
 
         group_data = np.concatenate(group_data, axis=1)
         group_data = normalize(group_data, norm='l2')
@@ -101,21 +109,7 @@ def group_dim_reduce(
 
         if cross_cluster:
 
-            cxc_roi_mask_image = nb.load(cxc_roi_mask_file)
-            cxc_roi_mask_data = cxc_roi_mask_image.get_data().astype('bool')
-
-            cxc_group_data = np.zeros((x, y, z, 1))[cxc_roi_mask_data]
-
-            for subject_file in subjects_files:
-                subject_data = nb.load(subject_file) \
-                                 .get_data() \
-                                 .astype('float16')[cxc_roi_mask_data]
-
-                cxc_group_data = np.append(
-                    cxc_group_data, subject_data, axis=1
-                )
-
-            cxc_group_data = cxc_group_data[:, 1:]
+            cxc_group_data = np.concatenate(cxc_group_data, axis=1)
             cxc_group_data = normalize(cxc_group_data, norm='l2')
 
             if not cxc_compression_dim:
