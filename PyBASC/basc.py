@@ -80,8 +80,6 @@ def group_dim_reduce(
             cxc_roi_mask_image = nb.load(cxc_roi_mask_file)
             cxc_roi_mask_data = cxc_roi_mask_image.get_data().astype('bool')
 
-        x, y, z = nb.load(subjects_files[0]).shape[0:3]
-
         group_data = []
         cxc_group_data = []
         for subject_i, subject_file in enumerate(subjects_files):
