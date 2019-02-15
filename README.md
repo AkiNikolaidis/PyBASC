@@ -1,6 +1,9 @@
 PyBASC: Bootstrap Analysis of Stable Clusters in Python
 ============================================================
 
+[![Build Status](https://api.travis-ci.org/AkiNikolaidis/PyBASC.svg?branch=master)](https://travis-ci.com/AkiNikolaidis/PyBASC)
+[![Code Coverage](https://codecov.io/github/AkiNikolaidis/PyBASC/branch/master/graph/badge.svg)](https://codecov.io/github/AkiNikolaidis/PyBASC)
+
 PyBASC is an open , Nipype-based, parcellation package for preprocessed functional MRI data. Designed for use by both novice and expert users, PyBASC allows users to create individual and group level clustering solutions and compare the reliability and reproducibility of these clustering solutions across a wide variety of methods.
 
 ## Core Dependencies
