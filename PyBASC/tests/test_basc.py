@@ -1,21 +1,21 @@
 import os
 import time
-from os.path import expanduser
 
 import nibabel as nb
-import nilearn.image as image
-import nipype.interfaces.utility as util
-import nipype.pipeline.engine as pe
-import numpy as np
-import scipy as sp
-from nilearn import datasets
-from nilearn.image import resample_img
-from nilearn.image.image import mean_img
-from nilearn.input_data import NiftiMasker
-from nilearn.plotting import plot_roi, show
-from sklearn import cluster, datasets
-from sklearn.neighbors import kneighbors_graph
-from sklearn.preprocessing import StandardScaler
+# import nilearn.image as image
+# import nipype.interfaces.utility as util
+# import nipype.pipeline.engine as pe
+# import numpy as np
+# import scipy as sp
+
+# from nilearn import datasets
+# from nilearn.image import resample_img
+# from nilearn.image.image import mean_img
+# from nilearn.input_data import NiftiMasker
+# from nilearn.plotting import plot_roi, show
+# from sklearn import cluster, datasets
+# from sklearn.neighbors import kneighbors_graph
+# from sklearn.preprocessing import StandardScaler
 
 
 def test_timeseries_bootstrap():
@@ -29,8 +29,6 @@ def test_timeseries_bootstrap():
     
     x = np.arange(50).reshape((5, 10)).T
     actual, other = timeseries_bootstrap(x, 3)
-
-    print(actual)
 
     desired = np.array([
         [9, 19, 29, 39, 49],
