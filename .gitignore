@@ -4,5 +4,9 @@ dist
 .env
 *.egg-info
 build
+
+cov.xml
+.coverage
+
 PyBASC_outputs
 PyBASC_Outputs
