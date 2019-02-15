@@ -4,3 +4,6 @@ dist
 .env
 *.egg-info
 build
+
+cov.xml
+.coverage
