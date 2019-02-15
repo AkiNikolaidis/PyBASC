@@ -1,11 +1,11 @@
 import os
 import time
 
+import numpy as np
 import nibabel as nb
 # import nilearn.image as image
 # import nipype.interfaces.utility as util
 # import nipype.pipeline.engine as pe
-# import numpy as np
 # import scipy as sp
 
 # from nilearn import datasets
@@ -26,21 +26,22 @@ def test_timeseries_bootstrap():
     from PyBASC.utils import timeseries_bootstrap
 
     np.random.seed(27)
+    random_state = np.random.RandomState(seed=27)
     
     x = np.arange(50).reshape((5, 10)).T
-    actual, other = timeseries_bootstrap(x, 3)
+    actual, other = timeseries_bootstrap(x, 3, random_state=random_state)
 
     desired = np.array([
+        [4, 14, 24, 34, 44],
+        [5, 15, 25, 35, 45],
+        [6, 16, 26, 36, 46],
+        [8, 18, 28, 38, 48],
         [9, 19, 29, 39, 49],
         [0, 10, 20, 30, 40],
-        [1, 11, 21, 31, 41],
         [7, 17, 27, 37, 47],
         [8, 18, 28, 38, 48],
         [9, 19, 29, 39, 49],
-        [7, 17, 27, 37, 47],
         [8, 18, 28, 38, 48],
-        [9, 19, 29, 39, 49],
-        [4, 14, 24, 34, 44],
     ])
 
     np.testing.assert_equal(actual, desired)
@@ -54,21 +55,22 @@ def test_standard_bootstrap():
     from PyBASC.utils import standard_bootstrap
 
     np.random.seed(27)
+    random_state = np.random.RandomState(seed=27)
 
     x = np.arange(50).reshape((5,10)).T
-    actual = standard_bootstrap(x)
+    actual = standard_bootstrap(x, random_state=random_state)
 
     desired = np.array([
+        [3, 13, 23, 33, 43],
         [8, 18, 28, 38, 48],
-        [6, 16, 26, 36, 46],
+        [8, 18, 28, 38, 48],
+        [8, 18, 28, 38, 48],
         [0, 10, 20, 30, 40],
+        [5, 15, 25, 35, 45],
+        [8, 18, 28, 38, 48],
+        [1, 11, 21, 31, 41],
         [2, 12, 22, 32, 42],
         [1, 11, 21, 31, 41],
-        [5, 15, 25, 35, 45],
-        [2, 12, 22, 32, 42],
-        [6, 16, 26, 36, 46],
-        [0, 10, 20, 30, 40],
-        [2, 12, 22, 32, 42],
     ])
 
     np.testing.assert_equal(actual, desired)

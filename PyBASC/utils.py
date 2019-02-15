@@ -3,28 +3,33 @@ import os
 import time
 from builtins import bytes, str
 
+import numpy as np
+import scipy as sp
 import nibabel as nb
 import nilearn.image as image
 import nipype.interfaces.utility as util
 import nipype.pipeline.engine as pe
-import numpy as np
-import scipy as sp
-from future import standard_library
+
 from nipype import logging
 from nilearn import datasets
 from nilearn.image import resample_img, mean_img
 from nilearn.input_data import NiftiMasker
-from nilearn.plotting import plot_roi, show
-from nipype.interfaces.base import (BaseInterfaceInputSpec, DynamicTraitedSpec,
-                                    Undefined, isdefined, traits)
-from nipype.interfaces.io import IOBase, add_traits
-from nipype.utils.filemanip import ensure_list
-from nipype.utils.functions import create_function_from_source, getsource
+
 from sklearn import cluster, datasets
 from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import StandardScaler, normalize
 
+
+from nipype.interfaces.base import (BaseInterfaceInputSpec, DynamicTraitedSpec,
+                                    Undefined, isdefined, traits)
+
+from nipype.interfaces.io import IOBase, add_traits
+from nipype.utils.filemanip import ensure_list
+from nipype.utils.functions import create_function_from_source, getsource
+
+from future import standard_library
 standard_library.install_aliases()
+
 
 iflogger = logging.getLogger('nipype.interface')
 

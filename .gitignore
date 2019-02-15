@@ -7,6 +7,7 @@ build
 
 cov.xml
 .coverage
+.coverage.*
 
 PyBASC_outputs
 PyBASC_Outputs
