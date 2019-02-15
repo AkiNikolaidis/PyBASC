@@ -85,7 +85,7 @@ setup(
     # $ pip install -e .[dev,test]
 
     extras_require={
-       'test': ['pytest', 'pytest-cov', 'pytest-env', 'codecov', 'coverage'],
+       'test': ['pytest-cov', 'codecov', 'pytest-env', 'pytest-xdist'],
     },
 
     # If there are data files included in your packages that need to be

@@ -5,11 +5,14 @@ python:
   - "3.5"
   - "3.6"
 
+before_install:
+  - travis_retry pip install --upgrade pip setuptools wheel
+
 install:
   - pip install .[test]
 
 script:
-  - py.test -vs -n auto --cov matchgroup --cov-config .coveragerc --cov-report xml:cov.xml PyBASC
+  - py.test -vs -n auto --cov PyBASC --cov-config .coveragerc --cov-report xml:cov.xml PyBASC
 
 after_script:
   - codecov --file cov.xml --flags unittests -e TRAVIS_JOB_NUMBER
