@@ -196,6 +196,7 @@ def cluster_timeseries(
     import sklearn as sk
     from sklearn.feature_extraction import image
     from sklearn.cluster import FeatureAgglomeration, SpectralClustering, KMeans
+    from sklearn.mixture import GaussianMixture
 
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X.T, metric=similarity_metric)
@@ -207,12 +208,12 @@ def cluster_timeseries(
     sim_matrix = 1 - sk.preprocessing.normalize(X_dist, norm='max')
     sim_matrix[sim_matrix < affinity_threshold] = 0
 
-    print("Calculating Hierarchical Clustering") 
+    print("Calculating Hierarchical Clustering")
+
+    cluster_method = cluster_method.lower()
      
     if cluster_method == 'ward':
-
         if roi_mask_data is not None:
-
             shape = roi_mask_data.shape
             connectivity = image.grid_to_graph(
                 n_x=shape[0], n_y=shape[1],
@@ -226,9 +227,7 @@ def cluster_timeseries(
             )
             ward.fit(sim_matrix)
             y_pred = ward.labels_.astype(np.int)
-
         else:
-
             ward = FeatureAgglomeration(
                 n_clusters=n_clusters,
                 affinity='euclidean',
@@ -238,7 +237,6 @@ def cluster_timeseries(
             y_pred = ward.labels_.astype(np.int)
 
     elif cluster_method == 'spectral':
-
         spectral = SpectralClustering(
             n_clusters,
             eigen_solver='arpack',
@@ -249,13 +247,21 @@ def cluster_timeseries(
         y_pred = spectral.labels_.astype(np.int)
 
     elif cluster_method == 'kmeans':
-
         kmeans = KMeans(
             n_clusters=n_clusters,
-            init='k-means++', n_init=10, random_state=random_state
+            init='k-means++', n_init=10,
+            random_state=random_state
         )
         kmeans.fit(sim_matrix)
         y_pred = kmeans.labels_.astype(np.int)
+
+    elif cluster_method == 'gaussianmixture':
+        gaussianmixture = GaussianMixture(
+            n_components=n_clusters,
+            init_params='kmeans',
+            random_state=random_state
+        )
+        y_pred = gaussianmixture.fit_predict(sim_matrix)
 
     return y_pred
 
@@ -383,6 +389,14 @@ def cross_cluster_timeseries(
 
         kmeans.fit(sim_matrix)
         y_pred = kmeans.labels_.astype(np.int)
+
+    elif cluster_method == 'gaussianmixture':
+        gaussianmixture = GaussianMixture(
+            n_components=n_clusters,
+            init_params='kmeans',
+            random_state=random_state
+        )
+        y_pred = gaussianmixture.fit_predict(sim_matrix)
 
     return y_pred
 
