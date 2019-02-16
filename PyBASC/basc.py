@@ -291,15 +291,14 @@ def nifti_individual_stability(
     ism = scipy.sparse.csr_matrix(ism, dtype=np.int8)
     ism_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
 
-    if compression_dim == 0:
-        scipy.sparse.save_npz(ism_file, ism)
+    # get back to original dimensionality based on individual or group-based
+    # dimensionality reductionn
+    if not compressor:
+        voxel_ism = utils.expand_ism(ism, compression_labels)
+        voxel_ism = voxel_ism.astype("uint8")
+        scipy.sparse.save_npz(ism_file, voxel_ism)
     else:
-        if not compressor:
-            voxel_ism = utils.expand_ism(ism, compression_labels)
-            voxel_ism = voxel_ism.astype("uint8")
-            scipy.sparse.save_npz(ism_file, voxel_ism)
-        else:
-            scipy.sparse.save_npz(ism_file, ism)
+        scipy.sparse.save_npz(ism_file, ism)
 
     return ism_file, compression_labels_file
 
