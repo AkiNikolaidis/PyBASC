@@ -458,7 +458,6 @@ def join_group_stability(
             ism_gsm_corr = np.zeros(len(subject_stability_list))
 
             for i in range(len(subject_stability_list)):
-                #import pdb;pdb.set_trace()
                 ism = indiv_stability_set[i].toarray()
                 ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
 
