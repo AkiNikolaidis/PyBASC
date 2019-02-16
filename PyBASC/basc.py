@@ -238,7 +238,7 @@ def nifti_individual_stability(
         if cxc_compression_dim == 0:
 
             # Use uncompressed data
-            cxc_compressed = subject_cxc_rois
+            cxc_compressed = subject_cxc_rois.T
 
         else:
 
@@ -252,20 +252,13 @@ def nifti_individual_stability(
                     cxc_compression_dim
                 )
 
-                cxc_compression_labels = cxc_compression['labels'][:, np.newaxis]
                 cxc_compressed = cxc_compression['compressed']
 
             else:
 
                 # Use group-based data compression
                 cxc_compressor.fit(subject_cxc_rois.T)
-                cxc_compression_labels = cxc_compressor.labels_
                 cxc_compressed = cxc_compressor.transform(subject_cxc_rois.T)
-
-            cxc_compression_labels_file = os.path.join(
-                os.getcwd(), 'cxc_compression_labels.npy'
-            )
-            np.save(cxc_compression_labels_file, cxc_compression_labels)
 
     else:
         cxc_compressed = None
