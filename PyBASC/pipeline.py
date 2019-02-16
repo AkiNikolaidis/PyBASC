@@ -632,7 +632,7 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
         Function(
             input_names=['subject_stability_list',
                          'n_clusters',
-                         'is_bootstraping',
+                         'is_bootstrapping',
                          'roi_mask_file',
                          'group_dim_reduce',
                          'cluster_method',
@@ -642,7 +642,7 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
             as_module=True
         ),
         name='map_group_stability',
-        iterfield='is_bootstraping',
+        iterfield='is_bootstrapping',
         mem_gb=mem_per_proc
     )
 
@@ -799,7 +799,7 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
         ),
         (
             inputspec_boostraps, mgsm, [
-                (('dataset_bootstraps', _generate_list), 'is_bootstraping'),
+                (('dataset_bootstraps', _generate_list), 'is_bootstrapping'),
             ]
         ),
         (

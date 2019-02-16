@@ -305,7 +305,7 @@ def nifti_individual_stability(
 
 
 def map_group_stability(
-    subject_stability_list, n_clusters, is_bootstraping,
+    subject_stability_list, n_clusters, is_bootstrapping,
     roi_mask_file, group_dim_reduce, cluster_method='ward',
     random_state_tuple=None
 ):
@@ -346,11 +346,11 @@ def map_group_stability(
         for ism_file in subject_stability_list
     ])
 
-    if type(is_bootstraping) is int:
+    if type(is_bootstrapping) is int:
 
         # hack to generate random seed based on bootstrap index
         random_state = utils.generate_random_state(
-            random_state, is_bootstraping
+            random_state, is_bootstrapping
         )
 
         J = utils.standard_bootstrap(
