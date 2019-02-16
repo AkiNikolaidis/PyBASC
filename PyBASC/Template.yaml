@@ -7,7 +7,8 @@ proc_mem:
 
 reruns: 1
 
-affinity_thresh: 0.0
+affinity_threshold_list:
+    - 0.0
 
 blocklength_list:
     - 1 

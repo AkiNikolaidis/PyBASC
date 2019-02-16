@@ -16,7 +16,7 @@ from PyBASC.utils import Function
 
 
 def _generate_list(n):
-    if n <= 1:
+    if n == False or n <= 1:
         return [False]
     return list(range(n))
 
@@ -194,7 +194,7 @@ def create_basc(proc_mem, name='basc'):
         Function(
             input_names=['subject_stability_list',
                          'n_clusters',
-                         'bootstrap_list',
+                         'is_bootstrapping',
                          'roi_mask_file',
                          'group_dim_reduce',
                          'cluster_method'],
@@ -204,7 +204,7 @@ def create_basc(proc_mem, name='basc'):
         ),
         name='map_group_stability',
         mem_gb=mem_per_proc,
-        iterfield='bootstrap_list'
+        iterfield='is_bootstrapping'
     )
 
     jgsm = pe.Node(
@@ -303,7 +303,7 @@ def create_basc(proc_mem, name='basc'):
         ),
         (
             inputspec, mgsm, [
-                ('bootstrap_list', 'bootstrap_list'),
+                ('bootstrap_list', 'is_bootstrapping'),
                 ('n_clusters', 'n_clusters'),
                 ('roi_mask_file', 'roi_mask_file'),
                 ('group_dim_reduce', 'group_dim_reduce'),
