@@ -209,11 +209,11 @@ def run_PyBASC(
                                     )
 
                                     ism_gsm_stability.append(
-                                        np.load(experiment_dir + '/workflow_output/ism_gsm_corr/ism_gsm_corr.npy')
+                                        np.load(experiment_dir + '/ism_gsm_corr/ism_gsm_corr.npy')
                                     )
 
                                     ind_clust_stab_mat = np.load(
-                                        experiment_dir + '/workflow_output/ind_group_cluster_stability_set/ind_group_cluster_stability_set.npy'
+                                        experiment_dir + '/ind_group_cluster_stability_set/ind_group_cluster_stability_set.npy'
                                     )
 
                                     ind_clust_stab_summary = np.concatenate(
@@ -230,14 +230,13 @@ def run_PyBASC(
                                     )
 
                                     # Run Group ClusterMaps
-                                    gsm_file = experiment_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/group_stability_matrix.npz'
-                                    clusters_G_file = experiment_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/clusters_G.npy'
-                                    os.chdir(experiment_dir +'/workflow_output/basc_workflow_runner/basc/join_group_stability/')
+                                    gsm_file = experiment_dir + '/basc_workflow_runner/basc/join_group_stability/group_stability_matrix.npz'
+                                    clusters_G_file = experiment_dir + '/basc_workflow_runner/basc/join_group_stability/clusters_G.npy'
+                                    os.chdir(experiment_dir +'/basc_workflow_runner/basc/join_group_stability/')
                                     create_group_cluster_maps(gsm_file, clusters_G_file, roi_mask_file)
 
                                     # Run IGCM on all individual subjects
-                                    clustvoxscoredir = experiment_dir + '/workflow_output/basc_workflow_runner/basc/individual_group_clustered_maps/mapflow/'
-                                    clusters_G_file = experiment_dir + '/workflow_output/basc_workflow_runner/basc/join_group_stability/clusters_G.npy'
+                                    clusters_G_file = experiment_dir + '/basc_workflow_runner/basc/join_group_stability/clusters_G.npy'
                                 
                                 ism_gsm_stability_file = os.path.join(experiment_dir, 'ism_gsm_stability_' + str(n_clusters) + '.npy')
                                 np.save(ism_gsm_stability_file, ism_gsm_stability)
