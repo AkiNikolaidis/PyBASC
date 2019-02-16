@@ -38,6 +38,14 @@ def group_dim_reduce(
         Individual stability matrix of shape (`V`, `V`), `V` voxels
     """
 
+    if type(compression_dim) == list:
+        cxc_compression_dim = compression_dim[1]
+        compression_dim = compression_dim[0]
+    else:
+        cxc_compression_dim = compression_dim
+
+    compress = compression_dim > 0
+    cxc_compress = cxc_compression_dim > 0 and cross_cluster
 
     if not group_dim_reduce:
 
@@ -49,46 +57,45 @@ def group_dim_reduce(
                 cxc_compressor,
                 compression_labels_file)
 
-    elif compression_dim == 0:
-
+    elif not compress and not cxc_compress:
         compressor = None
         cxc_compressor = None
         compression_labels_file = None
 
         return compressor, cxc_compressor, compression_labels_file
 
-    else:
+    elif compress or cxc_compress:
+        # it is a tautology at this point, but just to make it explicit
+        # that one of them is true here
+
         import numpy as np
         import nibabel as nb
         from sklearn.preprocessing import normalize
 
         import PyBASC.utils as utils
 
-        if type(compression_dim) == list:
-            cxc_compression_dim = compression_dim[1]
-            compression_dim = compression_dim[0]
-        else:
-            cxc_compression_dim = compression_dim
-
         print("Compressing %d subjects with dimension "
               "%d" % (len(subjects_files), compression_dim))
 
-        roi_mask_img = nb.load(roi_mask_file)
-        roi_mask_data = roi_mask_img.get_data().astype('bool')
+        if compress:
+            roi_mask_img = nb.load(roi_mask_file)
+            roi_mask_data = roi_mask_img.get_data().astype('bool')
 
-        if cross_cluster:
-            cxc_roi_mask_image = nb.load(cxc_roi_mask_file)
-            cxc_roi_mask_data = cxc_roi_mask_image.get_data().astype('bool')
+        if cross_cluster and cxc_compress:
+            cxc_roi_mask_img = nb.load(cxc_roi_mask_file)
+            cxc_roi_mask_data = cxc_roi_mask_img.get_data().astype('bool')
 
         group_data = []
         cxc_group_data = []
         for subject_i, subject_file in enumerate(subjects_files):
             subject_data = nb.load(subject_file) \
-                             .get_data() \
-                             .astype('float16')
+                            .get_data() \
+                            .astype('float16')
 
-            group_data.append(subject_data[roi_mask_data])
-            if cross_cluster:
+            if compress:
+                group_data.append(subject_data[roi_mask_data])
+
+            if cross_cluster and cxc_compress:
                 cxc_group_data.append(subject_data[cxc_roi_mask_data])
 
             print(
@@ -97,22 +104,26 @@ def group_dim_reduce(
                 )
             )
 
-        group_data = np.concatenate(group_data, axis=1)
-        group_data = normalize(group_data, norm='l2')
+        if compress:
+            group_data = np.concatenate(group_data, axis=1)
+            group_data = normalize(group_data, norm='l2')
 
-        compression = utils.data_compression(group_data.T, roi_mask_img,
-                                             roi_mask_data, compression_dim)
+            compression = utils.data_compression(group_data.T, roi_mask_img,
+                                                 roi_mask_data, compression_dim)
 
-        compression_labels = compression['labels'][:, np.newaxis]
+            compression_labels = compression['labels'][:, np.newaxis]
 
-        compression_labels_file = './compression_labels.npy'
-        np.save(compression_labels_file, compression_labels)
-        compression_labels_file = [compression_labels_file]
+            compression_labels_file = './compression_labels.npy'
+            np.save(compression_labels_file, compression_labels)
+            compression_labels_file = [compression_labels_file]
 
-        compressor = compression['compressor']
+            compressor = compression['compressor']
 
-        if cross_cluster:
+        else:
+            compression_labels_file = None
+            compressor = None
 
+        if cxc_compress:
             cxc_group_data = np.concatenate(cxc_group_data, axis=1)
             cxc_group_data = normalize(cxc_group_data, norm='l2')
 
@@ -121,7 +132,7 @@ def group_dim_reduce(
 
             cxc_compression = utils.data_compression(
                 cxc_group_data.T,
-                cxc_roi_mask_image,
+                cxc_roi_mask_img,
                 cxc_roi_mask_data,
                 cxc_compression_dim
             )
@@ -129,7 +140,6 @@ def group_dim_reduce(
             cxc_compressor = cxc_compression['compressor']
 
         else:
-
             cxc_compressor = None
 
         return (compressor,
@@ -419,7 +429,8 @@ def join_group_stability(
     random_state = utils.get_random_state(random_state_tuple)
 
     group_stability_set = np.asarray([
-        scipy.sparse.load_npz(G_file).toarray() for G_file in group_stability_list
+        scipy.sparse.load_npz(G_file).toarray()
+        for G_file in group_stability_list
     ])
 
     G = group_stability_set.sum(axis=0)
@@ -455,11 +466,11 @@ def join_group_stability(
     ]
 
     if compression_labels_list[0] == None:
-            ism_gsm_corr = np.zeros(len(subject_stability_list))
+        ism_gsm_corr = np.zeros(len(subject_stability_list))
 
-            for i in range(len(subject_stability_list)):
-                ism = indiv_stability_set[i].toarray()
-                ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
+        for i in range(len(subject_stability_list)):
+            ism = indiv_stability_set[i].toarray()
+            ism_gsm_corr[i] = utils.compare_stability_matrices(ism, G)
 
     else:
 
