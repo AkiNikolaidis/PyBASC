@@ -45,8 +45,7 @@ def run_basc_workflow(
     
     from PyBASC.pipeline import create_basc
     from nipype import config
-    
-    # config.enable_debug_mode()
+
     config.set('execution', 'keep_inputs', 'true')
     workflow = pe.Workflow(name='basc_workflow_runner')
 
@@ -128,7 +127,6 @@ def run_basc_workflow_optimized(
     import nipype.pipeline.engine as pe
     from nipype import config
     
-    config.enable_debug_mode()
     config.set('execution', 'keep_inputs', 'true')
     if cache_method == 'content':
         config.set('execution', 'hash_method', 'content')
