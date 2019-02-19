@@ -43,20 +43,20 @@ def main(config, optimized=False, random_seed=None, cache_method='timestamp'):
         os.chdir(home)
     else:
         home = os.getcwd()
-    
+
     analysis_id = config['analysis_ID']
     run = config['run']
     proc_mem = config['proc_mem']
     path = os.path.dirname(PyBASC.__file__)
 
     random_seed = config.get('random_seed', random_seed)
-    
+
     subject_file_list = [
-        os.path.abspath(s.replace('$PYBASC',path))
+        os.path.abspath(s.replace('$PYBASC', path))
         for s in config['subject_file_list']
     ]
 
-    reruns = config['reruns']
+    reruns = config.get('reruns', 1)
     dataset_bootstraps_list = config['dataset_bootstrap_list']
     timeseries_bootstraps_list = config['timeseries_bootstrap_list']
     similarity_metric_list = config['similarity_metric_list']
@@ -66,12 +66,14 @@ def main(config, optimized=False, random_seed=None, cache_method='timestamp'):
     output_size_list = config['output_sizes']
     affinity_threshold_list = config['affinity_threshold_list']
     roi_mask_file = config['roi_mask_file']
-    cross_cluster = config['cross_cluster']
-    cross_cluster_mask_file = config['cross_cluster_mask_file']
-    group_dim_reduce = config['group_dim_reduce']
+    cross_cluster = config.get('cross_cluster', False)
+    cross_cluster_mask_file = config.get('cross_cluster_mask_file', None)
+    group_dim_reduce = config.get('group_dim_reduce', False)
 
     roi_mask_file = os.path.abspath(roi_mask_file.replace('$PYBASC', path))
-    cross_cluster_mask_file = os.path.abspath(cross_cluster_mask_file.replace('$PYBASC', path))
+    if cross_cluster_mask_file:
+        cross_cluster_mask_file = \
+            os.path.abspath(cross_cluster_mask_file.replace('$PYBASC', path))
 
     if optimized:
 
