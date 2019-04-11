@@ -98,10 +98,6 @@ def create_basc(proc_mem, name='basc'):
        "Multi-level bootstrap analysis of stable clusters in resting-state fMRI"
        NeuroImage, vol. 51, no. 3, pp. 1126-39, Jul. 2010.
 
-    Examples
-    --------
-    >>> from CPAC import basc
-
     """
 
     mem_per_proc = float(proc_mem[1]) / float(proc_mem[0])
@@ -423,7 +419,7 @@ def create_basc(proc_mem, name='basc'):
     return basc
 
 
-def create_basc_optimized(proc_mem, name='basc', random_state=None):
+def create_basc_parallelized(proc_mem, name='basc', random_state=None):
     """
     Bootstrap Analysis of Stable Clusters (BASC)
 
@@ -499,10 +495,6 @@ def create_basc_optimized(proc_mem, name='basc', random_state=None):
     .. [1] P. Bellec, P. Rosa-Neto, O. C. Lyttelton, H. Benali, and A. C. Evans,
        "Multi-level bootstrap analysis of stable clusters in resting-state fMRI"
        NeuroImage, vol. 51, no. 3, pp. 1126-39, Jul. 2010.
-
-    Examples
-    --------
-    >>> from CPAC import basc
 
     """
 

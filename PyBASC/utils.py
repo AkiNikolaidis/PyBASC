@@ -418,7 +418,6 @@ def adjacency_matrix(cluster_pred):
     Examples
     --------
     >>> import numpy as np
-    >>> from CPAC.basc import cluster_adjacency_matrix
     >>> x = np.asarray([1, 2, 2, 3, 1])[:, np.newaxis]
     >>> cluster_adjacency_matrix(x).astype('int')
     array([[1, 0, 0, 0, 1],
@@ -461,7 +460,6 @@ def cluster_matrix_average(M, cluster_assignments):
     Examples
     --------
     >>> import numpy as np
-    >>> from CPAC import basc
     >>> S = np.arange(25).reshape(5, 5)
     >>> assign = np.array([0, 0, 0, 1, 1])
     >>> basc.cluster_matrix_average(S, assign)

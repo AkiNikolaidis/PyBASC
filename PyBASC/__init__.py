@@ -28,7 +28,7 @@ from PyBASC.pipeline import create_basc
 
 from PyBASC.basc_workflow_runner import(
     run_basc_workflow,
-    run_basc_workflow_optimized,
+    run_basc_workflow_parallelized,
 )
 
 from PyBASC.__main__ import main, main_args

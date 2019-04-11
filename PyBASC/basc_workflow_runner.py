@@ -108,7 +108,7 @@ def run_basc_workflow(
     return outpath
 
 
-def run_basc_workflow_optimized(
+def run_basc_workflow_parallelized(
     subject_file_list, roi_mask_file,
     dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
     similarity_metric_list, blocklength_list=[1],
@@ -133,7 +133,7 @@ def run_basc_workflow_optimized(
     else:
         config.set('execution', 'hash_method', 'timestamp')
     
-    from PyBASC.pipeline import create_basc_optimized
+    from PyBASC.pipeline import create_basc_parallelized
     from PyBASC.utils import generate_random_state
 
     if not out_dir:
@@ -150,7 +150,7 @@ def run_basc_workflow_optimized(
         workflow = pe.Workflow(name='pipeline')
         workflow.base_dir = os.path.join(analysis_dir, 'run_%d' % run_id, 'working')
 
-        basc_workflow = create_basc_optimized(proc_mem, name='basc')
+        basc_workflow = create_basc_parallelized(proc_mem, name='basc')
 
         basc_workflow.inputs.inputspec.set(
             subjects_files=subject_file_list,

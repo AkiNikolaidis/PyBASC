@@ -9,7 +9,7 @@ import yaml
 import PyBASC
 from PyBASC import (create_group_cluster_maps,
                     run_basc_workflow,
-                    run_basc_workflow_optimized)
+                    run_basc_workflow_parallelized)
 
 
 def main_args():
@@ -19,7 +19,7 @@ def main_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='YAML config file', type=argparse.FileType('r'))
-    parser.add_argument('--optimized', action='store_true')
+    parser.add_argument('--parallelized', action='store_true')
     parser.add_argument('--cache_method', type=str)
     parser.add_argument('--seed', type=int)
     args = parser.parse_args()
@@ -28,12 +28,12 @@ def main_args():
     args.config.close()
 
     main(config,
-         optimized=args.optimized,
+         parallelized=args.parallelized,
          random_seed=args.seed,
          cache_method=args.cache_method)
 
 
-def main(config, optimized=False, random_seed=None, cache_method='timestamp'):
+def main(config, parallelized=False, random_seed=None, cache_method='timestamp'):
 
     if type(config) is not dict:
         raise ValueError("Expecting dictionary of configuration")
@@ -75,9 +75,9 @@ def main(config, optimized=False, random_seed=None, cache_method='timestamp'):
         cross_cluster_mask_file = \
             os.path.abspath(cross_cluster_mask_file.replace('$PYBASC', path))
 
-    if optimized:
+    if parallelized:
 
-        run_basc_workflow_optimized(
+        run_basc_workflow_parallelized(
             subject_file_list, roi_mask_file,
             
             dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
