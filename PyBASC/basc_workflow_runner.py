@@ -45,16 +45,14 @@ def run_basc_workflow(
     
     from PyBASC.pipeline import create_basc
     from nipype import config
-    
-    #config.enable_debug_mode()
+
     config.set('execution', 'keep_inputs', 'true')
     workflow = pe.Workflow(name='basc_workflow_runner')
 
     if not out_dir:
         out_dir = os.getcwd()
 
-    workflow_dir = os.path.join(out_dir, "workflow_output")
-    workflow.base_dir = workflow_dir
+    workflow.base_dir = out_dir
 
     resource_pool = {}
 
@@ -88,18 +86,13 @@ def run_basc_workflow(
     resource_pool['ind_group_cluster_stability_set'] = (basc, 'outputspec.ind_group_cluster_stability_set')
 
 
-
-
     ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
-    ds.inputs.base_directory = workflow_dir
-    
-    #import pdb;pdb.set_trace()
+    ds.inputs.base_directory = out_dir
     
     for output in resource_pool.keys():
         node, out_file = resource_pool[output]
         workflow.connect(node, out_file, ds, output)
 
-    #import pdb;pdb.set_trace()
 
     plugin = 'MultiProc'
     if int(proc_mem[0]) == 1:
@@ -110,12 +103,118 @@ def run_basc_workflow(
         'memory_gb': int(proc_mem[1])
     }
 
-    # TODO @AKI is there any occasion in which running will be false?
-    if run:
+    workflow.run(plugin=plugin, plugin_args=plugin_args)
+    outpath = glob.glob(os.path.join(out_dir, "*", "*"))
+    return outpath
+
+
+def run_basc_workflow_parallelized(
+    subject_file_list, roi_mask_file,
+    dataset_bootstraps_list, timeseries_bootstraps_list, n_clusters_list, 
+    similarity_metric_list, blocklength_list=[1],
+    cluster_method_list=['ward'],
+
+    group_dim_reduce=False, output_size_list=[None],
+
+    affinity_threshold_list=[0.0],
+
+    cross_cluster=False, cross_cluster_mask_file=None, 
+    out_dir=None, runs=1, proc_mem=None, random_seed=None,
+    analysis_id='basc', cache_method='content'
+):
+    import os
+    import nipype.interfaces.io as nio
+    import nipype.pipeline.engine as pe
+    from nipype import config
+    
+    config.set('execution', 'keep_inputs', 'true')
+    if cache_method == 'content':
+        config.set('execution', 'hash_method', 'content')
+    else:
+        config.set('execution', 'hash_method', 'timestamp')
+    
+    from PyBASC.pipeline import create_basc_parallelized
+    from PyBASC.utils import generate_random_state
+
+    if not out_dir:
+        out_dir = os.getcwd()
+
+    analysis_dir = os.path.join(out_dir, analysis_id)
+
+    rng = np.random.RandomState(random_seed)
+
+    for run_id in range(1, runs + 1):
+
+        rng_run = generate_random_state(rng)
+
+        workflow = pe.Workflow(name='pipeline')
+        workflow.base_dir = os.path.join(analysis_dir, 'run_%d' % run_id, 'working')
+
+        basc_workflow = create_basc_parallelized(proc_mem, name='basc')
+
+        basc_workflow.inputs.inputspec.set(
+            subjects_files=subject_file_list,
+            roi_mask_file=roi_mask_file,
+            group_dim_reduce=group_dim_reduce,
+            cross_cluster=cross_cluster,
+            cxc_roi_mask_file=cross_cluster_mask_file,
+            random_state_tuple=rng_run.get_state()
+        )
+
+        basc_workflow.get_node('inputspec_compression_dim').iterables = [
+            ("compression_dim", output_size_list)
+        ]
+        basc_workflow.get_node('inputspec_boostraps').iterables = [
+            ('dataset_bootstraps', dataset_bootstraps_list),
+            ('timeseries_bootstraps', timeseries_bootstraps_list),
+        ]
+        basc_workflow.get_node('inputspec_similarity_metric').iterables = [
+            ('similarity_metric', similarity_metric_list)
+        ]
+        basc_workflow.get_node('inputspec_cluster_method').iterables = [
+            ('cluster_method', cluster_method_list)
+        ]
+        basc_workflow.get_node('inputspec_blocklength').iterables = [
+            ('blocklength', blocklength_list)
+        ]
+        basc_workflow.get_node('inputspec_n_clusters').iterables = [
+            ('n_clusters', n_clusters_list)
+        ]
+        basc_workflow.get_node('inputspec_affinity_threshold').iterables = [
+            ('affinity_threshold', affinity_threshold_list)
+        ]        
+
+        resource_pool = {}
+
+        resource_pool['group_stability_matrix'] = (basc_workflow, 'outputspec.group_stability_matrix')
+        resource_pool['clusters_G'] = (basc_workflow, 'outputspec.clusters_G')
+        resource_pool['ism_gsm_corr'] = (basc_workflow, 'outputspec.ism_gsm_corr')
+        resource_pool['gsclusters_img'] = (basc_workflow, 'outputspec.gsclusters_img')
+        #resource_pool['cluster_voxel_scores_img'] = (basc_workflow, 'outputspec.cluster_voxel_scores_img')
+        #resource_pool['cluster_voxel_scores'] = (basc_workflow, 'outputspec.cluster_voxel_scores')
+        resource_pool['ind_group_cluster_stability'] = (basc_workflow, 'outputspec.ind_group_cluster_stability')
+        resource_pool['individualized_group_clusters'] = (basc_workflow, 'outputspec.individualized_group_clusters')
+        resource_pool['ind_group_cluster_labels'] = (basc_workflow, 'outputspec.ind_group_cluster_labels')
+        resource_pool['ind_group_cluster_stability_set'] = (basc_workflow, 'outputspec.ind_group_cluster_stability_set')
+
+        ds = pe.Node(nio.DataSink(), name='datasink_workflow_name')
+        ds.inputs.base_directory = os.path.join(analysis_dir, 'run_%d' % run_id)
+        
+        for output in resource_pool.keys():
+            node, out_file = resource_pool[output]
+            workflow.connect(node, out_file, ds, output)
+
+        
+        plugin = 'MultiProc'
+        if int(proc_mem[0]) == 1:
+            plugin = 'Linear'
+
+        plugin_args = {
+            'n_procs': int(proc_mem[0]),
+            'memory_gb': int(proc_mem[1])
+        }
+
+        # workflow.write_graph(dotfilename='graph.dot', graph2use='exec')
         workflow.run(plugin=plugin, plugin_args=plugin_args)
 
-        outpath = glob.glob(os.path.join(workflow_dir, "*", "*"))
-
-        return outpath
-    else:
-        return workflow, workflow.base_dir
+    return analysis_dir

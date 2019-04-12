@@ -1,29 +1,90 @@
+import inspect
 import os
 import time
+import hashlib
+from builtins import bytes, str
 
-import nibabel as nb
 import numpy as np
 import scipy as sp
-
-#import matplotlib
-#from matplotlib import pyplot as plt
-
+import nibabel as nb
+import nilearn.image as image
 import nipype.interfaces.utility as util
 import nipype.pipeline.engine as pe
 
-import nilearn.image as image
+from nipype import logging
 from nilearn import datasets
-from nilearn.image import resample_img
-from nilearn.image.image import mean_img
+from nilearn.image import resample_img, mean_img
 from nilearn.input_data import NiftiMasker
-from nilearn.plotting import plot_roi, show
 
 from sklearn import cluster, datasets
 from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import StandardScaler, normalize
 
 
-def timeseries_bootstrap(tseries, block_size):
+from nipype.interfaces.base import (BaseInterfaceInputSpec, DynamicTraitedSpec,
+                                    Undefined, isdefined, traits)
+
+from nipype.interfaces.io import IOBase, add_traits
+from nipype.utils.filemanip import ensure_list
+from nipype.utils.functions import create_function_from_source, getsource
+
+from future import standard_library
+standard_library.install_aliases()
+
+
+iflogger = logging.getLogger('nipype.interface')
+
+max_int = 2 ** 32 - 1
+
+
+def merge_random_states(*rngs):
+    """
+    Merge several random states, by generating an avarage of random integers.
+    """
+    seed = 0.0
+    rngs = list(filter(None, rngs))
+    for rng in rngs:
+        # divide it first to avoid numerical overflow
+        seed += generate_random_seed(rng) / len(rngs)
+    return np.random.RandomState(int(seed))
+
+
+def generate_random_seed(rng=None):
+    """
+    Generate a random seed based on a RandomState. It will sample a random
+    integer from 0 to maximum integer.
+    """
+    if rng:
+        return rng.randint(max_int)
+    else:
+        return np.random.randint(max_int)
+
+
+def generate_random_state(rng=None, seed=None):
+    """
+    Get a RandomState object, initialized with the provided seed structure or
+    previous RandomState. When a seed and a RandomState is provided, it will
+    use both to generate a new RandomState (see `merge_random_states`).
+    """
+    if seed:
+        seed_rng = np.random.RandomState(seed)
+        return merge_random_states(seed_rng, rng)
+
+    seed = generate_random_seed(rng)
+    return np.random.RandomState(seed)
+
+
+def get_random_state(tuple_state=None):
+    """
+    Get a RandomState object, initialized with the provided seed structure.
+    """
+    random_state = np.random.RandomState()
+    if tuple_state:
+        random_state.set_state(tuple_state)
+    return random_state
+
+
+def timeseries_bootstrap(tseries, block_size, random_state=None):
     """
     Generates a bootstrap sample derived from the input time-series.
     Utilizes Circular-block-bootstrap method described in [1]_.
@@ -66,14 +127,15 @@ def timeseries_bootstrap(tseries, block_size):
 
     """
     import numpy as np
-    randseed = np.random.randint(0, 10000)
-    np.random.seed(randseed)
+
+    if not random_state:
+        random_state = np.random.RandomState()
 
     # calculate number of blocks
     k = int(np.ceil(float(tseries.shape[0]) / block_size))
 
     # generate random indices of blocks
-    r_ind = np.floor(np.random.rand(1, k) * tseries.shape[0])
+    r_ind = np.floor(random_state.rand(1, k) * tseries.shape[0])
     blocks = np.dot(np.arange(0, block_size)[:, np.newaxis], np.ones([1, k]))
 
     block_offsets = np.dot(np.ones([block_size, 1]), r_ind)
@@ -83,7 +145,7 @@ def timeseries_bootstrap(tseries, block_size):
     return tseries[block_mask.astype('int'), :], block_mask.astype('int')
 
 
-def standard_bootstrap(dataset):
+def standard_bootstrap(dataset, random_state=None):
     """
     Generates a bootstrap sample from the input dataset
 
@@ -100,17 +162,18 @@ def standard_bootstrap(dataset):
     Examples
     --------
     """
-    randseed = np.random.randint(0, 10000)
-    np.random.seed(randseed)
+
+    if not random_state:
+        random_state = np.random.RandomState()
 
     n = dataset.shape[0]
-    b = np.random.randint(0, high=n - 1, size=n)
+    b = random_state.randint(0, high=n - 1, size=n)
     return dataset[b]
 
 
 def cluster_timeseries(
     X, roi_mask_data, n_clusters, similarity_metric,
-    affinity_threshold, cluster_method='ward'
+    affinity_threshold, cluster_method='ward', random_state=None
 ):
     """
     Cluster a given timeseries
@@ -144,11 +207,12 @@ def cluster_timeseries(
     .. [1] http://scikit-learn.org/dev/modules/generated/sklearn.neighbors.kneighbors_graph.html
 
     """
-
+    import numpy as np
     import scipy as sp
     import sklearn as sk
     from sklearn.feature_extraction import image
     from sklearn.cluster import FeatureAgglomeration, SpectralClustering, KMeans
+    from sklearn.mixture import GaussianMixture
 
     X = np.array(X)
     X_dist = sp.spatial.distance.pdist(X.T, metric=similarity_metric)
@@ -160,12 +224,12 @@ def cluster_timeseries(
     sim_matrix = 1 - sk.preprocessing.normalize(X_dist, norm='max')
     sim_matrix[sim_matrix < affinity_threshold] = 0
 
-    print("Calculating Hierarchical Clustering") 
+    print("Calculating Hierarchical Clustering")
+
+    cluster_method = cluster_method.lower()
      
     if cluster_method == 'ward':
-
         if roi_mask_data is not None:
-
             shape = roi_mask_data.shape
             connectivity = image.grid_to_graph(
                 n_x=shape[0], n_y=shape[1],
@@ -179,9 +243,7 @@ def cluster_timeseries(
             )
             ward.fit(sim_matrix)
             y_pred = ward.labels_.astype(np.int)
-
         else:
-
             ward = FeatureAgglomeration(
                 n_clusters=n_clusters,
                 affinity='euclidean',
@@ -191,32 +253,38 @@ def cluster_timeseries(
             y_pred = ward.labels_.astype(np.int)
 
     elif cluster_method == 'spectral':
-
-        # TODO @ASH review random_state & seed
         spectral = SpectralClustering(
             n_clusters,
-            eigen_solver='arpack', random_state=5,
-            affinity="precomputed", assign_labels='discretize'
+            eigen_solver='arpack',
+            affinity="precomputed", assign_labels='discretize',
+            random_state=random_state
         )
         spectral.fit(sim_matrix)
         y_pred = spectral.labels_.astype(np.int)
 
     elif cluster_method == 'kmeans':
-
-        # TODO @ASH review random_state & seed
         kmeans = KMeans(
             n_clusters=n_clusters,
-            init='k-means++', n_init=10, random_state=0
+            init='k-means++', n_init=10,
+            random_state=random_state
         )
         kmeans.fit(sim_matrix)
         y_pred = kmeans.labels_.astype(np.int)
+
+    elif cluster_method == 'gaussianmixture':
+        gaussianmixture = GaussianMixture(
+            n_components=n_clusters,
+            init_params='kmeans',
+            random_state=random_state
+        )
+        y_pred = gaussianmixture.fit_predict(sim_matrix)
 
     return y_pred
 
 
 def cross_cluster_timeseries(
     data1, data2, roi_mask_data, n_clusters, similarity_metric,
-    affinity_threshold, cluster_method='ward'
+    affinity_threshold, cluster_method='ward', random_state=None
 ):
     """
     Cluster a timeseries dataset based on its relationship
@@ -297,7 +365,6 @@ def cross_cluster_timeseries(
     if cluster_method == 'ward':
         
         if roi_mask_data is not None:
-        
             shape = roi_mask_data.shape
             connectivity = image.grid_to_graph(
                 n_x=shape[0], n_y=shape[1],
@@ -313,7 +380,6 @@ def cross_cluster_timeseries(
             y_pred = ward.labels_.astype(np.int)
 
         else:
-
             ward = FeatureAgglomeration(
                 n_clusters=n_clusters,
                 affinity='euclidean',
@@ -323,24 +389,30 @@ def cross_cluster_timeseries(
             y_pred = ward.labels_.astype(np.int)
 
     elif cluster_method == 'spectral':
-        # TODO @ASH review seed
         spectral = SpectralClustering(
-            n_clusters,
-            eigen_solver='arpack', random_state=5,
-            affinity="precomputed", assign_labels='discretize'
+            n_clusters, eigen_solver='arpack',
+            affinity="precomputed", assign_labels='discretize',
+            random_state=random_state
         )
         spectral.fit(sim_matrix)
         y_pred = spectral.labels_.astype(np.int)
 
     elif cluster_method == 'kmeans':
-        # TODO @ASH review seed
         kmeans = KMeans(
             n_clusters=n_clusters, init='k-means++',
-            n_init=10, random_state=0
+            n_init=10, random_state=random_state
         )
 
         kmeans.fit(sim_matrix)
         y_pred = kmeans.labels_.astype(np.int)
+
+    elif cluster_method == 'gaussianmixture':
+        gaussianmixture = GaussianMixture(
+            n_components=n_clusters,
+            init_params='kmeans',
+            random_state=random_state
+        )
+        y_pred = gaussianmixture.fit_predict(sim_matrix)
 
     return y_pred
 
@@ -362,7 +434,6 @@ def adjacency_matrix(cluster_pred):
     Examples
     --------
     >>> import numpy as np
-    >>> from CPAC.basc import cluster_adjacency_matrix
     >>> x = np.asarray([1, 2, 2, 3, 1])[:, np.newaxis]
     >>> cluster_adjacency_matrix(x).astype('int')
     array([[1, 0, 0, 0, 1],
@@ -405,7 +476,6 @@ def cluster_matrix_average(M, cluster_assignments):
     Examples
     --------
     >>> import numpy as np
-    >>> from CPAC import basc
     >>> S = np.arange(25).reshape(5, 5)
     >>> assign = np.array([0, 0, 0, 1, 1])
     >>> basc.cluster_matrix_average(S, assign)
@@ -478,7 +548,7 @@ def compare_stability_matrices(ism_a, ism_b):
 def individual_stability_matrix(
     Y1, roi_mask_data, n_bootstraps, n_clusters, similarity_metric,
     Y2=None, cross_cluster=False, cbb_block_size=None, blocklength=1,
-    affinity_threshold=0.0, cluster_method='ward'
+    affinity_threshold=0.0, cluster_method='ward', random_state=None
 ):
     """
     Calculate the individual stability matrix of a single subject by
@@ -525,11 +595,13 @@ def individual_stability_matrix(
     if cbb_block_size is None:
         cbb_block_size = int(temp_block_size * blocklength)
 
+    # TODO @AKI review SPATIAL CONSTRAINT EXPERIMENT
+    roi_mask_data = None
+
     S = np.zeros((V1, V1))
 
     if cross_cluster:
-
-        # TODO @ASH review n_bootstraps start (0 or 1?)
+        
         for _ in range(n_bootstraps):
             if n_bootstraps == 1:
                 Y_bootstrap = Y1
@@ -537,50 +609,44 @@ def individual_stability_matrix(
 
             else:
                 Y_bootstrap, block_mask = utils.timeseries_bootstrap(
-                    Y1, cbb_block_size
+                    Y1, cbb_block_size, random_state=random_state
                 )
                 Y_cxc_bootstrap = Y2[block_mask.astype('int'), :]
-
-            # TODO @AKI review SPATIAL CONSTRAINT EXPERIMENT
-            roi_mask_data = None
 
             S += utils.adjacency_matrix(
                 utils.cross_cluster_timeseries(
                     Y_bootstrap, Y_cxc_bootstrap, roi_mask_data, n_clusters,
                     similarity_metric=similarity_metric,
                     affinity_threshold=affinity_threshold,
-                    cluster_method=cluster_method
+                    cluster_method=cluster_method,
+                    random_state=random_state
                 )
+            
             )
         
-        S *= 100
-        S //= n_bootstraps
-        S = S.astype("uint8")
-
     else:
         for _ in range(n_bootstraps):
-
             if n_bootstraps == 1:
                 Y_bootstrap = Y1
 
             else:
-                Y_bootstrap, _ = utils.timeseries_bootstrap(Y1, cbb_block_size)
-
-            # TODO @AKI review SPATIAL CONSTRAINT EXPERIMENT
-            roi_mask_data = None
+                Y_bootstrap, _ = utils.timeseries_bootstrap(
+                    Y1, cbb_block_size, random_state=random_state
+                )
 
             S += utils.adjacency_matrix(
                 utils.cluster_timeseries(
                     Y_bootstrap, roi_mask_data, n_clusters,
                     similarity_metric=similarity_metric,
                     affinity_threshold=affinity_threshold,
-                    cluster_method=cluster_method
+                    cluster_method=cluster_method,
+                    random_state=random_state
                 )[:, np.newaxis]
             )
 
-        S *= 100
-        S //= n_bootstraps
-        S = S.astype("uint8")
+    S *= 100
+    S //= n_bootstraps
+    S = S.astype("uint8")
 
     return S
 
@@ -661,3 +727,171 @@ def data_compression(fmri_masked, mask_img, mask_np, compression_dim):
         'compressed': data_reduced,
         'labels': labels,
     }
+
+
+class FunctionInputSpec(DynamicTraitedSpec, BaseInterfaceInputSpec):
+    function_str = traits.Str(mandatory=True, desc='code for function')
+    function_str_hash = traits.Str(mandatory=True, desc='hash of code for function')
+
+
+class Function(IOBase):
+    """Runs arbitrary function as an interface
+
+    Examples
+    --------
+
+    >>> func = 'def func(arg1, arg2=5): return arg1 + arg2'
+    >>> fi = Function(input_names=['arg1', 'arg2'], output_names=['out'])
+    >>> fi.inputs.function_str = func
+    >>> res = fi.run(arg1=1)
+    >>> res.outputs.out
+    6
+
+    """
+
+    input_spec = FunctionInputSpec
+    output_spec = DynamicTraitedSpec
+
+    def __init__(self,
+                 input_names=None,
+                 output_names='out',
+                 function=None,
+                 imports=None,
+                 as_module=False,
+                 **inputs):
+        """
+
+        Parameters
+        ----------
+
+        input_names: single str or list or None
+            names corresponding to function inputs
+            if ``None``, derive input names from function argument names
+        output_names: single str or list
+            names corresponding to function outputs (default: 'out').
+            if list of length > 1, has to match the number of outputs
+        function : callable
+            callable python object. must be able to execute in an
+            isolated namespace (possibly in concert with the ``imports``
+            parameter)
+        imports : list of strings
+            list of import statements that allow the function to execute
+            in an otherwise empty namespace
+        """
+
+        super(Function, self).__init__(**inputs)
+        if function:
+            if as_module:
+                module = inspect.getmodule(function).__name__
+                full_name = "%s.%s" % (module, function.__name__)
+                self.inputs.function_str = full_name
+                self.inputs.function_str_hash = hashlib.md5(getsource(function).encode('utf-8')).hexdigest()
+            elif hasattr(function, '__call__'):
+                try:
+                    self.inputs.function_str = getsource(function)
+                    self.inputs.function_str_hash = ''
+                except IOError:
+                    raise Exception('Interface Function does not accept '
+                                    'function objects defined interactively '
+                                    'in a python session')
+                else:
+                    if input_names is None:
+                        fninfo = function.__code__
+            elif isinstance(function, (str, bytes)):
+                self.inputs.function_str = function
+                self.inputs.function_str_hash = ''
+                if input_names is None:
+                    fninfo = create_function_from_source(function,
+                                                         imports).__code__
+            else:
+                raise Exception('Unknown type of function')
+            if input_names is None:
+                input_names = fninfo.co_varnames[:fninfo.co_argcount]
+
+        self.as_module = as_module
+        self.inputs.on_trait_change(self._set_function_string, 'function_str')
+        self._input_names = ensure_list(input_names)
+        self._output_names = ensure_list(output_names)
+        add_traits(self.inputs, [name for name in self._input_names])
+        self.imports = imports
+        self._out = {}
+        for name in self._output_names:
+            self._out[name] = None
+
+    def _set_function_string(self, obj, name, old, new):
+        if name == 'function_str':
+            self.inputs.function_str_hash = ''
+
+            if self.as_module:
+                module = inspect.getmodule(new).__name__
+                full_name = "%s.%s" % (module, new.__name__)
+                self.inputs.function_str = full_name
+                self.inputs.function_str_hash = hashlib.md5(getsource(new)).hexdigest()
+            elif hasattr(new, '__call__'):
+                function_source = getsource(new)
+                fninfo = new.__code__
+            elif isinstance(new, (str, bytes)):
+                function_source = new
+                fninfo = create_function_from_source(new,
+                                                     self.imports).__code__
+            
+            self.inputs.trait_set(
+                trait_change_notify=False, **{
+                    '%s' % name: function_source
+                })
+
+            # Update input traits
+            input_names = fninfo.co_varnames[:fninfo.co_argcount]
+            new_names = set(input_names) - set(self._input_names)
+            add_traits(self.inputs, list(new_names))
+            self._input_names.extend(new_names)
+
+    def _add_output_traits(self, base):
+        undefined_traits = {}
+        for key in self._output_names:
+            base.add_trait(key, traits.Any)
+            undefined_traits[key] = Undefined
+        base.trait_set(trait_change_notify=False, **undefined_traits)
+        return base
+
+    def _run_interface(self, runtime):
+        # Create function handle
+        if self.as_module: 
+            import importlib 
+            pieces = self.inputs.function_str.split('.') 
+            module = '.'.join(pieces[:-1]) 
+            function = pieces[-1] 
+            try: 
+                function_handle = getattr(importlib.import_module(module), function) 
+            except ImportError: 
+                raise RuntimeError('Could not import module: %s' % self.inputs.function_str) 
+        else: 
+            function_handle = create_function_from_source(self.inputs.function_str, 
+                                                          self.imports) 
+
+        # Get function args
+        args = {}
+        for name in self._input_names:
+            value = getattr(self.inputs, name)
+            if isdefined(value):
+                args[name] = value
+
+        out = function_handle(**args)
+        if len(self._output_names) == 1:
+            self._out[self._output_names[0]] = out
+        else:
+            if isinstance(out, tuple) and \
+                    (len(out) != len(self._output_names)):
+                raise RuntimeError('Mismatch in number of expected outputs')
+
+            else:
+                for idx, name in enumerate(self._output_names):
+                    self._out[name] = out[idx]
+
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        for key in self._output_names:
+            outputs[key] = self._out[key]
+        return outputs

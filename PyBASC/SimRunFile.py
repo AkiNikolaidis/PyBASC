@@ -40,24 +40,24 @@ subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/data/sub_0cor
 #roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
 #roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
 
-roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
+roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Smallmem_BGClust.nii.gz'
 
 
-roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz' #
+roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz' #
 
 
-dataset_bootstrap_list=[1,10,100]#,10,30,100]
-timeseries_bootstrap_list=[1,10,100]#,10,30,100]
+dataset_bootstrap_list=[2]#,10,30,100]
+timeseries_bootstrap_list=[2]#,10,30,100]
 similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
 blocklength_list=[1]#[0.5,1,2]
 n_clusters_list=[2]#[2,6,12,20]
-output_sizes=[400]#,200,400,800,1600]#[10,100,600,1200]
+output_sizes=[0]#,200,400,800,1600]#[10,100,600,1200]
 
 group_dim_reduce=False
 #reruns= np.linspace(1,16,16)
 
 cluster_methods=['ward']
-cross_cluster=True
+cross_cluster = True
 
 affinity_thresh= 0.0
 ism_gsm_stability=[]
@@ -66,8 +66,8 @@ ism_gsm_stability=[]
 run=True
 
 
-analysis_ID='Interview_Analysis'
-reruns= 20
+analysis_ID='NoDimReduce_cxc'
+reruns= 1
 
 
 run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, cluster_methods, 
