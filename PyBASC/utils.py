@@ -37,15 +37,22 @@ max_int = 2 ** 32 - 1
 
 
 def merge_random_states(*rngs):
+    """
+    Merge several random states, by generating an avarage of random integers.
+    """
     seed = 0.0
     rngs = list(filter(None, rngs))
     for rng in rngs:
-        # divide it first to avoid overflow
+        # divide it first to avoid numerical overflow
         seed += generate_random_seed(rng) / len(rngs)
     return np.random.RandomState(int(seed))
 
 
 def generate_random_seed(rng=None):
+    """
+    Generate a random seed based on a RandomState. It will sample a random
+    integer from 0 to maximum integer.
+    """
     if rng:
         return rng.randint(max_int)
     else:
@@ -53,6 +60,11 @@ def generate_random_seed(rng=None):
 
 
 def generate_random_state(rng=None, seed=None):
+    """
+    Get a RandomState object, initialized with the provided seed structure or
+    previous RandomState. When a seed and a RandomState is provided, it will
+    use both to generate a new RandomState (see `merge_random_states`).
+    """
     if seed:
         seed_rng = np.random.RandomState(seed)
         return merge_random_states(seed_rng, rng)
@@ -62,6 +74,9 @@ def generate_random_state(rng=None, seed=None):
 
 
 def get_random_state(tuple_state=None):
+    """
+    Get a RandomState object, initialized with the provided seed structure.
+    """
     random_state = np.random.RandomState()
     if tuple_state:
         random_state.set_state(tuple_state)
