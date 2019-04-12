@@ -1,6 +1,7 @@
 import inspect
 import os
 import time
+import hashlib
 from builtins import bytes, str
 
 import numpy as np
@@ -730,6 +731,7 @@ def data_compression(fmri_masked, mask_img, mask_np, compression_dim):
 
 class FunctionInputSpec(DynamicTraitedSpec, BaseInterfaceInputSpec):
     function_str = traits.Str(mandatory=True, desc='code for function')
+    function_str_hash = traits.Str(mandatory=True, desc='hash of code for function')
 
 
 class Function(IOBase):
@@ -783,9 +785,11 @@ class Function(IOBase):
                 module = inspect.getmodule(function).__name__
                 full_name = "%s.%s" % (module, function.__name__)
                 self.inputs.function_str = full_name
+                self.inputs.function_str_hash = hashlib.md5(getsource(function).encode('utf-8')).hexdigest()
             elif hasattr(function, '__call__'):
                 try:
                     self.inputs.function_str = getsource(function)
+                    self.inputs.function_str_hash = ''
                 except IOError:
                     raise Exception('Interface Function does not accept '
                                     'function objects defined interactively '
@@ -795,6 +799,7 @@ class Function(IOBase):
                         fninfo = function.__code__
             elif isinstance(function, (str, bytes)):
                 self.inputs.function_str = function
+                self.inputs.function_str_hash = ''
                 if input_names is None:
                     fninfo = create_function_from_source(function,
                                                          imports).__code__
@@ -815,10 +820,13 @@ class Function(IOBase):
 
     def _set_function_string(self, obj, name, old, new):
         if name == 'function_str':
+            self.inputs.function_str_hash = ''
+
             if self.as_module:
                 module = inspect.getmodule(new).__name__
                 full_name = "%s.%s" % (module, new.__name__)
                 self.inputs.function_str = full_name
+                self.inputs.function_str_hash = hashlib.md5(getsource(new)).hexdigest()
             elif hasattr(new, '__call__'):
                 function_source = getsource(new)
                 fninfo = new.__code__
@@ -826,10 +834,12 @@ class Function(IOBase):
                 function_source = new
                 fninfo = create_function_from_source(new,
                                                      self.imports).__code__
+            
             self.inputs.trait_set(
                 trait_change_notify=False, **{
                     '%s' % name: function_source
                 })
+
             # Update input traits
             input_names = fninfo.co_varnames[:fninfo.co_argcount]
             new_names = set(input_names) - set(self._input_names)
