@@ -5,7 +5,7 @@ import nipype.interfaces.utility as util
 from PyBASC.basc import (
     group_dim_reduce,
     nifti_individual_stability,
-    map_group_stability,
+    map_group_stability_random_bootstrap,
     join_group_stability,
     individual_group_clustered_maps,
     post_analysis,
@@ -195,7 +195,7 @@ def create_basc(proc_mem, name='basc'):
                          'group_dim_reduce',
                          'cluster_method'],
             output_names=['G_file'],
-            function=map_group_stability,
+            function=map_group_stability_random_bootstrap,
             as_module=True
         ),
         name='map_group_stability',
@@ -630,7 +630,7 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
                          'cluster_method',
                          'random_state_tuple'],
             output_names=['G_file'],
-            function=map_group_stability,
+            function=map_group_stability_random_bootstrap,
             as_module=True
         ),
         name='map_group_stability',

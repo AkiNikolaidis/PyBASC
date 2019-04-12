@@ -313,6 +313,29 @@ def nifti_individual_stability(
     return ism_file, compression_labels_file
 
 
+def map_group_stability_random_bootstrap(
+    subject_stability_list, n_clusters, is_bootstrapping,
+    roi_mask_file, group_dim_reduce, cluster_method='ward',
+    random_state_tuple=None
+):
+    import PyBASC.utils as utils
+
+    random_state = utils.get_random_state(random_state_tuple)
+
+    # hack to generate random seed based on bootstrap index
+    random_state = utils.generate_random_state(
+        random_state, is_bootstrapping
+    )
+
+    is_bootstrapping = type(is_bootstrapping) == int
+
+    return map_group_stability(
+        subject_stability_list, n_clusters, is_bootstrapping,
+        roi_mask_file, group_dim_reduce, cluster_method,
+        random_state_tuple=random_state.get_state()
+    )
+
+
 def map_group_stability(
     subject_stability_list, n_clusters, is_bootstrapping,
     roi_mask_file, group_dim_reduce, cluster_method='ward',
@@ -355,13 +378,7 @@ def map_group_stability(
         for ism_file in subject_stability_list
     ])
 
-    if type(is_bootstrapping) is int:
-
-        # hack to generate random seed based on bootstrap index
-        random_state = utils.generate_random_state(
-            random_state, is_bootstrapping
-        )
-
+    if is_bootstrapping:
         J = utils.standard_bootstrap(
             indiv_stability_set,
             random_state=random_state
