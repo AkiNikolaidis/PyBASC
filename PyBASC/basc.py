@@ -318,6 +318,16 @@ def map_group_stability_random_bootstrap(
     roi_mask_file, group_dim_reduce, cluster_method='ward',
     random_state_tuple=None
 ):
+    """
+
+    Parameters
+    ----------
+    is_bootstrapping : int or bool
+        indicates if it is to perform bootstrapping. If it is an integer, it will
+        merge the integer with random state to generate a new random state.
+        If it is a boolean, it indicates that is not to perform bootstrapping.
+    """
+
     import PyBASC.utils as utils
 
     random_state = utils.get_random_state(random_state_tuple)
@@ -352,6 +362,8 @@ def map_group_stability(
         `N` subjects, `V` voxels
     n_clusters : array_like
         number of clusters extrated from adjacency matrx
+    is_bootstrapping : boolean
+        indicates if it is to perform bootstrapping
 
     Returns
     -------
