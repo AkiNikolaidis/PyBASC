@@ -1,21 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 19 12:44:06 2018
+#!/usr/bin/env python
 
-@author: aki.nikolaidis
-"""
-
-import yaml
-import sys
-import argparse
-
-from PyBASC import main
-
-parser = argparse.ArgumentParser()
-parser.add_argument('config', help='YAML config file', type=argparse.FileType('r'))
-args = parser.parse_args()
-
-config = yaml.load(args.config)
-
-main(config)
+from PyBASC import main_args
+main_args()
