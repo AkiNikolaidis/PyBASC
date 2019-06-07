@@ -1,25 +1,23 @@
 analysis_ID: SimulationPipeline
 run: True
 
-random_seed:
-
 proc_mem:
     - 1
     - 4
 
 reruns: 1
 
-affinity_threshold_list:
+affinity_threshold_list: 
     - 0.0
 
 blocklength_list:
     - 1 
     
 dataset_bootstrap_list:
-    - 100
+    - 10
 
 timeseries_bootstrap_list:
-    - 100
+    - 10
 
 group_dim_reduce: False
 
@@ -34,7 +32,7 @@ n_clusters_list:
 #    - 16
     
 output_sizes:
-    - [800, 800]
+    - 400
 
 similarity_metric_list:
     - correlation
@@ -45,9 +43,9 @@ similarity_metric_list:
 cluster_methods:
     - ward
 
-roi_mask_file: $PYBASC/masks/Full_BG_Sim_3mm.nii.gz
+roi_mask_file: $PYBASC/masks/BG_HarvardOxford3mm.nii.gz
 
-cross_cluster: True
+cross_cluster: False
 cross_cluster_mask_file: $PYBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
 
 
