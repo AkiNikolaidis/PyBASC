@@ -14,10 +14,10 @@ blocklength_list:
     - 1 
     
 dataset_bootstrap_list:
-    - 10
+    - 50
 
 timeseries_bootstrap_list:
-    - 10
+    - 50
 
 group_dim_reduce: False
 
@@ -50,7 +50,14 @@ cross_cluster_mask_file: $PYBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
 
 
 subject_file_list: 
-    - $PYBASC/data/sub_0corr_0.05_noise_2_TRs_100.nii.gz
-    - $PYBASC/data/sub_1corr_0.05_noise_2_TRs_100.nii.gz
-    - $PYBASC/data/sub_2corr_0.05_noise_2_TRs_100.nii.gz
-    - $PYBASC/data/sub_3corr_0.05_noise_2_TRs_100.nii.gz
+    - $PYBASC/data/sub_0corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_1corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_2corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_3corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_4corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_5corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_6corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_7corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_8corr_0.1_noise_2.5_TRs_100.nii.gz
+    - $PYBASC/data/sub_9corr_0.1_noise_2.5_TRs_100.nii.gz
+
