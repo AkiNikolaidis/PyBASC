@@ -12,7 +12,7 @@ from PyBASC.basc import (
     ndarray_to_vol
 )
 
-from PyBASC.utils import Function
+from PyBASC.utils import Function, CustomCacheNode, CustomCacheMapNode
 
 
 def _generate_list(n):
@@ -141,7 +141,7 @@ def create_basc(proc_mem, name='basc'):
     ]), name='outputspec')
 
 
-    gdr = pe.Node(
+    gdr = CustomCacheNode(
         Function(
             input_names=['subjects_files',
                          'roi_mask_file',
@@ -159,7 +159,7 @@ def create_basc(proc_mem, name='basc'):
         mem_gb=mem_per_proc
     )
 
-    nis = pe.MapNode(
+    nis = CustomCacheMapNode(
         Function(
             input_names=['subject_file',
                          'roi_mask_file',
@@ -186,7 +186,7 @@ def create_basc(proc_mem, name='basc'):
     )
     nis.inputs.cbb_block_size = None
 
-    mgsm = pe.MapNode(
+    mgsm = CustomCacheMapNode(
         Function(
             input_names=['subject_stability_list',
                          'n_clusters',
@@ -203,7 +203,7 @@ def create_basc(proc_mem, name='basc'):
         iterfield='is_bootstrapping'
     )
 
-    jgsm = pe.Node(
+    jgsm = CustomCacheNode(
         Function(
             input_names=['subject_stability_list',
                          'group_stability_list',
@@ -226,7 +226,7 @@ def create_basc(proc_mem, name='basc'):
         mem_gb=mem_per_proc
     )
     
-    igcm = pe.MapNode(
+    igcm = CustomCacheMapNode(
         Function(
             input_names=['subject_stability_list',
                          'clusters_G',
@@ -244,7 +244,7 @@ def create_basc(proc_mem, name='basc'):
         iterfield=['subject_stability_list', 'compression_labels_file']
     )
 
-    post = pe.Node(
+    post = CustomCacheNode(
         Function(
             input_names=['ind_group_cluster_stability_file_list'],
             output_names=['ind_group_cluster_stability_set_file'],
@@ -255,7 +255,7 @@ def create_basc(proc_mem, name='basc'):
         mem_gb=mem_per_proc
     )
 
-    gs_cluster_vol = pe.Node(
+    gs_cluster_vol = CustomCacheNode(
         Function(
             input_names=['data_array',
                          'roi_mask_file',
@@ -502,80 +502,99 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
 
     basc_wf = pe.Workflow(name=name)
 
-    inputspec = pe.Node(util.IdentityInterface(fields=[
-        'subjects_files',
-        'roi_mask_file',
-        'cross_cluster',
-        'cxc_roi_mask_file',
-        'group_dim_reduce',
-        'random_state_tuple',
-    ]), name='inputspec')
+    ignore_cache = ()
+    if not random_state:
+        ignore_cache = ('random_state_tuple',)
 
-    inputspec_compression_dim = pe.Node(
+    inputspec = CustomCacheNode(
+        util.IdentityInterface(fields=[
+            'subjects_files',
+            'roi_mask_file',
+            'cross_cluster',
+            'cxc_roi_mask_file',
+            'group_dim_reduce',
+            'random_state_tuple',
+        ]),
+        name='inputspec',
+        ignore_cache=ignore_cache
+    )
+
+    inputspec_compression_dim = CustomCacheNode(
         util.IdentityInterface(fields=[
             'compression_dim',
         ]),
-        name='inputspec_compression_dim'
+        name='inputspec_compression_dim',
+        ignore_cache=ignore_cache
     )
 
-    inputspec_boostraps = pe.Node(
+    inputspec_boostraps = CustomCacheNode(
         util.IdentityInterface(fields=[
             'dataset_bootstraps',
             'timeseries_bootstraps',
         ]),
-        name='inputspec_boostraps'
+        name='inputspec_boostraps',
+        ignore_cache=ignore_cache
     )
     inputspec_boostraps.synchronize = True
 
-    inputspec_similarity_metric = pe.Node(
+    inputspec_similarity_metric = CustomCacheNode(
         util.IdentityInterface(fields=[
             'similarity_metric',
         ]),
-        name='inputspec_similarity_metric'
+        name='inputspec_similarity_metric',
+        ignore_cache=ignore_cache
     )
 
-    inputspec_cluster_method = pe.Node(
+    inputspec_cluster_method = CustomCacheNode(
         util.IdentityInterface(fields=[
             'cluster_method',
         ]),
-        name='inputspec_cluster_method'
+        name='inputspec_cluster_method',
+        ignore_cache=ignore_cache
     )
 
-    inputspec_blocklength = pe.Node(
+    inputspec_blocklength = CustomCacheNode(
         util.IdentityInterface(fields=[
             'blocklength',
         ]),
-        name='inputspec_blocklength'
+        name='inputspec_blocklength',
+        ignore_cache=ignore_cache
     )
 
-    inputspec_n_clusters = pe.Node(
+    inputspec_n_clusters = CustomCacheNode(
         util.IdentityInterface(fields=[
             'n_clusters',
         ]),
-        name='inputspec_n_clusters'
+        name='inputspec_n_clusters',
+        ignore_cache=ignore_cache
     )
 
-    inputspec_affinity_threshold = pe.Node(
+    inputspec_affinity_threshold = CustomCacheNode(
         util.IdentityInterface(fields=[
             'affinity_threshold',
         ]),
-        name='inputspec_affinity_threshold'
+        name='inputspec_affinity_threshold',
+        ignore_cache=ignore_cache
     )
 
-    outputspec = pe.Node(util.IdentityInterface(fields=[
-        'group_stability_matrix',
-        'clusters_G',
-        'ism_gsm_corr',
-        'gsclusters_img',
-        'cluster_voxel_scores_img',
-        'cluster_voxel_scores',
-        'ind_group_cluster_stability',
-        'individualized_group_clusters',
-        'ind_group_cluster_labels',
-        'ind_group_cluster_stability_set',
-    ]), name='outputspec')
+    outputspec = CustomCacheNode(
+        util.IdentityInterface(fields=[
+            'group_stability_matrix',
+            'clusters_G',
+            'ism_gsm_corr',
+            'gsclusters_img',
+            'cluster_voxel_scores_img',
+            'cluster_voxel_scores',
+            'ind_group_cluster_stability',
+            'individualized_group_clusters',
+            'ind_group_cluster_labels',
+            'ind_group_cluster_stability_set',
+        ]),
+        name='outputspec',
+        ignore_cache=ignore_cache
+    )
 
-    gdr = pe.Node(
+    gdr = CustomCacheNode(
         Function(
             input_names=['subjects_files',
                          'roi_mask_file',
@@ -590,10 +609,11 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
             as_module=True
         ),
         name='group_dim_reduce', 
-        mem_gb=mem_per_proc
+        mem_gb=mem_per_proc,
+        ignore_cache=ignore_cache
     )
 
-    nis = pe.MapNode(
+    nis = CustomCacheMapNode(
         Function(
             input_names=['subject_file',
                          'roi_mask_file',
@@ -616,11 +636,12 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
         ),
         name='individual_stability_matrices',
         iterfield=['subject_file'],
-        mem_gb=mem_per_proc
+        mem_gb=mem_per_proc,
+        ignore_cache=ignore_cache
     )
     nis.inputs.cbb_block_size = None
 
-    mgsm = pe.MapNode(
+    mgsm = CustomCacheMapNode(
         Function(
             input_names=['subject_stability_list',
                          'n_clusters',
@@ -635,10 +656,11 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
         ),
         name='map_group_stability',
         iterfield='is_bootstrapping',
-        mem_gb=mem_per_proc
+        mem_gb=mem_per_proc,
+        ignore_cache=ignore_cache
     )
 
-    jgsm = pe.Node(
+    jgsm = CustomCacheNode(
         Function(
             input_names=['subject_stability_list',
                          'group_stability_list',
@@ -659,10 +681,11 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
             as_module=True
         ),
         name='join_group_stability',
-        mem_gb=mem_per_proc
+        mem_gb=mem_per_proc,
+        ignore_cache=ignore_cache
     )
     
-    igcm = pe.MapNode(
+    igcm = CustomCacheMapNode(
         Function(
             input_names=['subject_stability_list',
                          'clusters_G',
@@ -681,10 +704,11 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
             'subject_stability_list',
             'compression_labels_file'
         ],
-        mem_gb=mem_per_proc
+        mem_gb=mem_per_proc,
+        ignore_cache=ignore_cache
     )
 
-    post = pe.Node(
+    post = CustomCacheNode(
         Function(
             input_names=['ind_group_cluster_stability_file_list'],
             output_names=['ind_group_cluster_stability_set_file'],
@@ -692,10 +716,11 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
             as_module=True
         ),
         name='post_analysis',
-        mem_gb=mem_per_proc
+        mem_gb=mem_per_proc,
+        ignore_cache=ignore_cache
     )
 
-    gs_cluster_vol = pe.Node(
+    gs_cluster_vol = CustomCacheNode(
         Function(
             input_names=['data_array',
                          'roi_mask_file',
@@ -706,7 +731,8 @@ def create_basc_parallelized(proc_mem, name='basc', random_state=None):
             as_module=True
         ),
         name='group_stability_clusters',
-        mem_gb=mem_per_proc
+        mem_gb=mem_per_proc,
+        ignore_cache=ignore_cache
     )
     gs_cluster_vol.inputs.filename = 'group_stability_clusters.nii.gz'
 

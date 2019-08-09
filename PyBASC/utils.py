@@ -1,5 +1,9 @@
 import inspect
 import os
+import os.path as op
+from glob import glob
+import sys
+import copy
 import time
 import hashlib
 from builtins import bytes, str
@@ -20,19 +24,22 @@ from sklearn import cluster, datasets
 from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import StandardScaler, normalize
 
-
+from nipype.pipeline.engine.utils import (save_hashfile as _save_hashfile)
 from nipype.interfaces.base import (BaseInterfaceInputSpec, DynamicTraitedSpec,
-                                    Undefined, isdefined, traits)
+                                    Undefined, isdefined, traits, InputMultiPath)
+from nipype.utils.misc import (str2bool, flatten, dict_diff)
 
 from nipype.interfaces.io import IOBase, add_traits
-from nipype.utils.filemanip import ensure_list
+from nipype.utils.filemanip import (ensure_list, md5, split_filename, load_json, loadpkl)
 from nipype.utils.functions import create_function_from_source, getsource
 
 from future import standard_library
 standard_library.install_aliases()
 
+from logging import INFO
 
 iflogger = logging.getLogger('nipype.interface')
+logger = logging.getLogger('nipype.workflow')
 
 max_int = 2 ** 32 - 1
 
@@ -347,6 +354,7 @@ def cross_cluster_timeseries(
     from sklearn.preprocessing import normalize
     from sklearn.feature_extraction import image
     from sklearn.cluster import FeatureAgglomeration, KMeans, SpectralClustering
+    from sklearn.mixture import GaussianMixture
 
     dist_btwn_data_1_2 = np.array(
         cdist(data1.T, data2.T, metric=similarity_metric)
@@ -895,3 +903,299 @@ class Function(IOBase):
         for key in self._output_names:
             outputs[key] = self._out[key]
         return outputs
+
+
+class CustomCacheNode(pe.Node):
+
+    ignore_cache = ()
+
+    def __init__(self,
+                 interface,
+                 name,
+                 iterables=None,
+                 itersource=None,
+                 synchronize=False,
+                 overwrite=None,
+                 needed_outputs=None,
+                 run_without_submitting=False,
+                 n_procs=None,
+                 mem_gb=0.20,
+                 ignore_cache=(),
+                 **kwargs):
+
+        super(CustomCacheNode, self).__init__(
+            interface,
+            name,
+            iterables,
+            itersource,
+            synchronize,
+            overwrite,
+            needed_outputs,
+            run_without_submitting,
+            n_procs,
+            mem_gb,
+            **kwargs
+        )
+
+        self.ignore_cache = ignore_cache
+
+
+    def is_cached(self, rm_outdated=False):
+        """
+        Check if the interface has been run previously, and whether
+        cached results are up-to-date.
+        """
+        outdir = self.output_dir()
+
+        # Update hash
+        hashed_inputs, hashvalue = self._get_hashval()
+
+        # The output folder does not exist: not cached
+        if not op.exists(outdir):
+            logger.debug('[Node] Directory not found "%s".', outdir)
+            return False, False
+
+        hashfile = op.join(outdir, '_0x%s.json' % hashvalue)
+        cached = op.exists(hashfile)
+
+        # Check if updated
+        globhashes = glob(op.join(outdir, '_0x*.json'))
+        unfinished = [
+            path for path in globhashes
+            if path.endswith('_unfinished.json')
+        ]
+        hashfiles = list(set(globhashes) - set(unfinished))
+        logger.debug('[Node] Hashes: %s, %s, %s, %s',
+                     hashed_inputs, hashvalue, hashfile, hashfiles)
+
+        node_file = op.join(outdir, '_node.pklz')
+        if not cached and len(hashfiles) == 1 and op.exists(node_file):
+            node = loadpkl(node_file)
+
+            old_inputs = copy.deepcopy(node._interface.inputs.__dict__)
+
+            updated = False
+            
+            if any(
+                k in self.ignore_cache
+                for k in old_inputs.keys()
+            ):
+
+                new_inputs = copy.deepcopy(self._interface.inputs.__dict__)
+                for f in self.ignore_cache:
+                    try:
+                        del old_inputs[f]
+                        del new_inputs[f]
+                    except:
+                        pass
+                    
+                updated = deep_eq(old_inputs, new_inputs)
+
+            if updated:
+                _save_hashfile(hashfile, self._hashed_inputs)
+            os.remove(hashfiles[0])
+
+            logger.debug('[Node] Up-to-date cache found for "%s", but with ignored fields.', self.fullname)
+            return True, updated
+
+        # No previous hashfiles found, we're all set.
+        if cached and len(hashfiles) == 1:
+            assert(hashfile == hashfiles[0])
+            logger.debug('[Node] Up-to-date cache found for "%s".', self.fullname)
+            return True, True  # Cached and updated
+
+        if len(hashfiles) > 1:
+            if cached:
+                hashfiles.remove(hashfile)  # Do not clean up the node, if cached
+            logger.warning('[Node] Found %d previous hashfiles indicating that the working '
+                           'directory of node "%s" is stale, deleting old hashfiles.',
+                           len(hashfiles), self.fullname)
+            for rmfile in hashfiles:
+                os.remove(rmfile)
+
+            hashfiles = [hashfile] if cached else []
+
+        if not hashfiles:
+            logger.debug('[Node] No hashfiles found in "%s".', outdir)
+            assert(not cached)
+            return False, False
+
+        # At this point only one hashfile is in the folder
+        # and we directly check whether it is updated
+        updated = hashfile == hashfiles[0]
+        if not updated:  # Report differences depending on log verbosity
+            cached = True
+            logger.info('[Node] Outdated cache found for "%s".', self.fullname)
+            # If logging is more verbose than INFO (20), print diff between hashes
+            loglevel = logger.getEffectiveLevel()
+            if loglevel < INFO:  # Lazy logging: only < INFO
+                exp_hash_file_base = split_filename(hashfiles[0])[1]
+                exp_hash = exp_hash_file_base[len('_0x'):]
+                logger.log(loglevel, "[Node] Old/new hashes = %s/%s",
+                           exp_hash, hashvalue)
+                try:
+                    prev_inputs = load_json(hashfiles[0])
+                except Exception:
+                    pass
+                else:
+                    logger.log(loglevel,
+                               dict_diff(prev_inputs, hashed_inputs, 10))
+
+            if rm_outdated:
+                os.remove(hashfiles[0])
+
+        assert(cached)  # At this point, node is cached (may not be up-to-date)
+        return cached, updated
+
+    def hash_exists(self, updatehash=False):
+        """
+        Decorate the new `is_cached` method with hash updating
+        to maintain backwards compatibility.
+        """
+
+        # Get a dictionary with hashed filenames and a hashvalue
+        # of the dictionary itself.
+        cached, updated = self.is_cached(rm_outdated=True)
+
+        outdir = self.output_dir()
+        hashfile = op.join(outdir, '_0x%s.json' % self._hashvalue)
+
+        if updated:
+            return True, self._hashvalue, hashfile, self._hashed_inputs
+
+        # Update only possible if it exists
+        if cached and updatehash:
+            logger.debug("[Node] Updating hash: %s", self._hashvalue)
+            _save_hashfile(hashfile, self._hashed_inputs)
+
+        return cached, self._hashvalue, hashfile, self._hashed_inputs
+
+    def _get_hashval(self):
+        """Return a hash of the input state"""
+        self._get_inputs()
+        if self._hashvalue is None and self._hashed_inputs is None:
+
+            inputs = copy.deepcopy(self._interface.inputs)
+            for f in self.ignore_cache:
+                try:
+                    delattr(inputs, f)
+                except:
+                    pass
+
+            self._hashed_inputs, self._hashvalue = inputs.get_hashval(
+                hash_method=self.config['execution']['hash_method']
+            )
+
+            rm_extra = self.config['execution']['remove_unnecessary_outputs']
+            if str2bool(rm_extra) and self.needed_outputs:
+                hashobject = md5()
+                hashobject.update(self._hashvalue.encode())
+                hashobject.update(str(self.needed_outputs).encode())
+                self._hashvalue = hashobject.hexdigest()
+                self._hashed_inputs.append(('needed_outputs', self.needed_outputs))
+
+        return self._hashed_inputs, self._hashvalue
+
+
+class CustomCacheMapNode(CustomCacheNode, pe.MapNode):
+
+    def __init__(self,
+                 interface,
+                 iterfield,
+                 name,
+                 serial=False,
+                 nested=False,
+                 ignore_cache=(),
+                 **kwargs):
+
+        pe.MapNode.__init__(
+            self,
+            interface=interface,
+            iterfield=iterfield,
+            name=name,
+            serial=serial,
+            nested=nested,
+            **kwargs
+        )
+
+        self.ignore_cache = ignore_cache
+
+
+    def _get_hashval(self):
+        """Compute hash including iterfield lists."""
+        self._get_inputs()
+
+        if self._hashvalue is not None and self._hashed_inputs is not None:
+            return self._hashed_inputs, self._hashvalue
+
+        self._check_iterfield()
+        hashinputs = copy.deepcopy(self._interface.inputs)
+        for name in self.iterfield:
+            hashinputs.remove_trait(name)
+            hashinputs.add_trait(
+                name,
+                InputMultiPath(
+                    self._interface.inputs.traits()[name].trait_type))
+            logger.debug('setting hashinput %s-> %s', name,
+                            getattr(self._inputs, name))
+            if self.nested:
+                setattr(hashinputs, name, flatten(getattr(self._inputs, name)))
+            else:
+                setattr(hashinputs, name, getattr(self._inputs, name))
+    
+        for f in self.ignore_cache:
+            try:
+                delattr(hashinputs, f)
+            except:
+                pass
+
+        hashed_inputs, hashvalue = hashinputs.get_hashval(
+            hash_method=self.config['execution']['hash_method']
+        )
+        rm_extra = self.config['execution']['remove_unnecessary_outputs']
+        if str2bool(rm_extra) and self.needed_outputs:
+            hashobject = md5()
+            hashobject.update(hashvalue.encode())
+            sorted_outputs = sorted(self.needed_outputs)
+            hashobject.update(str(sorted_outputs).encode())
+            hashvalue = hashobject.hexdigest()
+            hashed_inputs.append(('needed_outputs', sorted_outputs))
+        self._hashed_inputs, self._hashvalue = hashed_inputs, hashvalue
+        return self._hashed_inputs, self._hashvalue
+
+
+def deep_eq(_v1, _v2):
+    import operator, types
+    
+    def _deep_dict_eq(d1, d2):
+        k1 = sorted(d1.keys())
+        k2 = sorted(d2.keys())
+        if k1 != k2: # keys should be exactly equal
+            return False
+        return sum(deep_eq(d1[k], d2[k]) for k in k1) == len(k1)
+    
+    def _deep_iter_eq(l1, l2):
+        if len(l1) != len(l2):
+            return False
+        return sum(deep_eq(v1, v2) for v1, v2 in zip(l1, l2)) == len(l1)
+    
+    op = operator.eq
+    c1, c2 = (_v1, _v2)
+    
+    # guard against strings because they are also iterable
+    # and will consistently cause a RuntimeError (maximum recursion limit reached)
+    for t in (str,):
+        if isinstance(_v1, t):
+            break
+    else:
+        if isinstance(_v1, dict):
+            op = _deep_dict_eq
+        else:
+            try:
+                c1, c2 = (list(iter(_v1)), list(iter(_v2)))
+            except TypeError:
+                c1, c2 = _v1, _v2
+            else:
+                op = _deep_iter_eq
+    
+    return op(c1, c2)
