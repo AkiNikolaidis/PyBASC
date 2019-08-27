@@ -2,10 +2,12 @@ analysis_ID: SimulationPipeline
 run: True
 
 proc_mem:
-    - 1
+    - 2
     - 4
 
 reruns: 1
+
+random_seed: 42
 
 affinity_threshold_list: 
     - 0.0
