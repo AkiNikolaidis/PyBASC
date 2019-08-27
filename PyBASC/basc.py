@@ -798,40 +798,40 @@ def individual_group_clustered_maps(
             ind_group_cluster_labels_file)
 
 
-#def post_analysis(ind_group_cluster_stability_file_list):
-#    """
-#    Creates a composite matrix of all the ind_group_cluster_stability files.
-#    This allows for choosing the combination of parameters that produces the
-#    most stable clustering.
-#
-#    Parameters
-#    ----------
-#
-#    ind_group_cluster_stability_file_list : A list of all
-#                                            ind_group_cluster_stability files
-#
-#    Returns
-#    -------
-#    ind_group_cluster_stability_set_file : a composite matrix of all the
-#                                           ind_group_cluster_stability metrics
-#    """
-#    import os
-#    import numpy as np
-#    ind_group_cluster_stability_set = np.asarray([
-#        np.load(ind_group_cluster)
-#        for ind_group_cluster in ind_group_cluster_stability_file_list
-#    ])
-#
-#    ind_group_cluster_stability_set_file = os.path.join(
-#        os.getcwd(), 'ind_group_cluster_stability_set.npy'
-#    )
-#
-#    np.save(
-#        ind_group_cluster_stability_set_file,
-#        ind_group_cluster_stability_set
-#    )
-#
-#    return ind_group_cluster_stability_set_file
+def post_analysis(ind_group_cluster_stability_file_list):
+    """
+    Creates a composite matrix of all the ind_group_cluster_stability files.
+    This allows for choosing the combination of parameters that produces the
+    most stable clustering.
+
+    Parameters
+    ----------
+
+    ind_group_cluster_stability_file_list : A list of all
+                                            ind_group_cluster_stability files
+
+    Returns
+    -------
+    ind_group_cluster_stability_set_file : a composite matrix of all the
+                                           ind_group_cluster_stability metrics
+    """
+    import os
+    import numpy as np
+    ind_group_cluster_stability_set = np.asarray([
+        np.load(ind_group_cluster)
+        for ind_group_cluster in ind_group_cluster_stability_file_list
+    ])
+
+    ind_group_cluster_stability_set_file = os.path.join(
+        os.getcwd(), 'ind_group_cluster_stability_set.npy'
+    )
+
+    np.save(
+        ind_group_cluster_stability_set_file,
+        ind_group_cluster_stability_set
+    )
+
+    return ind_group_cluster_stability_set_file
 
 
 # TODO @AKI unused?

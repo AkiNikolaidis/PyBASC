@@ -1,4 +1,4 @@
-analysis_ID: SimulationPipeline
+analysis_ID: SimulationPipeline_randomseed2
 run: True
 
 proc_mem:
@@ -16,10 +16,10 @@ blocklength_list:
     - 1 
     
 dataset_bootstrap_list:
-    - 50
+    - 10
 
 timeseries_bootstrap_list:
-    - 50
+    - 10
 
 group_dim_reduce: False
 
