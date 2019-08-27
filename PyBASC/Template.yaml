@@ -1,7 +1,7 @@
-analysis_ID: SimulationPipeline
+analysis_ID: SimulationPipeline_randomseed1
 run: True
 
-random_seed:
+random_seed: 42
 
 proc_mem:
     - 1
@@ -16,10 +16,10 @@ blocklength_list:
     - 1 
     
 dataset_bootstrap_list:
-    - 100
+    - 10
 
 timeseries_bootstrap_list:
-    - 100
+    - 10
 
 group_dim_reduce: False
 
@@ -47,7 +47,7 @@ cluster_methods:
 
 roi_mask_file: $PYBASC/masks/Full_BG_Sim_3mm.nii.gz
 
-cross_cluster: True
+cross_cluster: False
 cross_cluster_mask_file: $PYBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
 
 
