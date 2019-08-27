@@ -24,12 +24,17 @@ def group_dim_reduce(
         Region of interest. This method is too computationally intensive to
         perform on a whole-brain volume.
     compression_dim : integer
-        
+        The number of supervoxels to be created after the compression.
     group_dim_reduce : boolean
-
+        Whether or not dimension reduction will be performed at the group 
+        level.
     cross_cluster : boolean
-
+        Whether or not the region of interest will be clustered according to 
+        the similarity of connectivity within the region, or similarity of 
+        connectivity to a secondary region.
     cxc_roi_mask_file : string
+        The primary region will be clustered based on similarity of voxel-wise
+        connectivity to this region.
     
 
     Returns
@@ -163,23 +168,57 @@ def nifti_individual_stability(
     ----------
     subject_file : string
         Nifti file of a subject
+        
     roi_mask_file : string
-        Region of interest (this method is too computationally intensive to perform on a whole-brain volume)
+        Region of interest that is being parcellated. Large volumes should use
+        compression_dim to reduce computational load.
+        
     n_bootstraps : integer
         Number of bootstraps
+        
     n_clusters : integer
         Number of clusters
+                
+    compression_dim : 
+        The number of supervoxels to be created after the compression.
+
+    similarity_metric : string
+        options 'correlation'
+    
+    blocklength : float, optional
+        A scalar value of the window size to be used for the block bootstrap
+    
     cbb_block_size : integer, optional
         Size of the time-series block when performing circular block bootstrap
+        
     affinity_threshold : float, optional
         Minimum threshold for similarity matrix based on correlation to create an edge
+       
+    cluster_method : string, optional
+    
+    compressor : 
+        Compressor object from group dim reduce.
+    
+    cross_cluster : boolean
+        Whether or not the region of interest will be clustered according to 
+        the similarity of connectivity within the region, or similarity of 
+        connectivity to a secondary region.
+    
+    cxc_compressor:
+        Compressor object from group dim reduce for cxc
+    
+    cxc_roi_mask_file : string
+         The primary region will be clustered based on similarity of voxel-wise
+        connectivity to this region.
+    
+    random_state_tuple : 
 
     Returns
     -------
     ism : array_like
         Individual stability matrix of shape (`V`, `V`), `V` voxels
     """
-
+    
     import os
     import numpy as np
     import nibabel as nb
@@ -322,10 +361,31 @@ def map_group_stability_random_bootstrap(
 
     Parameters
     ----------
-    is_bootstrapping : int or bool
+    
+    subject_stability_list : list of strings
+        A length `N` list of file paths to numpy matrices of shape (`V`, `V`),
+        `N` subjects, `V` voxels
+        
+    n_clusters : array_like
+        number of clusters extracted from adjacency matrx  
+        
+     is_bootstrapping : int or bool
         indicates if it is to perform bootstrapping. If it is an integer, it will
         merge the integer with random state to generate a new random state.
-        If it is a boolean, it indicates that is not to perform bootstrapping.
+        If it is a boolean, it indicates that is not to perform bootstrapping.    
+        
+    roi_mask_file : string
+        Region of interest that is being parcellated. Large volumes should use
+        compression_dim to reduce computational load.
+   
+    group_dim_reduce : boolean
+        Whether or not dimension reduction will be performed at the group 
+        level.
+        
+    cluster_method : string, optional
+        What type of clustering will be applied.    
+        
+   
     """
 
     import PyBASC.utils as utils
@@ -361,9 +421,23 @@ def map_group_stability(
         A length `N` list of file paths to numpy matrices of shape (`V`, `V`),
         `N` subjects, `V` voxels
     n_clusters : array_like
-        number of clusters extrated from adjacency matrx
-    is_bootstrapping : boolean
-        indicates if it is to perform bootstrapping
+        number of clusters extracted from adjacency matrix
+        
+    is_bootstrapping : int or bool
+        indicates if it is to perform bootstrapping. If it is an integer, it will
+        merge the integer with random state to generate a new random state.
+        If it is a boolean, it indicates that is not to perform bootstrapping.
+        
+    roi_mask_file : string
+        Region of interest that is being parcellated. Large volumes should use
+        compression_dim to reduce computational load.
+   
+    group_dim_reduce : boolean
+        Whether or not dimension reduction will be performed at the group 
+        level.
+        
+    cluster_method : string, optional
+        What type of clustering will be applied.    
 
     Returns
     -------
@@ -434,13 +508,31 @@ def join_group_stability(
     subject_stability_list : list of strings
         A length `N` list of file paths to numpy matrices of shape (`V`, `V`),
         `N` subjects, `V` voxels
+        
     group_stability_list : list of strings
         A length `N` list of file paths to numpy matrices of shape (`V`, `V`),
         `N` subjects, `V` voxels
+        
     n_bootstraps : array_like
         Number of bootstraps to join and average.
+        
     n_clusters : array_like
         number of clusters extrated from adjacency matrx
+        
+    roi_mask_file : string
+        Region of interest that is being parcellated. Large volumes should use
+        compression_dim to reduce computational load.
+   
+    group_dim_reduce : boolean
+        Whether or not dimension reduction will be performed at the group 
+        level.
+    
+    compression_labels_list : array_like
+        list of the arrays that contain the dimension reduced label files from
+        each individual dim reduce.
+    
+    cluster_method : string, optional
+        What type of clustering will be applied. 
 
     Returns
     -------
@@ -549,12 +641,14 @@ def ndarray_to_vol(data_array, roi_mask_file, sample_file, filename):
         given roi_mask_file.  If data_array is two dimensional, first dimension
         is considered temporal dimension
     roi_mask_file : string
-        Path of the roi_mask_file
+        Region of interest that is being parcellated. Large volumes should use
+        compression_dim to reduce computational load.
     sample_file : string or list of strings
         Path of sample nifti file(s) to use for header of the output.
         If list, the first file is chosen.
     filename : string
         Name of output file
+
 
     Returns
     -------
@@ -622,6 +716,17 @@ def individual_group_clustered_maps(
         `N` subjects, `V` voxels
     clusters_G : array_like
         Length `V` array of cluster assignments for each voxel
+    roi_mask_file : string
+        Region of interest that is being parcellated. Large volumes should use
+        compression_dim to reduce computational load. 
+    group_dim_reduce : boolean
+        Whether or not dimension reduction will be performed at the group 
+        level.
+    compression_labels_file : array_like
+        an array that contain the dimension reduced label file from
+        an individual dim reduce. 
+    
+    
 
     Returns
     -------
@@ -693,40 +798,40 @@ def individual_group_clustered_maps(
             ind_group_cluster_labels_file)
 
 
-def post_analysis(ind_group_cluster_stability_file_list):
-    """
-    Creates a composite matrix of all the ind_group_cluster_stability files.
-    This allows for choosing the combination of parameters that produces the
-    most stable clustering.
-
-    Parameters
-    ----------
-
-    ind_group_cluster_stability_file_list : A list of all
-                                            ind_group_cluster_stability files
-
-    Returns
-    -------
-    ind_group_cluster_stability_set_file : a composite matrix of all the
-                                           ind_group_cluster_stability metrics
-    """
-    import os
-    import numpy as np
-    ind_group_cluster_stability_set = np.asarray([
-        np.load(ind_group_cluster)
-        for ind_group_cluster in ind_group_cluster_stability_file_list
-    ])
-
-    ind_group_cluster_stability_set_file = os.path.join(
-        os.getcwd(), 'ind_group_cluster_stability_set.npy'
-    )
-
-    np.save(
-        ind_group_cluster_stability_set_file,
-        ind_group_cluster_stability_set
-    )
-
-    return ind_group_cluster_stability_set_file
+#def post_analysis(ind_group_cluster_stability_file_list):
+#    """
+#    Creates a composite matrix of all the ind_group_cluster_stability files.
+#    This allows for choosing the combination of parameters that produces the
+#    most stable clustering.
+#
+#    Parameters
+#    ----------
+#
+#    ind_group_cluster_stability_file_list : A list of all
+#                                            ind_group_cluster_stability files
+#
+#    Returns
+#    -------
+#    ind_group_cluster_stability_set_file : a composite matrix of all the
+#                                           ind_group_cluster_stability metrics
+#    """
+#    import os
+#    import numpy as np
+#    ind_group_cluster_stability_set = np.asarray([
+#        np.load(ind_group_cluster)
+#        for ind_group_cluster in ind_group_cluster_stability_file_list
+#    ])
+#
+#    ind_group_cluster_stability_set_file = os.path.join(
+#        os.getcwd(), 'ind_group_cluster_stability_set.npy'
+#    )
+#
+#    np.save(
+#        ind_group_cluster_stability_set_file,
+#        ind_group_cluster_stability_set
+#    )
+#
+#    return ind_group_cluster_stability_set_file
 
 
 # TODO @AKI unused?

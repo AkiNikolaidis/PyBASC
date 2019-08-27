@@ -95,6 +95,8 @@ def timeseries_bootstrap(tseries, block_size, random_state=None):
         A matrix of shapes (`M`, `N`) with `M` timepoints and `N` variables
     block_size : integer
         Size of the bootstrapped blocks
+    random_state : integer
+        the random state to seed the bootstrap
 
     Returns
     -------
@@ -153,6 +155,8 @@ def standard_bootstrap(dataset, random_state=None):
     ----------
     dataset : array_like
         A matrix of where dimension-0 represents samples
+    random_state : integer
+        the random state to seed the bootstrap
 
     Returns
     -------
@@ -182,6 +186,9 @@ def cluster_timeseries(
     ----------
     X : array_like
         A matrix of shape (`N`, `M`) with `N` samples and `M` dimensions
+    roi_mask_data : array_like
+        An array that contains a binary mask of the region of interest (ROI)
+        being parcellated.
     n_clusters : integer
         Number of clusters
     similarity_metric : {'k_neighbors', 'correlation', 'data'}
@@ -192,6 +199,11 @@ def cluster_timeseries(
     affinity_threshold : float
         Threshold of similarity metric when 'correlation' similarity
         metric is used.
+    cluster_method : {'ward', 'spectral', 'kmeans', 'gaussianmixture'}
+        A string that says which cluster method to use.
+    random_state : integer
+        the random state to seed the bootstrap
+
 
     Returns
     -------
@@ -299,6 +311,9 @@ def cross_cluster_timeseries(
         A matrix of shape (`N`, `M`) with `N2` samples and `M2` dimensions.
         This is the matrix with which distances will be calculated to assign
         clusters to data1
+    roi_mask_data : array_like
+        An array that contains a binary mask of the region of interest (ROI)
+        being parcellated.
     n_clusters : integer
         Number of clusters
     similarity_metric : {'euclidean', 'correlation', 'minkowski', 'cityblock',
@@ -310,6 +325,10 @@ def cross_cluster_timeseries(
     affinity_threshold : float
         Threshold of similarity metric when 'correlation' similarity metric
         is used.
+    cluster_method : {'ward', 'spectral', 'kmeans', 'gaussianmixture'}
+        A string that says which cluster method to use.
+    random_state : integer
+        the random state to seed the bootstrap
 
     Returns
     -------
@@ -467,11 +486,17 @@ def cluster_matrix_average(M, cluster_assignments):
     Parameters
     ----------
     M : array_like
+        A stability matrix.
     cluster_assignments : array_like
-
+        A cluster labels file
+        
     Returns
     -------
-    s : array_like
+    
+    vox_cluster_label: array_like
+        An output that has the mean stability for each voxel by each cluster
+        label.
+
 
     Examples
     --------
@@ -558,19 +583,37 @@ def individual_stability_matrix(
     ----------
     Y1 : array_like
         A matrix of shape (`V`, `N`) with `V` voxels `N` timepoints
+    roi_mask_data : array_like
+        An array that contains a binary mask of the region of interest (ROI)
+        being parcellated.
+    n_bootstraps : integer
+        Number of bootstrap samples
+    n_clusters : integer
+        Number of clusters
+    similarity_metric : {'k_neighbors', 'correlation', 'data'}
+        Type of similarity measure for spectral clustering. The pairwise
+        similarity measure specifies the edges of the similarity graph.
+        'data' option assumes X as the similarity matrix and hence must be
+        symmetric.  Default is kneighbors_graph [1]_ (forced to be symmetric)    
     Y2 : array_like
         A matrix of shape (`V`, `N`) with `V` voxels `N` timepoints
         For Cross-cluster solutions, this will be the matrix by
         which Y1 is clustered
-    n_bootstraps : integer
-        Number of bootstrap samples
-    k_clusters : integer
-        Number of clusters
+    cross_cluster : boolean
+        Whether or not the region of interest will be clustered according to 
+        the similarity of connectivity within the region, or similarity of 
+        connectivity to a secondary region.
     cbb_block_size : integer, optional
         Block size to use for the Circular Block Bootstrap algorithm
+    blocklength : float, optional
+        A scalar value of the window size to be used for the block bootstrap
     affinity_threshold : float, optional
         Minimum threshold for similarity matrix based on correlation
         to create an edge
+    cluster_method : {'ward', 'spectral', 'kmeans', 'gaussianmixture'}
+        A string that says which cluster method to use.
+    random_state : integer
+        the random state to seed the bootstrap
 
     Returns
     -------
@@ -692,10 +735,11 @@ def data_compression(fmri_masked, mask_img, mask_np, compression_dim):
     
     Parameters
     ----------
-    data : np.ndarray[ndim=2]
+    fmri_masked : np.ndarray[ndim=2]
            A matrix of shape (`V`, `N`) with `V` voxels `N` timepoints
            The functional dataset that needs to be reduced
-    mask : a numpy array of the mask
+    mask_img : an nibabel img object of the mask
+    mask_np : a numpy array of the mask
     compression_dim : integer
         The number of elements that the data should be reduced to
 
