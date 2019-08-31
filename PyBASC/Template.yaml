@@ -1,5 +1,7 @@
-analysis_ID: SimulationPipeline_randomseed2
+analysis_ID: SimulationPipeline_randomseed1
 run: True
+
+random_seed: 42
 
 proc_mem:
     - 2
@@ -52,6 +54,7 @@ cross_cluster_mask_file: $PYBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz
 
 
 subject_file_list: 
+<<<<<<< HEAD
     - $PYBASC/data/sub_0corr_0.1_noise_2.5_TRs_100.nii.gz
     - $PYBASC/data/sub_1corr_0.1_noise_2.5_TRs_100.nii.gz
     - $PYBASC/data/sub_2corr_0.1_noise_2.5_TRs_100.nii.gz
@@ -63,3 +66,9 @@ subject_file_list:
     - $PYBASC/data/sub_8corr_0.1_noise_2.5_TRs_100.nii.gz
     - $PYBASC/data/sub_9corr_0.1_noise_2.5_TRs_100.nii.gz
 
+=======
+    - $PYBASC/data/sub_0corr_0.05_noise_2_TRs_100.nii.gz
+    - $PYBASC/data/sub_1corr_0.05_noise_2_TRs_100.nii.gz
+    - $PYBASC/data/sub_2corr_0.05_noise_2_TRs_100.nii.gz
+    - $PYBASC/data/sub_3corr_0.05_noise_2_TRs_100.nii.gz
+>>>>>>> b528b93cd2688698190566f2fa5edf3d87574996
