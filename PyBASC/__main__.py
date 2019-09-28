@@ -91,7 +91,7 @@ def main(config, parallelized=False, random_seed=None, cache_method='timestamp')
             cross_cluster, cross_cluster_mask_file, 
             runs=reruns, 
             
-            out_dir=home + '/PyBASC_Outputs', proc_mem=proc_mem,
+            out_dir=home + '/PyBASC_outputs', proc_mem=proc_mem,
             analysis_id=analysis_id,
             random_seed=random_seed,
             cache_method=cache_method
@@ -137,7 +137,7 @@ def run_PyBASC(
 
     out_dir = os.path.join(
         home,
-        'PyBASC_Outputs',
+        'PyBASC_outputs',
         '{analysis}',
         '_'.join([
             'Run_{rerun}',
