@@ -230,6 +230,7 @@ def nifti_individual_stability(
 
     random_state = utils.get_random_state(random_state_tuple)
 
+
     if type(compression_dim) == list:
         cxc_compression_dim = compression_dim[1]
         compression_dim = compression_dim[0]
@@ -478,7 +479,9 @@ def map_group_stability(
         roi_mask_img = None
     else:
         roi_mask_img = nb.load(roi_mask_file).get_data().astype('bool')
+    
 
+    
     G = utils.adjacency_matrix(
         utils.cluster_timeseries(J, roi_mask_img, n_clusters,
                                  similarity_metric='correlation',
@@ -486,7 +489,12 @@ def map_group_stability(
                                  cluster_method=cluster_method,
                                  random_state=random_state)[:, np.newaxis]
     )
+    
+
+    
     G = scipy.sparse.csr_matrix(G, dtype=np.int8)
+    
+
 
     G_file = os.path.join(os.getcwd(), 'individual_stability_matrix.npz')
     scipy.sparse.save_npz(G_file, G)
@@ -554,6 +562,7 @@ def join_group_stability(
         for G_file in group_stability_list
     ])
 
+    
     G = group_stability_set.sum(axis=0)
     G *= 100
     G //= n_bootstraps
@@ -564,7 +573,8 @@ def join_group_stability(
         G = scipy.sparse.csr_matrix(G, dtype=np.int8)
         G = utils.expand_ism(G, compression_labels.T)
         G = G.toarray()
-
+    
+    
     roi_mask_data = nb.load(roi_mask_file).get_data().astype('bool')
 
     clusters_G = utils.cluster_timeseries(
@@ -572,7 +582,7 @@ def join_group_stability(
         similarity_metric='correlation', affinity_threshold=0.0,
         cluster_method=cluster_method, random_state=random_state
     )
-    clusters_G = clusters_G.astype("uint8")
+    clusters_G = clusters_G.astype("uint16")
 
     # TODO @AKI APPLY THIS METHOD TO THE INDIVIDUAL LEVEL CLUSTER
     # TODO @AKI INSERT SECTION HERE TO RETURN ALL OUTPUTS

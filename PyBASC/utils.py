@@ -246,7 +246,8 @@ def cluster_timeseries(
     print("Calculating Hierarchical Clustering")
 
     cluster_method = cluster_method.lower()
-     
+    
+    
     if cluster_method == 'ward':
         if roi_mask_data is not None:
             shape = roi_mask_data.shape
@@ -262,12 +263,14 @@ def cluster_timeseries(
             )
             ward.fit(sim_matrix)
             y_pred = ward.labels_.astype(np.int)
+
         else:
             ward = FeatureAgglomeration(
                 n_clusters=n_clusters,
                 affinity='euclidean',
                 linkage='ward'
             )
+
             ward.fit(sim_matrix)
             y_pred = ward.labels_.astype(np.int)
 
@@ -374,6 +377,7 @@ def cross_cluster_timeseries(
     from sklearn.feature_extraction import image
     from sklearn.cluster import FeatureAgglomeration, KMeans, SpectralClustering
     from sklearn.mixture import GaussianMixture
+
 
     dist_btwn_data_1_2 = np.array(
         cdist(data1.T, data2.T, metric=similarity_metric)

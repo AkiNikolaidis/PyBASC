@@ -10,8 +10,7 @@
 #from BASC import *
 import PyBASC
 from PyBASC.__main__ import main, run_PyBASC
-import __init__
-import utils
+
 import os
 import gc
 import numpy as np
@@ -21,55 +20,76 @@ import scipy.stats
 from os.path import expanduser
 from basc_workflow_runner import run_basc_workflow
 from basc import save_igcm_nifti, create_group_cluster_maps, ism_nifti, gsm_nifti
-home = expanduser("~")
-proc_mem= [2,4]
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Oct  7 15:32:13 2019
+
+@author: aki.nikolaidis
+"""
 
 
-subject_file_list = ['/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/data/sub_0corr_0.05_noise_2_TRs_100.nii.gz',
-                     '/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/data/sub_1corr_0.05_noise_2_TRs_100.nii.gz',
-                     '/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/data/sub_2corr_0.05_noise_2_TRs_100.nii.gz',
-                     '/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/data/sub_3corr_0.05_noise_2_TRs_100.nii.gz']
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_4corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_5corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_6corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_7corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_8corr_0.05_noise_2_TRs_100.nii.gz',
-#                     '/Users/aki.nikolaidis/git_repo/PyBASC/SimData4/sub_9corr_0.05_noise_2_TRs_100.nii.gz']
+with open('/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/testing_256.yaml', "r") as f:
+        config = yaml.load(f)
+
+if 'home' in config:
+    home = os.path.abspath(config['home'])
+    os.chdir(home)
+else:
+    home = os.getcwd()
+    
+analysis_id = config['analysis_ID']
+run = config['run']
+proc_mem = config['proc_mem']
+path = os.path.dirname(PyBASC.__file__)
+
+random_seed = config['random_seed']
+
+subject_file_list = [
+    os.path.abspath(s.replace('$PYBASC', path))
+    for s in config['subject_file_list']
+]
+
+reruns = config.get('reruns', 1)
+dataset_bootstraps_list = config['dataset_bootstrap_list']
+timeseries_bootstraps_list = config['timeseries_bootstrap_list']
+similarity_metric_list = config['similarity_metric_list']
+cluster_method_list = config['cluster_methods']
+blocklength_list = config['blocklength_list']
+n_clusters_list = config['n_clusters_list']
+output_size_list = config['output_sizes']
+affinity_threshold_list = config['affinity_threshold_list']
+roi_mask_file = config['roi_mask_file']
+cross_cluster = config.get('cross_cluster', False)
+cross_cluster_mask_file = config.get('cross_cluster_mask_file', None)
+group_dim_reduce = config.get('group_dim_reduce', False)
+
+roi_mask_file = os.path.abspath(roi_mask_file.replace('$PYBASC', path))
+if cross_cluster_mask_file:
+    cross_cluster_mask_file = \
+        os.path.abspath(cross_cluster_mask_file.replace('$PYBASC', path))
 
 
-#roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Full_BG_Sim_3mm.nii.gz'
-#roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/masks/Yeo7_3mmMasks/Yeo_2_3mm.nii.gz'
 
-roi_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Smallmem_BGClust.nii.gz'
+run_PyBASC(
+            dataset_bootstrap_list=dataset_bootstraps_list,
+            timeseries_bootstrap_list=timeseries_bootstraps_list,
+            similarity_metric_list=similarity_metric_list,
+            cluster_methods=cluster_method_list,
+            blocklength_list=blocklength_list,
+            n_clusters_list=n_clusters_list,
+            output_sizes=output_size_list,
+            subject_file_list=subject_file_list,
+            roi_mask_file=roi_mask_file,
+            proc_mem=proc_mem,
+            cross_cluster=cross_cluster,
+            cross_cluster_mask_file=cross_cluster_mask_file,
+            affinity_threshold_list=affinity_threshold_list,
+            run=run,
+            home=home,
+            reruns=reruns,
+            group_dim_reduce=group_dim_reduce,
+            analysis_ID=analysis_id,
+            random_seed=random_seed
+        )
 
-
-roi2_mask_file='/Users/aki.nikolaidis/git_repo/PyBASC/PyBASC/masks/Yeo7_3mmMasks/Yeo_1_3mm.nii.gz' #
-
-
-dataset_bootstrap_list=[2]#,10,30,100]
-timeseries_bootstrap_list=[2]#,10,30,100]
-similarity_metric_list=['correlation'] #['correlation','euclidean','cityblock', 'cosine']
-blocklength_list=[1]#[0.5,1,2]
-n_clusters_list=[2]#[2,6,12,20]
-output_sizes=[0]#,200,400,800,1600]#[10,100,600,1200]
-
-group_dim_reduce=False
-#reruns= np.linspace(1,16,16)
-
-cluster_methods=['ward']
-cross_cluster = True
-
-affinity_thresh= 0.0
-ism_gsm_stability=[]
-#ind_clust_stab_mat=[]
-#ind_clust_stab_summary=[[1, 2, 3, 4, 5]]
-run=True
-
-
-analysis_ID='NoDimReduce_cxc'
-reruns= 1
-
-
-run_PyBASC(dataset_bootstrap_list,timeseries_bootstrap_list, similarity_metric_list, cluster_methods, 
-         blocklength_list, n_clusters_list, output_sizes, subject_file_list, roi_mask_file, proc_mem,
-         cross_cluster, roi2_mask_file, affinity_thresh, run, home, reruns, group_dim_reduce, analysis_ID)
